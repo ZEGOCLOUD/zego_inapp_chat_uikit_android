@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">ZIMKit</string>
+    <string name="demo_login_hint">输入用户id</string>
+    <string name="demo_login">登录</string>
+    <string name="demo_user_name">用户名为:%s</string>
+    <string name="demo_welcome">hi，\n欢迎使用 Zego In-app chat</string>
+    <string name="demo_input_user_id_error_tips">请输入6–12位英文或数字的用户ID</string>
+    <string name="demo_user_id_login">用户id登录</string>
+</resources>

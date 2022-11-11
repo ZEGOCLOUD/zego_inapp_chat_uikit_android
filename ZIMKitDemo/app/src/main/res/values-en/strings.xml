@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ZIMKit</string>
+    <string name="demo_login_hint">User ID</string>
+    <string name="demo_login">Log In</string>
+    <string name="demo_user_name">Username: %s</string>
+    <string name="demo_welcome">Hi, \nwelcome to ZEGOCLOUD In-app Chat.</string>
+    <string name="demo_input_user_id_error_tips">6-12 bit userID using letters and numbers.</string>
+    <string name="demo_user_id_login">User Login</string>
+</resources>

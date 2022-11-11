@@ -1,0 +1,48 @@
+plugins {
+    id 'com.android.library'
+    id 'maven-publish'
+}
+apply plugin: 'com.github.dcendents.android-maven'
+
+android {
+    compileSdk rootProject.ext.compileSdkVersion
+
+    defaultConfig {
+        minSdk rootProject.ext.miniSdkVersion
+        targetSdk rootProject.ext.targetSdkVersion
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+    }
+    buildFeatures {
+        dataBinding true
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+//    implementation fileTree(dir: '../app/libs', include: ['*.jar'])
+    api project(':zimkitcommon')
+    api project(':zimkitalbum')
+    api "com.github.zegolibrary:zim:${rootProject.ext.zimVersion}"
+    implementation "io.github.scwang90:refresh-layout-kernel:${rootProject.ext.rv_thirdVersion}"
+    implementation "io.github.scwang90:refresh-footer-classics:${rootProject.ext.rv_thirdVersion}"
+    implementation "io.github.scwang90:refresh-header-classics:${rootProject.ext.rv_thirdVersion}"
+    implementation "androidx.appcompat:appcompat:${rootProject.ext.appcompatVersion}"
+    implementation "com.google.android.material:material:${rootProject.ext.materialVersion}"
+    implementation "androidx.constraintlayout:constraintlayout:${rootProject.ext.constraintlayout}"
+    testImplementation "junit:junit:${rootProject.ext.junitVersion}"
+    androidTestImplementation "androidx.test.ext:junit:${rootProject.ext.test_extVersion}"
+    androidTestImplementation "androidx.test.espresso:espresso-core:${rootProject.ext.espresso_coreVersion}"
+    implementation "com.github.bumptech.glide:glide:${rootProject.ext.glide}"
+
+}

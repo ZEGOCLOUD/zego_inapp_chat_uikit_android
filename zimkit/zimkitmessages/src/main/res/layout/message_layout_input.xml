@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <import
+            alias="textUtils"
+            type="android.text.TextUtils" />
+
+        <variable
+            name="view"
+            type="android.view.View" />
+
+
+        <variable
+            name="model"
+            type="im.zego.zimkitmessages.model.ZIMKitInputModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="5dp"
+            android:background="@drawable/message_shape_gradient_input_bg"
+            app:layout_constraintBottom_toTopOf="@+id/bottom_view" />
+
+        <View
+            android:id="@+id/bottom_view"
+            android:layout_width="match_parent"
+            android:layout_height="61dp"
+            app:backgroundColor="@{model.isShowWhite}"
+            app:layout_constraintBottom_toTopOf="@+id/input_more_view" />
+
+        <im.zego.zimkitmessages.widget.DrawableCenterTextView
+            android:id="@+id/tv_multi_delete"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:background="@drawable/common_shape_12dp_white"
+            android:drawableLeft="@mipmap/message_ic_multi_delete"
+            android:drawablePadding="4dp"
+            android:gravity="center_vertical"
+            android:text="@string/message_option_delete"
+            android:textColor="@color/color_ffff4a50"
+            android:textSize="15sp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@id/bottom_view"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="@id/bottom_view" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cl_input_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="@id/bottom_view"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="@id/bottom_view">
+
+            <ImageView
+                android:id="@+id/btn_audio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="12dp"
+                android:background="@mipmap/message_ic_audio_close"
+                android:clickable="@{!model.audioRecordBtn}"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <EditText
+                android:id="@+id/et_message"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginLeft="12dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginRight="12dp"
+                android:layout_marginBottom="8dp"
+                android:background="@drawable/common_shape_12dp_f2f2f2"
+                android:gravity="center_vertical"
+                android:hint="@string/message_input_new_message"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp"
+                android:text="@={model.inputMessage}"
+                android:textColor="@color/color_2a2a2a"
+                android:textColorHint="@color/color_c2c2c2"
+                android:textSize="15sp"
+                android:visibility="@{model.audioBtn ? view.GONE:view.VISIBLE}"
+                app:addTextChangedListener="@{model.onEditTextWatcher}"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintLeft_toRightOf="@+id/btn_audio"
+                app:layout_constraintRight_toLeftOf="@id/btn_emoji"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/chat_audio_input"
+                style="?android:attr/borderlessButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginLeft="12dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginRight="12dp"
+                android:layout_marginBottom="8dp"
+                android:background="@drawable/message_selector_audio"
+                android:text="@string/message_audio_record_normal"
+                android:textAllCaps="false"
+                android:textColor="@color/color_2a2a2a"
+                android:textSize="15sp"
+                android:visibility="@{model.audioBtn ? view.VISIBLE:view.GONE}"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintLeft_toRightOf="@+id/btn_audio"
+                app:layout_constraintRight_toLeftOf="@id/btn_emoji"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/btn_emoji"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="12dp"
+                android:background="@mipmap/message_ic_emoji_close"
+                android:clickable="@{!model.audioRecordBtn}"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintRight_toLeftOf="@+id/cl_btn_right"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/cl_btn_right"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="12dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <ImageView
+                    android:id="@+id/btn_send"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@mipmap/message_ic_send"
+                    android:visibility="@{!textUtils.isEmpty(model.inputMessage) ? view.VISIBLE:view.GONE}"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <ImageView
+                    android:id="@+id/btn_more"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:clickable="@{!model.audioRecordBtn}"
+                    android:src="@mipmap/message_ic_send_more"
+                    android:visibility="@{textUtils.isEmpty(model.inputMessage) ? view.VISIBLE:view.GONE}"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/input_more_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

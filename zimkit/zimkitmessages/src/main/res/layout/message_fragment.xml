@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <import
+            alias="textUtils"
+            type="android.text.TextUtils" />
+
+        <variable
+            name="view"
+            type="android.view.View" />
+
+        <variable
+            name="vm"
+            type="im.zego.zimkitmessages.viewmodel.ZIMKitMessageVM" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_contain"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:splitMotionEvents="false">
+
+        <com.scwang.smart.refresh.layout.SmartRefreshLayout
+            android:id="@+id/refresh_layout"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toTopOf="@id/input_view"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srlAccentColor="@color/color_2a2a2a"
+            app:srlPrimaryColor="@color/color_f2f2f2">
+
+            <com.scwang.smart.refresh.header.ClassicsHeader
+                android:id="@+id/refresh_header"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:srlEnableLastTime="false" />
+
+            <im.zego.zimkitmessages.widget.message.MessageRecyclerView
+                android:id="@+id/rv_message"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/color_f2f2f2"
+                android:clickable="false"
+                android:paddingBottom="12dp" />
+
+        </com.scwang.smart.refresh.layout.SmartRefreshLayout>
+
+        <im.zego.zimkitmessages.widget.message.input.RecordAudioView
+            android:id="@+id/mRecordAudioView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:background="@color/color_80000000"
+            android:visibility="gone"
+            app:layout_constraintBottom_toTopOf="@id/input_view"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <im.zego.zimkitmessages.widget.message.input.ZIMKitInputView
+            android:id="@+id/input_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

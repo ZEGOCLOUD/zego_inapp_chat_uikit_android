@@ -1,0 +1,15 @@
+<resources>
+    <string name="conversation_start_chat">开始聊天</string>
+    <string name="conversation_empty">暂无消息\n快去发起聊天吧</string>
+    <string name="conversation_start_single_chat">发起单聊</string>
+    <string name="conversation_start_group_chat">发起群聊</string>
+    <string name="conversation_join_group_chat">加入群聊</string>
+    <string name="conversation_cancel">取消</string>
+    <string name="conversation_delete">删除</string>
+    <string name="conversation_message_total_count">消息总数</string>
+    <string name="conversation_reload">重新加载</string>
+
+    <string name="conversation_title">In-app Chat</string>
+    <string name="conversation_disconnected">In-app Chat(未连接)</string>
+    <string name="conversation_connecting">In-app Chat(连接中...)</string>
+</resources>

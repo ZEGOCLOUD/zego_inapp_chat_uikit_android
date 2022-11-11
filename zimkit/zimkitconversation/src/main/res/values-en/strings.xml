@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="conversation_start_chat">New Chat</string>
+    <string name="conversation_empty">No chats. Start chatting now.</string>
+    <string name="conversation_start_single_chat">One-on-one chat</string>
+    <string name="conversation_start_group_chat">Group chat</string>
+    <string name="conversation_join_group_chat">Join a group</string>
+    <string name="conversation_cancel">Cancel</string>
+    <string name="conversation_delete">Delete</string>
+    <string name="conversation_message_total_count">Chats</string>
+    <string name="conversation_reload">Reload</string>
+
+    <string name="conversation_title">In-app Chat</string>
+    <string name="conversation_disconnected">In-app Chat(Disconnected)</string>
+    <string name="conversation_connecting">In-app Chat(Connecting...)</string>
+</resources>

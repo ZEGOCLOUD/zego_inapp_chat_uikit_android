@@ -1,0 +1,23 @@
+<resources>
+    <string name="common_create_zim_fail_log">ZIMManager.createZIM() must be called first</string>
+    <string name="common_login_room_fail_zim_not_create_log">login fail,ZIMManager.createZIM() must be called first</string>
+    <string name="common_yesterday">昨天</string>
+    <string name="common_user_kick_out">重复登录，用户被踢出</string>
+    <string-array name="common_weeks">
+        <item name="common_sunday">周日</item>
+        <item name="common_monday">周一</item>
+        <item name="common_tuesday">周二</item>
+        <item name="common_wednesday">周三</item>
+        <item name="common_thursday">周四</item>
+        <item name="common_friday">周五</item>
+        <item name="common_saturday">周六</item>
+    </string-array>
+
+    <string name="common_message_photo">[图片]</string>
+    <string name="common_message_video">[视频]</string>
+    <string name="common_message_audio">[语音]</string>
+    <string name="common_message_file">[文件]</string>
+    <string name="common_message_unknown">暂不支持该类型消息，请升级到最新版本</string>
+    <string name="common_open_file_tips">选择要打开此文件的应用</string>
+    <string name="common_title_cancel">取消</string>
+</resources>

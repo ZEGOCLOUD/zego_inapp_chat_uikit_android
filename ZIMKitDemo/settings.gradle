@@ -1,0 +1,9 @@
+
+rootProject.name = "ZIMKit"
+include ':app'
+include ':zimkitcommon'
+include ':zimkitconversation'
+include ':zimkitmessages'
+include ':zimkit'
+include ':zimkitgroup'
+include ':zimkitalbum'

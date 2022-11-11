@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="view"
+            type="android.view.View" />
+
+        <variable
+            name="loginRoomVM"
+            type="im.zego.zimkit.LoginViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".LoginActivity">
+
+        <ImageView
+            android:id="@+id/tv_cover"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scaleType="centerCrop"
+            android:src="@mipmap/img_background"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16dp"
+            android:layout_marginBottom="34dp"
+            android:text="@string/demo_welcome"
+            android:textColor="@color/white"
+            android:textSize="23sp"
+            app:layout_constraintBottom_toTopOf="@id/view_bg"
+            app:layout_constraintLeft_toLeftOf="parent" />
+
+        <View
+            android:id="@+id/view_bg"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="-22dp"
+            android:background="@drawable/common_shape_24dp_white"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_cover" />
+
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="36dp"
+            android:layout_marginTop="40dp"
+            android:text="@string/demo_user_id_login"
+            android:textColor="@color/color_2a2a2a"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="@id/view_bg" />
+
+        <EditText
+            android:id="@+id/et_id"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="37dp"
+            android:background="@drawable/common_shape_8dp_ffedf1f7"
+            android:hint="@string/demo_input_user_id_error_tips"
+            android:paddingLeft="12dp"
+            android:paddingRight="12dp"
+            android:text="@={loginRoomVM.mUserId}"
+            android:textColor="@color/color_2a2a2a"
+            android:textColorHint="@color/color_a4a4a4"
+            android:textSize="16sp"
+            app:addTextChangedListener="@{loginRoomVM.onEditTextWatcher}"
+            app:layout_constraintLeft_toLeftOf="@id/tv_title"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_title" />
+
+        <TextView
+            android:id="@+id/tv_error_tip"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/demo_input_user_id_error_tips"
+            android:textColor="@color/color_ff4a50"
+            android:textSize="12sp"
+            android:visibility="@{loginRoomVM.isShowErrorTips?view.VISIBLE:view.GONE}"
+            app:layout_constraintLeft_toLeftOf="@id/et_id"
+            app:layout_constraintRight_toRightOf="@id/et_id"
+            app:layout_constraintTop_toBottomOf="@id/et_id"
+            tools:visibility="visible" />
+
+        <TextView
+            android:id="@+id/tv_user_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@{String.format(@string/demo_user_name,loginRoomVM.mUserName)}"
+            android:textColor="@color/color_2a2a2a"
+            android:textSize="16sp"
+            app:layout_constraintLeft_toLeftOf="@id/et_id"
+            app:layout_constraintRight_toRightOf="@id/et_id"
+            app:layout_constraintTop_toBottomOf="@id/tv_error_tip"
+            tools:text="用户名为：aaaa" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_login"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
+            android:background="@drawable/common_selector_8dp_ff3478fc"
+            android:enabled="@{loginRoomVM.mLoginButtonEnableLiveData}"
+            android:paddingTop="7dp"
+            android:paddingBottom="7dp"
+            android:text="@string/demo_login"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            app:layout_constraintLeft_toLeftOf="@id/et_id"
+            app:layout_constraintRight_toRightOf="@id/et_id"
+            app:layout_constraintTop_toBottomOf="@id/tv_user_name" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

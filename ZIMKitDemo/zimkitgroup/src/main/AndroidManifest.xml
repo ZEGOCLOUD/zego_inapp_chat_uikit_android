@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="im.zego.zimkitgroup">
+
+    <application>
+        <activity
+            android:name=".ui.ZIMKitCreateAndJoinGroupActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".ui.ZIMKitGroupManagerActivity"
+            android:screenOrientation="portrait" />
+    </application>
+</manifest>

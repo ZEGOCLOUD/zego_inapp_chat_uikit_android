@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!--内置SD卡 Environment.getExternalStorageDirectory() .表示共享所有的目录，也可以指定共享的目录-->
+    <external-path
+        name="external-path"
+        path="."/>
+    <!--Built-in SD card Context.getExternalCacheDir() . Indicates that all directories are shared, or you can specify the shared directories-->
+    <external-cache-path
+        name="external-cache-path"
+        path="."/>
+    <!--Built-in SD card Context.getExternalFilesDir(null) . Indicates that all directories are shared, or you can specify the shared directories-->
+    <external-files-path
+        name="external-files-path"
+        path="."/>
+    <!--data directory Context.getFilesDir() . indicates that all directories are shared, or you can specify which directories are shared-->
+    <files-path
+        name="files_path"
+        path="."/>
+    <!--data cache directory Context.getCacheDir() . indicates that all directories are shared, or you can specify the shared directories-->
+    <cache-path
+        name="cache-path"
+        path="."/>
+    <!--This tag is not mentioned in the official Android documentation, the root directory of the Android device, which contains the internal memory of the phone, the external SD card and all the other files in the directory-->
+    <root-path
+        name="name"
+        path="."/>
+</paths>
