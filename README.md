@@ -2,71 +2,50 @@
 
 ---
 
-In-app Chat UIKit is a UI component library based on the In-app Chat SDK. It provides general UI components, such as the session list, one-on-one chat, and group chat. You can use In-app Chat UIKit to quickly build custom IM applications based on actual business requirements. 
+## What is the In-app Chat Kit
 
-In addition to implementing UI features, components of In-app Chat UIKit can call related API methods of the In-app Chat SDK to implement logic and data processing related to the In-app Chat. With this In-app Chat UIKit, you only need to focus on the business logic or personalized extension.
+In-app Chat Kit is a UI component library based on the In-app Chat SDK. It provides general UI components, such as the chat list, one-on-one chat, and group chat. You can use the In-app Chat Kit to quickly build custom IM applications based on actual business requirements.
 
-
-
-## Features
-
-In-app Chat UIKit supports the following features:
-
-- Create one-on-one chats or group chats and join group chats.
-- Chat with others through one-to-one or group messages.
-- Send text messages.
-- Send rich media messages, such as images, voice messages, videos, and files.
-- Select multiple messages and delete messages.
+<div class="picture" style="width:100%">
+<img class="picture_left" src="https://storage.zego.im/sdk-doc/Pics/ZIMKit/ZIMLKit_image1_EN.png"  style="width:20vw">
 
 
+<img class="picture_middle" src="https://storage.zego.im/sdk-doc/Pics/ZIMKit/ZIMLKit_image2_EN.png"  style="width:20vw">
 
-##  Supported platforms
+<img class="picture_right" src="https://storage.zego.im/sdk-doc/Pics/ZIMKit/ZIMLKit_image3_EN.png"  style="width:20vw">
+</div>
 
-In-app Chat UIKit can be used on Android, iOS, and Web client apps.
+## When do you need the In-app Chat Kit
 
+- Build apps faster and easier
 
+  > When you want to prototype in-app chat ASAP
 
-## Advantages
+  > Consider speed or efficiency as the first priority.
 
-| Advantage                               | Description                                                  |
-| --------------------------------------- | ------------------------------------------------------------ |
-| UI component decoupling                 | Components of In-app Chat UIKit can run independently. You can select and integrate components into your app as required to implement related UI features and reduce useless dependencies. |
-| Simple and easy-to-use UI capabilities  | The business logic layer and UI layer of In-app Chat UIKit are independent of each other. At the UI layer, you only need to focus on view display and event processing. Clear data forwarding and processing of In-app Chat UIKit ensure simple and easy-to-use code at the UI layer. |
-| Comprehensive business logic processing | The business logic layer of In-app Chat UIKit provides comprehensive business logic processing capability. You do not need to care about complex processing logic between different APIs at the SDK layer. One API at the business logic layer can help you handle the SDK layer. |
+- Customize UI and features as needed
 
+  > When you want to customize the UI based on your actual business needs
 
+  > Don't want to waste time developing basic features
 
-## Component effect
+To finest-grained build an in-app chat app, you may try our [In-app Chat SDK](https://docs.zegocloud.com/article/13919) to make full customization.
 
-**Session list page (session component)**
+## Embedded features
 
-
-
-<img src="https://storage.zego.im/sdk-doc/Pics/ZIMKit/ZIMLKit_image1_EN.png" width="20%">
-
-
-
-- **One-on-one chat page (message component)**
-
-
-
-<img src="https://storage.zego.im/sdk-doc/Pics/ZIMKit/ZIMLKit_image2_EN.png" width="20%">
-
-
-
-- **Group chat page (message component)**
-
-
-
-<img src="https://storage.zego.im/sdk-doc/Pics/ZIMKit/ZIMLKit_image3_EN.png" width="20%">
-
-
+- One-on-one chat & group chat
+- Conversation list
+- Message list
+- Send text messages
+- Send & receive rich media messages (images, voice, video, and files) 
+- Select and delete multiple messages
+- Customize UI
 
 ## Recommended guides
 
-* To get started swiftly, follow the steps in this doc: [Integrate the SDK](https://docs.zegocloud.com/article/14664)
-* To explore more customizable components, check this out: [Component overview](https://docs.zegocloud.com/article/14661)
-* To check and run the sample code, click here: [Run the sample code](https://docs.zegocloud.com/article/14982)
+* To get started swiftly, follow the steps in this doc: [Integrate the SDK](https://docs.zegocloud.com/article/15652)
+* To explore more customizable components, check this out: [Component overview](https://docs.zegocloud.com/article/14667)
+* To check and run the sample code, click here: [Run the sample code](https://github.com/ZEGOCLOUD/zego_inapp_chat_uikit_example_android)
 
 
 
