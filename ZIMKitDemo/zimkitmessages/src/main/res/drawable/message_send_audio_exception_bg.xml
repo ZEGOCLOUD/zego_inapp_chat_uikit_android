@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<animation-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@drawable/common_shape_8dp_ff175ce6" android:duration="400"/>
-    <item android:drawable="@drawable/common_shape_8dp_60175ce6" android:duration="400"/>
-</animation-list>
