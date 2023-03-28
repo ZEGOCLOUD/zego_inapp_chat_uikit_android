@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="view"
+            type="android.view.View" />
+
+        <variable
+            name="vm"
+            type="com.zegocloud.zimkit.components.message.viewmodel.ZIMKitCreateSingleChatVM" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/white"
+        tools:context="im.zego.zimkitgroup.ui.ZIMKitCreateAndJoinGroupActivity">
+
+        <com.zegocloud.zimkit.common.components.widget.TitleBar
+            android:id="@+id/title_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <EditText
+            android:id="@+id/et_id"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_marginLeft="32dp"
+            android:layout_marginTop="64dp"
+            android:layout_marginRight="32dp"
+            android:background="@drawable/zimkit_shape_8dp_ffedf1f7"
+            android:hint="@string/zimkit_input_user_id"
+            android:paddingLeft="12dp"
+            android:paddingRight="12dp"
+            android:text="@={vm.mId}"
+            android:textColor="@color/color_2a2a2a"
+            android:textColorHint="@color/color_a4a4a4"
+            android:textSize="16sp"
+            app:addTextChangedListener="@{vm.onEditTextWatcher}"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/title_bar"
+            tools:visibility="visible" />
+
+        <TextView
+            android:id="@+id/tv_error_tip"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/zimkit_input_user_id_error_tips"
+            android:textColor="@color/color_ff4a50"
+            android:textSize="12sp"
+            android:visibility="@{vm.mButtonState?view.GONE:view.VISIBLE}"
+            app:layout_constraintLeft_toLeftOf="@id/btn_start_chat"
+            app:layout_constraintRight_toRightOf="@id/et_id"
+            app:layout_constraintTop_toBottomOf="@id/et_id"
+            tools:visibility="visible" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_start_chat"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/zimkit_selector_8dp_ff3478fc"
+            android:enabled="@{vm.mButtonState}"
+            android:onClick="@{() ->vm.createSingleChat()}"
+            android:paddingTop="7dp"
+            android:paddingBottom="7dp"
+            android:text="@string/zimkit_create_chat"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            app:layout_constraintLeft_toLeftOf="@id/et_id"
+            app:layout_constraintRight_toRightOf="@id/et_id"
+            app:layout_constraintTop_toBottomOf="@id/tv_error_tip" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

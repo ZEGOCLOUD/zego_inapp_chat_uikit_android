@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="view"
+            type="android.view.View" />
+
+        <variable
+            name="vm"
+            type="com.zegocloud.zimkit.components.conversation.viewmodel.ZIMKitConversationVM" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".ui.ZIMKitConversationActivity">
+
+        <com.zegocloud.zimkit.common.components.widget.TitleBar
+            android:id="@+id/title_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <fragment
+            android:id="@+id/frag"
+            android:name="com.zegocloud.zimkit.components.conversation.ui.ZIMKitConversationFragment"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toTopOf="@+id/view_bottom"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/title_bar" />
+
+        <View
+            android:id="@+id/view_bottom"
+            android:layout_width="match_parent"
+            android:layout_height="61dp"
+            android:background="@drawable/zimkit_layer_1px_e6e6e6"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/frag" />
+
+        <ImageView
+            android:id="@+id/img_message"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:src="@mipmap/zimkit_icon_message_total_count"
+            app:layout_constraintBottom_toTopOf="@id/tv_message_unread"
+            app:layout_constraintLeft_toLeftOf="@id/view_bottom"
+            app:layout_constraintRight_toRightOf="@id/view_bottom" />
+
+        <TextView
+            android:id="@+id/tv_message_unread"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:text="@string/zimkit_message_total_count"
+            android:textColor="@color/color_666666"
+            android:textSize="11sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="@id/img_message"
+            app:layout_constraintRight_toRightOf="@id/img_message" />
+
+        <com.zegocloud.zimkit.common.components.widget.UnreadCountView
+            android:id="@+id/tv_un_read_count"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginTop="-8dp"
+            android:layout_marginRight="-8dp"
+            app:layout_constraintRight_toRightOf="@id/img_message"
+            app:layout_constraintTop_toTopOf="@id/img_message"
+            app:unReadCount="@{vm.totalUnReadCount}" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

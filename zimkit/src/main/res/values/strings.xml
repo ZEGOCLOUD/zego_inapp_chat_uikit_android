@@ -1,0 +1,141 @@
+<resources>
+    <string name="zimkit_create_zim_fail_log">ZIMManager.createZIM() must be called first</string>
+    <string name="zimkit_login_room_fail_zim_not_create_log">login fail,ZIMManager.createZIM() must be called first</string>
+    <string name="zimkit_yesterday">昨天</string>
+    <string name="zimkit_user_kick_out">重复登录，用户被踢出</string>
+    <string-array name="zimkit_weeks">
+        <item name="zimkit_sunday">周日</item>
+        <item name="zimkit_monday">周一</item>
+        <item name="zimkit_tuesday">周二</item>
+        <item name="zimkit_wednesday">周三</item>
+        <item name="zimkit_thursday">周四</item>
+        <item name="zimkit_friday">周五</item>
+        <item name="zimkit_saturday">周六</item>
+    </string-array>
+
+    <string name="zimkit_message_photo">[图片]</string>
+    <string name="zimkit_message_video">[视频]</string>
+    <string name="zimkit_message_audio">[语音]</string>
+    <string name="zimkit_message_file">[文件]</string>
+    <string name="zimkit_message_unknown">暂不支持该类型消息，请升级到最新版本</string>
+    <string name="zimkit_open_file_tips">选择要打开此文件的应用</string>
+    <string name="zimkit_title_cancel">取消</string>
+
+    <string name="zimkit_start_chat">开始聊天</string>
+    <string name="zimkit_empty">暂无消息\n快去发起聊天吧</string>
+    <string name="zimkit_start_single_chat">发起单聊</string>
+    <string name="zimkit_start_group_chat">发起群聊</string>
+    <string name="zimkit_join_group_chat">加入群聊</string>
+    <string name="zimkit_cancel">取消</string>
+    <string name="zimkit_delete">删除</string>
+    <string name="zimkit_message_total_count">消息总数</string>
+    <string name="zimkit_reload">重新加载</string>
+
+    <string name="zimkit_title">In-app Chat</string>
+    <string name="zimkit_disconnected">In-app Chat(未连接)</string>
+    <string name="zimkit_connecting">In-app Chat(连接中...)</string>
+
+    <string name="zimkit_create_chat">发起会话</string>
+    <string name="zimkit_input_group_id">输入群ID</string>
+    <string name="zimkit_input_group_name">输入群聊名称</string>
+    <string name="zimkit_input_user_id_of_group">输入群成员的用户ID，\';\'英文分号隔开</string>
+    <string name="zimkit_user_id_cant_null">用户id不能为空</string>
+    <string name="zimkit_create_group_chat_title">发起群聊会话</string>
+    <string name="zimkit_group_join_group_chat">加入群聊会话</string>
+    <string name="zimkit_user_not_exit">用户不存在</string>
+    <string name="zimkit_group_not_exit">群不存在</string>
+    <string name="zimkit_group_user_id_not_exit">群成员用户ID %s 不存在，请返回</string>
+    <string name="zimkit_group_id_not_exit">群ID %s 不存在，请返回</string>
+    <string name="zimkit_input_user_id_error_tip">请输入6–12位英文或数字的用户ID</string>
+    <string name="zimkit_group_id">群聊ID</string>
+    <string name="zimkit_copy">复制</string>
+    <string name="zimkit_copy_success">复制成功</string>
+    <string name="zimkit_repeat_join_group_chat">你已在该群组</string>
+
+    <string name="zimkit_input_new_message"> </string>
+    <string name="zimkit_test_time">周一 12:45</string>
+    <string name="zimkit_user_not_exit_please_again">用户ID:%s不存在，请返回重新添加</string>
+    <string name="zimkit_cant_send_empty_msg">不允许发送空白消息</string>
+    <string name="zimkit_input_user_id_error_tips">请输入6–12位英文或数字的用户ID</string>
+    <string name="zimkit_input_user_id">请输入对方用户ID</string>
+    <string name="zimkit_create_single_chat">发起单聊会话</string>
+
+    <string name="zimkit_album">相册</string>
+    <string name="zimkit_btn_cancel">取消</string>
+    <string name="zimkit_go_setting">去设置</string>
+    <string name="zimkit_network_anomaly">网络异常，请检查网络后重试</string>
+    <string name="zimkit_play_error_tip">语音文件已损坏或不存在</string>
+    <string name="zimkit_audio_record_normal">按住 说话</string>
+    <string name="zimkit_audio_record_release_to_send">松开 发送</string>
+    <string name="zimkit_audio_record_release_to_cancel">松开 取消</string>
+    <string name="zimkit_audio_record_tip1">松开发送，上滑取消</string>
+    <string name="zimkit_audio_record_tip2">松开手指，取消发送</string>
+    <string name="zimkit_audio_record_stop">%d秒后结束录制</string>
+    <string name="zimkit_audio_record_too_short">说话时间太短</string>
+    <string name="zimkit_multi_select">多选</string>
+    <string name="zimkit_delete_confirmation_desc">确认删除?</string>
+    <string name="zimkit_option_speaker_on">扬声器播放</string>
+    <string name="zimkit_option_speaker_off">听筒播放</string>
+    <string name="zimkit_option_copy">复制</string>
+    <string name="zimkit_speaker_on_tip">已切换扬声器播放</string>
+    <string name="zimkit_speaker_off_tip">已切换听筒播放</string>
+
+    <string name="zimkit_option_delete">删除</string>
+    <string name="zimkit_option_save">保存</string>
+    <string name="zimkit_file_empty_error_tips">无法发送空文件，请重新选择</string>
+    <string name="zimkit_photo_no_mic_tip">麦克风权限未开启</string>
+    <string name="zimkit_photo_no_mic_description">不开启麦克风权限，无法在聊天功能中使用</string>
+    <string name="zimkit_access_later">以后再说</string>
+    <string name="zimkit_storage_permissions_tip">存储权限未开启</string>
+    <string name="zimkit_storage_permissions_description">不开启存储权限，无法在聊天功能中使用</string>
+    <string name="zimkit_file">文件</string>
+    <string name="zimkit_record_fail">录制失败，请重试</string>
+    <string name="zimkit_file_save_fail">文件保存失败，请重试</string>
+    <string name="zimkit_file_save_path_tip">文件已保存到 /sdcard/Download/ZIMKit/ %s</string>
+    <string name="zimkit_video_play_error">无法播放此视频</string>
+    <string name="zimkit_file_size_err_tips">文件不支持超过100MB，请处理后重新发送</string>
+
+    <string name="zimkit_title_chat">聊天</string>
+    <string name="zimkit_title_group_chat">群聊</string>
+    <string name="zimkit_loading_txt">加载中...</string>
+
+    <string name="zimkit_album_name_all">全部</string>
+    <string name="zimkit_button_preview">预览</string>
+    <string name="zimkit_button_apply_default">发送</string>
+    <string name="zimkit_button_apply">发送  (%1$d/9)</string>
+    <string name="zimkit_button_back">返回</string>
+    <string name="zimkit_photo_grid_capture">拍一张</string>
+    <string name="zimkit_empty_text">暂无图片和视频</string>
+    <string name="zimkit_button_ok">我知道了</string>
+
+    <string name="zimkit_error_over_count_default">您已经达到最大选择数量</string>
+    <plurals name="zimkit_error_over_count">
+        <item quantity="one">最多只能选择一个文件</item>
+        <item quantity="many">你最多只能选择\n %1$d 个图片或者视频</item>
+    </plurals>
+    <string name="zimkit_error_over_count">你最多只能选择\n %1$d 个图片或者视频</string>
+    <string name="zimkit_error_under_quality">图片质量太低</string>
+    <string name="zimkit_error_over_quality">图片质量太高</string>
+    <string name="zimkit_error_file_type">不支持的文件类型</string>
+    <string name="zimkit_error_type_conflict">不能同时选择图片和视频</string>
+    <string name="zimkit_error_no_video_activity">没有支持视频预览的应用</string>
+    <string name="zimkit_error_over_original_size">"该照片大于 %1$d M，无法上传将取消勾选原图"</string>
+    <string name="zimkit_error_over_original_count">"有 %1$d 张照片大于 %2$d M\n无法上传，将取消勾选原图"</string>
+    <string name="zimkit_button_original">原图</string>
+    <string name="zimkit_button_sure_default">确定</string>
+    <string name="zimkit_button_sure">确定(%1$d)</string>
+
+    <string name="zimkit_album_download_image">下载图片</string>
+    <string name="zimkit_album_redownload_image">重新加载</string>
+    <string name="zimkit_album_save_success">已保存到系统相册</string>
+    <string name="zimkit_album_save_fail">图片下载失败，请重试</string>
+    <string name="zimkit_album_dialog_tips">提示</string>
+    <string name="zimkit_album_btn_cancle">取消</string>
+    <string name="zimkit_album_go_setting">去设置</string>
+    <string name="zimkit_album_need_permission_content">需要获取存储权限</string>
+    <string name="zimkit_album_loading_txt">加载中...</string>
+    <string name="zimkit_album_downloading_txt">下载中...</string>
+
+    <string name="zimkit_album_over_size">文件大小超过限制</string>
+
+</resources>

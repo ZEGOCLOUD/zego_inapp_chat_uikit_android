@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="view"
+            type="android.view.View" />
+
+        <variable
+            name="sentStatus"
+            type="im.zego.zim.enums.ZIMMessageSentStatus" />
+
+        <variable
+            name="itemModel"
+            type="com.zegocloud.zimkit.components.conversation.model.ZIMKitConversationModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?android:attr/selectableItemBackground">
+
+        <ImageView
+            android:id="@+id/iv_avatar"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginTop="15dp"
+            android:layout_marginRight="15dp"
+            android:layout_marginBottom="15dp"
+            app:avatarConversationUrl="@{itemModel.avatar}"
+            app:conversationType="@{itemModel.conversation.type}"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.zegocloud.zimkit.common.components.widget.UnreadCountView
+            android:id="@+id/tv_un_read_count"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginTop="-4dp"
+            android:layout_marginRight="-6dp"
+            app:layout_constraintRight_toRightOf="@id/iv_avatar"
+            app:layout_constraintTop_toTopOf="@id/iv_avatar"
+            app:unReadCount="@{itemModel.unReadCount}"
+            tools:visibility="gone" />
+
+        <TextView
+            android:id="@+id/tv_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="16dp"
+            android:text="@{itemModel.time}"
+            android:textColor="@color/color_b8b8b8"
+            app:layout_constraintBottom_toBottomOf="@id/tv_name"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tv_name"
+            tools:text="2022.04.10 22:12" />
+
+        <TextView
+            android:id="@+id/tv_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="11dp"
+            android:layout_marginTop="1dp"
+            android:ellipsize="end"
+            android:lines="1"
+            android:text="@{itemModel.name}"
+            android:textColor="@color/color_2a2a2a"
+            android:textSize="16sp"
+            app:layout_constraintLeft_toRightOf="@id/iv_avatar"
+            app:layout_constraintRight_toLeftOf="@id/tv_time"
+            app:layout_constraintTop_toTopOf="@id/iv_avatar"
+            tools:text="科普小课堂" />
+
+        <ImageView
+            android:id="@+id/img_fail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginRight="4dp"
+            android:src="@mipmap/zimkit_icon_message_fail_small"
+            android:visibility="@{itemModel.showMessageFailTip?view.VISIBLE:view.GONE}"
+            app:layout_constraintLeft_toLeftOf="@id/tv_name"
+            app:layout_constraintRight_toLeftOf="@id/tv_content"
+            app:layout_constraintTop_toBottomOf="@id/tv_name"
+            tools:visibility="visible" />
+
+        <TextView
+            android:id="@+id/tv_content"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginRight="16dp"
+            android:ellipsize="end"
+            android:lines="1"
+            android:text="@{itemModel.lastMsgContent}"
+            android:textColor="@color/color_a4a4a4"
+            android:textSize="12sp"
+            app:layout_constraintLeft_toRightOf="@id/img_fail"
+            app:layout_constraintRight_toRightOf="@id/tv_time"
+            app:layout_constraintTop_toBottomOf="@id/tv_name"
+            tools:text="测试测试测试" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1px"
+            android:layout_marginBottom="1px"
+            android:background="@color/color_e6e6e6"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="@id/tv_name"
+            app:layout_constraintRight_toRightOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="view"
+            type="android.view.View" />
+
+        <variable
+            name="sentStatus"
+            type="im.zego.zim.enums.ZIMMessageSentStatus" />
+
+        <variable
+            name="model"
+            type="com.zegocloud.zimkit.components.message.model.TextMessageModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        tools:background="@color/color_f2f2f2">
+
+        <ImageView
+            android:id="@+id/iv_avatar"
+            android:layout_width="43dp"
+            android:layout_height="43dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="12dp"
+            app:avatarMessageUrl="@{model.avatar}"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/ll_content"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.appcompat.widget.AppCompatCheckBox
+            android:id="@+id/select_checkbox"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:button="@drawable/zimkit_selector_checkbox"
+            android:checked="@{model.isCheck}"
+            android:visibility="@{model.isShowMultiSelectCheckBox ? view.VISIBLE : view.GONE}"
+            app:layout_constraintBottom_toBottomOf="@id/iv_avatar"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="@id/iv_avatar" />
+
+        <LinearLayout
+            android:id="@+id/ll_content"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="63dp"
+            android:gravity="end|center_vertical"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toStartOf="@id/iv_avatar"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/iv_avatar">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="8dp"
+                android:src="@mipmap/zimkit_icon_fail"
+                android:visibility="@{model.sentStatus==sentStatus.FAILED?view.VISIBLE:view.GONE}" />
+
+            <ProgressBar
+                android:id="@+id/message_sending_pb"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginRight="8dp"
+                android:indeterminateTint="@color/color_ff3478fc"
+                android:visibility="@{model.sentStatus==sentStatus.SENDING?view.VISIBLE:view.GONE}" />
+
+            <TextView
+                android:id="@+id/tv_message"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/zimkit_shape_8dp_ff3478fc"
+                android:paddingLeft="12dp"
+                android:paddingTop="11dp"
+                android:paddingRight="12dp"
+                android:paddingBottom="11dp"
+                android:text="@{model.content}"
+                android:textColor="@color/white"
+                android:textSize="15sp" />
+        </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
