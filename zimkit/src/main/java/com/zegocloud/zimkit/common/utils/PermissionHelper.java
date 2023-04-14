@@ -53,6 +53,16 @@ public class PermissionHelper {
             requestList.add(permission.WRITE_EXTERNAL_STORAGE);
             requestList.add(permission.RECORD_AUDIO);
         }
+        boolean allPermissionGranted = true;
+        for (String permission : requestList) {
+            if (ContextCompat.checkSelfPermission(activity, permission) != PackageManager.PERMISSION_GRANTED) {
+                allPermissionGranted = false;
+            }
+        }
+        if (allPermissionGranted) {
+            grantResult.onGrantResult(true);
+            return;
+        }
         PermissionX.init(activity).permissions(requestList)
             .request((RequestCallback) ((allGranted, grantedList, deniedList) -> {
                 if (allGranted) {
@@ -96,7 +106,7 @@ public class PermissionHelper {
             }
         }
         if (allPermissionGranted) {
-            grantResult.onGrantResult(false);
+            grantResult.onGrantResult(true);
             return;
         }
 
