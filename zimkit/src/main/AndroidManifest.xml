@@ -1,82 +1,90 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.zegocloud.zimkit">
+  package="com.zegocloud.zimkit">
 
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+  <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+  <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-    <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+  <uses-permission android:name="android.permission.VIBRATE" />
+  <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+  <uses-permission
+    android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+    android:maxSdkVersion="28" />
+  <uses-permission android:name="android.permission.WAKE_LOCK" />
+  <uses-permission
+    android:name="android.permission.READ_EXTERNAL_STORAGE"
+    android:maxSdkVersion="32" />
+  <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+  <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+  <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
 
-    <application android:requestLegacyExternalStorage="true">
-        <activity
-            android:name="com.zegocloud.zimkit.components.conversation.ui.ZIMKitConversationActivity"
-            android:screenOrientation="portrait" />
+  <application android:requestLegacyExternalStorage="true">
+    <activity
+      android:name="com.zegocloud.zimkit.components.conversation.ui.ZIMKitConversationActivity"
+      android:screenOrientation="portrait" />
 
-        <activity
-            android:name="com.zegocloud.zimkit.components.group.ui.ZIMKitCreateAndJoinGroupActivity"
-            android:exported="false"
-            android:screenOrientation="portrait" />
+    <activity
+      android:name="com.zegocloud.zimkit.components.group.ui.ZIMKitCreateAndJoinGroupActivity"
+      android:exported="false"
+      android:screenOrientation="portrait" />
 
-        <activity
-            android:name="com.zegocloud.zimkit.components.group.ui.ZIMKitGroupManagerActivity"
-            android:screenOrientation="portrait" />
+    <activity
+      android:name="com.zegocloud.zimkit.components.group.ui.ZIMKitGroupManagerActivity"
+      android:screenOrientation="portrait" />
 
-        <activity
-            android:name="com.zegocloud.zimkit.components.message.ui.ZIMKitMessageActivity"
-            android:configChanges="orientation|screenSize"
-            android:screenOrientation="portrait"
-            android:windowSoftInputMode="adjustResize|stateHidden" />
-        <activity
-            android:name="com.zegocloud.zimkit.components.message.ui.ZIMKitCreateSingleChatActivity"
-            android:screenOrientation="portrait" />
+    <activity
+      android:name="com.zegocloud.zimkit.components.message.ui.ZIMKitMessageActivity"
+      android:configChanges="orientation|screenSize"
+      android:screenOrientation="portrait"
+      android:windowSoftInputMode="adjustResize|stateHidden" />
+    <activity
+      android:name="com.zegocloud.zimkit.components.message.ui.ZIMKitCreateSingleChatActivity"
+      android:screenOrientation="portrait" />
 
-        <activity
-            android:name="com.zegocloud.zimkit.components.message.ui.ZIMKitVideoViewActivity"
-            android:screenOrientation="portrait" />
+    <activity
+      android:name="com.zegocloud.zimkit.components.message.ui.ZIMKitVideoViewActivity"
+      android:screenOrientation="portrait" />
 
-        <activity
-            android:name="com.zegocloud.zimkit.components.message.ui.ZIMKitTransparentActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/TranslucentTheme" />
+    <activity
+      android:name="com.zegocloud.zimkit.components.message.ui.ZIMKitTransparentActivity"
+      android:screenOrientation="portrait"
+      android:theme="@style/TranslucentTheme" />
 
-        <provider
-            android:name="com.zegocloud.zimkit.common.utils.ZIMKitFileProvider"
-            android:authorities="${applicationId}.zimkitcommon.fileprovider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths_public_open" />
-        </provider>
+    <provider
+      android:name="com.zegocloud.zimkit.common.utils.ZIMKitFileProvider"
+      android:authorities="${applicationId}.zimkitcommon.fileprovider"
+      android:exported="false"
+      android:grantUriPermissions="true">
+      <meta-data
+        android:name="android.support.FILE_PROVIDER_PATHS"
+        android:resource="@xml/file_paths_public_open" />
+    </provider>
 
-        <activity
-            android:name="com.zegocloud.zimkit.components.album.ui.MatisseActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name="com.zegocloud.zimkit.components.album.internal.ui.AlbumPreviewActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name="com.zegocloud.zimkit.components.album.internal.ui.SelectedPreviewActivity"
-            android:screenOrientation="portrait" />
-        <activity
-            android:name="com.zegocloud.zimkit.components.album.browserimage.ZIMKitBrowserImageActivity"
-            android:screenOrientation="portrait" />
+    <activity
+      android:name="com.zegocloud.zimkit.components.album.ui.MatisseActivity"
+      android:screenOrientation="portrait" />
+    <activity
+      android:name="com.zegocloud.zimkit.components.album.internal.ui.AlbumPreviewActivity"
+      android:screenOrientation="portrait" />
+    <activity
+      android:name="com.zegocloud.zimkit.components.album.internal.ui.SelectedPreviewActivity"
+      android:screenOrientation="portrait" />
+    <activity
+      android:name="com.zegocloud.zimkit.components.album.browserimage.ZIMKitBrowserImageActivity"
+      android:screenOrientation="portrait" />
 
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.zimkitalbum.fileprovider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths_public"></meta-data>
-        </provider>
+    <provider
+      android:name="androidx.core.content.FileProvider"
+      android:authorities="${applicationId}.zimkitalbum.fileprovider"
+      android:exported="false"
+      android:grantUriPermissions="true">
+      <meta-data
+        android:name="android.support.FILE_PROVIDER_PATHS"
+        android:resource="@xml/file_paths_public"></meta-data>
+    </provider>
 
-    </application>
+  </application>
 
 </manifest>

@@ -23,6 +23,7 @@ import com.zegocloud.zimkit.components.message.model.ImageMessageModel;
 import com.zegocloud.zimkit.components.message.model.TextMessageModel;
 import com.zegocloud.zimkit.components.message.model.VideoMessageModel;
 import com.zegocloud.zimkit.components.message.model.ZIMKitMessageModel;
+import java.io.IOException;
 
 public class ChatMessageBuilder {
 
@@ -111,7 +112,11 @@ public class ChatMessageBuilder {
             return msg;
         } catch (Exception ex) {
         } finally {
-            mmr.release();
+            try {
+                mmr.release();
+            } catch (IOException e) {
+
+            }
         }
 
         return null;

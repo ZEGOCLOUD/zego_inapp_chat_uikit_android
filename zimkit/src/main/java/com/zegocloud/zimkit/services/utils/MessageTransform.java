@@ -3,6 +3,7 @@ package com.zegocloud.zimkit.services.utils;
 import android.graphics.Bitmap;
 import android.text.TextUtils;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import im.zego.zim.entity.ZIMAudioMessage;
@@ -164,7 +165,10 @@ public class MessageTransform {
 
         } catch (Exception ex) {
         } finally {
-            mmr.release();
+            try {
+                mmr.release();
+            } catch (IOException e) {
+            }
         }
     }
 
