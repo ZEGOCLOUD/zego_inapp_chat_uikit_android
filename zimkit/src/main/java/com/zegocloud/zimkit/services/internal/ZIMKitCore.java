@@ -23,6 +23,7 @@ import com.zegocloud.zimkit.services.callback.LoadMoreMessageCallback;
 import com.zegocloud.zimkit.services.callback.MessageSentCallback;
 import com.zegocloud.zimkit.services.callback.QueryGroupInfoCallback;
 import com.zegocloud.zimkit.services.callback.UserAvatarUrlUpdateCallback;
+import com.zegocloud.zimkit.services.config.InputConfig;
 import com.zegocloud.zimkit.services.internal.interfaces.IZIMKitCore;
 import com.zegocloud.zimkit.services.model.ZIMKitConversation;
 import com.zegocloud.zimkit.services.model.ZIMKitGroupMember;
@@ -82,6 +83,12 @@ public class ZIMKitCore implements IZIMKitCore {
     private ZIMKitMessagesListListener messagesListListener;
 
     private boolean isLoadConversationList = false;
+
+    private InputConfig inputConfig;
+
+    public InputConfig getInputConfig() {
+        return inputConfig;
+    }
 
     private final TreeSet<ZIMKitConversation> conversations = new TreeSet<>((model1, model2) -> {
         //Sort by orderKey
@@ -375,5 +382,10 @@ public class ZIMKitCore implements IZIMKitCore {
 
     public Map<String, String> getGroupUserInfoAvatarMap() {
         return mGroupUserInfoAvatarMap;
+    }
+
+    @Override
+    public void setInputConfig(InputConfig config) {
+        inputConfig = config;
     }
 }

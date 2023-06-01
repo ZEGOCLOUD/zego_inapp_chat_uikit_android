@@ -15,6 +15,7 @@ import com.zegocloud.zimkit.services.callback.LoadMoreMessageCallback;
 import com.zegocloud.zimkit.services.callback.MessageSentCallback;
 import com.zegocloud.zimkit.services.callback.QueryGroupInfoCallback;
 import com.zegocloud.zimkit.services.callback.UserAvatarUrlUpdateCallback;
+import com.zegocloud.zimkit.services.config.InputConfig;
 import com.zegocloud.zimkit.services.model.ZIMKitMessage;
 import com.zegocloud.zimkit.services.model.ZIMKitUser;
 import java.util.List;
@@ -171,4 +172,7 @@ public class ZIMKit {
         zimKitCore.unRegisterMessageListListener();
     }
 
+    public static void setInputConfig(InputConfig config) {
+        zimKitCore.setInputConfig(config);
+    }
 }

@@ -16,6 +16,10 @@
         <variable
             name="model"
             type="com.zegocloud.zimkit.components.message.model.ZIMKitInputModel" />
+
+        <variable
+            name="config"
+            type="com.zegocloud.zimkit.services.config.InputConfig" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -70,6 +74,7 @@
                 android:layout_marginLeft="12dp"
                 android:background="@mipmap/zimkit_icon_audio_close"
                 android:clickable="@{!model.audioRecordBtn}"
+                android:visibility="@{config.showVoiceButton ? view.VISIBLE : view.GONE}"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -125,6 +130,7 @@
                 android:layout_marginRight="12dp"
                 android:background="@mipmap/zimkit_icon_emoji_close"
                 android:clickable="@{!model.audioRecordBtn}"
+                android:visibility="@{config.showEmojiButton ? view.VISIBLE : view.GONE}"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintRight_toLeftOf="@+id/cl_btn_right"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -154,7 +160,7 @@
                     android:layout_height="wrap_content"
                     android:clickable="@{!model.audioRecordBtn}"
                     android:src="@mipmap/zimkit_icon_send_more"
-                    android:visibility="@{textUtils.isEmpty(model.inputMessage) ? view.VISIBLE:view.GONE}"
+                    android:visibility="@{(textUtils.isEmpty(model.inputMessage) &amp;&amp; config.showAddButton) ? view.VISIBLE : view.GONE}"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintRight_toRightOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />

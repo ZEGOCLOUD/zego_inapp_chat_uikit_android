@@ -33,6 +33,7 @@ import com.zegocloud.zimkit.components.message.ui.ZIMKitInputMoreFragment;
 import com.zegocloud.zimkit.components.message.utils.ChatMessageBuilder;
 import com.zegocloud.zimkit.components.message.widget.ZIMKitAudioPlayer;
 import com.zegocloud.zimkit.databinding.ZimkitLayoutInputBinding;
+import com.zegocloud.zimkit.services.internal.ZIMKitCore;
 
 
 public class ZIMKitInputView extends LinearLayout {
@@ -70,6 +71,7 @@ public class ZIMKitInputView extends LinearLayout {
         mBinding = DataBindingUtil.inflate(LayoutInflater.from(context), R.layout.zimkit_layout_input, this, true);
         mInputModel = new ZIMKitInputModel();
         mBinding.setModel(mInputModel);
+        mBinding.setConfig(ZIMKitCore.getInstance().getInputConfig());
 
         initListener();
     }
