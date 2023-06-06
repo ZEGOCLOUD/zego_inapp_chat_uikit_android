@@ -6,6 +6,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.zegocloud.zimkit.services.internal.ZIMKitCore;
+import com.zegocloud.zimkit.services.model.ZIMKitErrorToast;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 public class ZIMKitToastUtils {
 
@@ -17,6 +20,19 @@ public class ZIMKitToastUtils {
 
     public static void showToast(int messageId) {
         toastShortMessage(ZIMKitCore.getInstance().getApplication().getString(messageId));
+    }
+
+    public static void showErrorMessageIfNeeded(int errorCode, String defaultMessage) {
+        AtomicReference<ZIMKitErrorToast> errorToast = new AtomicReference<>(new ZIMKitErrorToast(defaultMessage));
+        ZIMKitCore.getInstance().getZimkitNotifyList().notifyAllListener( delegate -> {
+            ZIMKitErrorToast toast = delegate.onErrorToastCallback(errorCode, new ZIMKitErrorToast(defaultMessage));
+            if (toast != null) {
+                errorToast.set(toast);
+            }
+        });
+        if (errorToast.get().isShow) {
+            toastShortMessage(errorToast.get().message);
+        }
     }
 
     public static void toastLongMessage(final String message) {

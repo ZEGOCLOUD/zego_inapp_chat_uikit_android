@@ -44,7 +44,7 @@ public class ZIMKitCreateSingleChatActivity extends
                 finish();
             } else {
                 String errorMsg = (String) pair.second;
-                ZIMKitToastUtils.showToast(errorMsg);
+                ZIMKitToastUtils.showErrorMessageIfNeeded(pair.first.value(), errorMsg);
             }
         });
     }

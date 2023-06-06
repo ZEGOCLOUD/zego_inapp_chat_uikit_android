@@ -148,11 +148,11 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
                 mBinding.refreshLayout.finishRefresh(false);
                 if (error.code != ZIMErrorCode.SUCCESS && getContext() != null) {
                     if (error.code == ZIMErrorCode.NETWORK_ERROR) {
-                        ZIMKitToastUtils.showToast(getString(R.string.zimkit_network_anomaly));
+                        ZIMKitToastUtils.showErrorMessageIfNeeded(error.code.value(), getString(R.string.zimkit_network_anomaly));
                     } else if (error.code == ZIMErrorCode.FILE_SIZE_INVALID) {
-                        ZIMKitToastUtils.showToast(getString(R.string.zimkit_file_size_err_tips));
+                        ZIMKitToastUtils.showErrorMessageIfNeeded(error.code.value(), getString(R.string.zimkit_file_size_err_tips));
                     } else {
-                        ZIMKitToastUtils.showToast(error.message);
+                        ZIMKitToastUtils.showErrorMessageIfNeeded(error.code.value(), error.message);
                     }
                 }
             }
@@ -269,9 +269,9 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
                         mOnTitleClickListener.titleNormal();
                     }
                 } else if (errorInfo.code == ZIMErrorCode.NETWORK_ERROR) {
-                    ZIMKitToastUtils.showToast(getString(R.string.zimkit_network_anomaly));
+                    ZIMKitToastUtils.showErrorMessageIfNeeded(errorInfo.code.value(), getString(R.string.zimkit_network_anomaly));
                 } else {
-                    ZIMKitToastUtils.showToast(errorInfo.message);
+                    ZIMKitToastUtils.showErrorMessageIfNeeded(errorInfo.code.value(), errorInfo.message);
                 }
             }
         });

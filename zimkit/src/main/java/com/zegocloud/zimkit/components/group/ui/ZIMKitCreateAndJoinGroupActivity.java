@@ -64,9 +64,9 @@ public class ZIMKitCreateAndJoinGroupActivity extends
                 } else if (pair.first == ZIMErrorCode.DOES_NOT_EXIST && mType.equals(ZIMKitConstant.GroupPageConstant.TYPE_JOIN_GROUP_MESSAGE)) {
                     showDialog(R.string.zimkit_group_not_exit, errorMsg);
                 } else if (pair.first == ZIMErrorCode.MEMBER_IS_ALREADY_IN_THE_GROUP && mType.equals(ZIMKitConstant.GroupPageConstant.TYPE_JOIN_GROUP_MESSAGE)) {
-                    ZIMKitToastUtils.showToast(getString(R.string.zimkit_repeat_join_group_chat));
+                    ZIMKitToastUtils.showErrorMessageIfNeeded(pair.first.value(), getString(R.string.zimkit_repeat_join_group_chat));
                 } else {
-                    ZIMKitToastUtils.showToast(errorMsg);
+                    ZIMKitToastUtils.showErrorMessageIfNeeded(pair.first.value(), errorMsg);
                 }
             }
         });

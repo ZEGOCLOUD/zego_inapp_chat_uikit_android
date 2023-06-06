@@ -219,7 +219,7 @@ public class ZIMKitConversationFragment extends BaseFragment<ZimkitFragmentConve
             @Override
             public void onFail(ZIMError error) {
                 mBinding.refreshLayout.finishLoadMore(false);
-                ZIMKitToastUtils.showToast(error.message);
+                ZIMKitToastUtils.showErrorMessageIfNeeded(error.code.value(), error.message);
             }
         });
         mViewModel.loadConversation(); // the first

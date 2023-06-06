@@ -1,6 +1,7 @@
 package com.zegocloud.zimkit.services;
 
 import com.zegocloud.zimkit.services.model.ZIMKitConversation;
+import com.zegocloud.zimkit.services.model.ZIMKitErrorToast;
 import com.zegocloud.zimkit.services.model.ZIMKitMessage;
 import java.util.ArrayList;
 
@@ -30,6 +31,9 @@ public interface ZIMKitDelegate {
 
     default void onMediaMessageUploadingProgressUpdated(ZIMKitMessage message, boolean isFinished){}
 
-    default void onMediaMessageDownloadingProgressUpdated(ZIMKitMessage message,boolean isFinished){}
+    default void onMediaMessageDownloadingProgressUpdated(ZIMKitMessage message, boolean isFinished){}
 
+    default ZIMKitErrorToast onErrorToastCallback(int errorCode, ZIMKitErrorToast defaultToast) {
+        return null;
+    }
 }
