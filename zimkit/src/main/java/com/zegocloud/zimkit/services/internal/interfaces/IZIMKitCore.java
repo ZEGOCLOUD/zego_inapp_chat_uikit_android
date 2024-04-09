@@ -1,14 +1,17 @@
 package com.zegocloud.zimkit.services.internal.interfaces;
 
 import android.app.Application;
+import com.zegocloud.uikit.plugin.adapter.plugins.signaling.RenewTokenCallback;
 import com.zegocloud.zimkit.components.conversation.interfaces.ZIMKitConversationListListener;
 import com.zegocloud.zimkit.components.message.interfaces.ZIMKitMessagesListListener;
 import com.zegocloud.zimkit.services.ZIMKitDelegate;
 
-public interface IZIMKitCore extends IUserService,IConversationService,IGroupService,IMessageService, IInputService {
+public interface IZIMKitCore extends IUserService, IConversationService, IGroupService, IMessageService, IInputService {
 
     void initWith(Application application, Long appID, String appSign);
+
     void initNotifications();
+
     void unInitNotifications();
 
     void registerZIMKitDelegate(ZIMKitDelegate delegate);
@@ -23,4 +26,5 @@ public interface IZIMKitCore extends IUserService,IConversationService,IGroupSer
 
     void unRegisterMessageListListener();
 
+    void renewToken(String token, RenewTokenCallback callback);
 }

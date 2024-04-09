@@ -2,6 +2,7 @@ package com.zegocloud.zimkit.services.internal;
 
 import android.app.Application;
 import android.text.TextUtils;
+import com.zegocloud.uikit.plugin.adapter.plugins.signaling.RenewTokenCallback;
 import com.zegocloud.uikit.plugin.signaling.ZegoSignalingPlugin;
 import com.zegocloud.zimkit.R;
 import com.zegocloud.zimkit.common.utils.ZIMKitActivityUtils;
@@ -346,6 +347,11 @@ public class ZIMKitCore implements IZIMKitCore {
     @Override
     public void unRegisterMessageListListener() {
         this.messagesListListener = null;
+    }
+
+    @Override
+    public void renewToken(String token, RenewTokenCallback callback) {
+        ZegoSignalingPlugin.getInstance().renewToken(token, callback);
     }
 
     public ZIMKitConversationListListener getConversationListListener() {

@@ -2,6 +2,7 @@ package com.zegocloud.zimkit.services;
 
 import android.app.Application;
 
+import com.zegocloud.uikit.plugin.adapter.plugins.signaling.RenewTokenCallback;
 import com.zegocloud.zimkit.services.callback.ClearUnreadCountCallback;
 import com.zegocloud.zimkit.services.callback.ConnectUserCallback;
 import com.zegocloud.zimkit.services.callback.DeleteConversationCallback;
@@ -40,6 +41,10 @@ public class ZIMKit {
         zimKitCore.initWith(application, appID, appSign);
     }
 
+    void initWith(Application application, Long appID) {
+        initWith(application, appID, "");
+    }
+
     public static void initNotifications() {
         zimKitCore.initNotifications();
     }
@@ -60,11 +65,13 @@ public class ZIMKit {
         zimKitCore.getConversationList(callback);
     }
 
-    public static void deleteConversation(String conversationID, ZIMConversationType type, DeleteConversationCallback callback) {
+    public static void deleteConversation(String conversationID, ZIMConversationType type,
+        DeleteConversationCallback callback) {
         zimKitCore.deleteConversation(conversationID, type, callback);
     }
 
-    public static void clearUnreadCount(String conversationID, ZIMConversationType type, ClearUnreadCountCallback callback) {
+    public static void clearUnreadCount(String conversationID, ZIMConversationType type,
+        ClearUnreadCountCallback callback) {
         zimKitCore.clearUnreadCount(conversationID, type, callback);
     }
 
@@ -76,7 +83,8 @@ public class ZIMKit {
         zimKitCore.createGroup(groupName, inviteUserIDs, callback);
     }
 
-    public static void createGroup(String groupName, String groupId, List<String> inviteUserIDs, CreateGroupCallback callback) {
+    public static void createGroup(String groupName, String groupId, List<String> inviteUserIDs,
+        CreateGroupCallback callback) {
         zimKitCore.createGroup(groupName, groupId, inviteUserIDs, callback);
     }
 
@@ -88,7 +96,8 @@ public class ZIMKit {
         zimKitCore.leaveGroup(groupID, callback);
     }
 
-    public static void inviteUsersToJoinGroup(List<String> userIDs, String groupID, InviteUsersToJoinGroupCallback callback) {
+    public static void inviteUsersToJoinGroup(List<String> userIDs, String groupID,
+        InviteUsersToJoinGroupCallback callback) {
         zimKitCore.inviteUsersToJoinGroup(userIDs, groupID, callback);
     }
 
@@ -100,31 +109,38 @@ public class ZIMKit {
         zimKitCore.queryGroupMemberInfo(userID, groupID, callback);
     }
 
-    public static void getMessageList(String conversationID, ZIMConversationType type, GetMessageListCallback callback) {
+    public static void getMessageList(String conversationID, ZIMConversationType type,
+        GetMessageListCallback callback) {
         zimKitCore.getMessageList(conversationID, type, callback);
     }
 
-    public static void loadMoreMessage(String conversationID, ZIMConversationType type, LoadMoreMessageCallback callback) {
+    public static void loadMoreMessage(String conversationID, ZIMConversationType type,
+        LoadMoreMessageCallback callback) {
         zimKitCore.loadMoreMessage(conversationID, type, callback);
     }
 
-    public static void sendTextMessage(String text, String conversationID, ZIMConversationType type, MessageSentCallback callback) {
+    public static void sendTextMessage(String text, String conversationID, ZIMConversationType type,
+        MessageSentCallback callback) {
         zimKitCore.sendTextMessage(text, conversationID, type, callback);
     }
 
-    public static void sendImageMessage(String imagePath, String conversationID, ZIMConversationType type, MessageSentCallback callback) {
+    public static void sendImageMessage(String imagePath, String conversationID, ZIMConversationType type,
+        MessageSentCallback callback) {
         zimKitCore.sendImageMessage(imagePath, conversationID, type, callback);
     }
 
-    public static void sendAudioMessage(String audioPath, long duration, String conversationID, ZIMConversationType type, MessageSentCallback callback) {
+    public static void sendAudioMessage(String audioPath, long duration, String conversationID,
+        ZIMConversationType type, MessageSentCallback callback) {
         zimKitCore.sendAudioMessage(audioPath, duration, conversationID, type, callback);
     }
 
-    public static void sendVideoMessage(String videoPath, long duration, String conversationID, ZIMConversationType type, MessageSentCallback callback) {
+    public static void sendVideoMessage(String videoPath, long duration, String conversationID,
+        ZIMConversationType type, MessageSentCallback callback) {
         zimKitCore.sendVideoMessage(videoPath, duration, conversationID, type, callback);
     }
 
-    public static void sendFileMessage(String filePath, String conversationID, ZIMConversationType type, MessageSentCallback callback) {
+    public static void sendFileMessage(String filePath, String conversationID, ZIMConversationType type,
+        MessageSentCallback callback) {
         zimKitCore.sendFileMessage(filePath, conversationID, type, callback);
     }
 
@@ -141,11 +157,12 @@ public class ZIMKit {
     }
 
     public static void connectUser(String userID, String userName, String avatarUrl, ConnectUserCallback callback) {
-        zimKitCore.connectUser(userID, userName, avatarUrl,"", callback);
+        zimKitCore.connectUser(userID, userName, avatarUrl, "", callback);
     }
 
-    public static void connectUser(String userID, String userName, String avatarUrl,String token, ConnectUserCallback callback) {
-        zimKitCore.connectUser(userID, userName, avatarUrl,token, callback);
+    public static void connectUser(String userID, String userName, String avatarUrl, String token,
+        ConnectUserCallback callback) {
+        zimKitCore.connectUser(userID, userName, avatarUrl, token, callback);
     }
 
     public static void disconnectUser() {
@@ -178,5 +195,9 @@ public class ZIMKit {
 
     public static void setInputConfig(InputConfig config) {
         zimKitCore.setInputConfig(config);
+    }
+
+    public static void renewToken(String token, RenewTokenCallback callback) {
+        zimKitCore.renewToken(token,callback);
     }
 }
