@@ -1,7 +1,6 @@
 package com.zegocloud.zimkit.services.internal.interfaces;
 
 import android.app.Application;
-
 import com.zegocloud.zimkit.components.conversation.interfaces.ZIMKitConversationListListener;
 import com.zegocloud.zimkit.components.message.interfaces.ZIMKitMessagesListListener;
 import com.zegocloud.zimkit.services.ZIMKitDelegate;
@@ -9,7 +8,6 @@ import com.zegocloud.zimkit.services.ZIMKitDelegate;
 public interface IZIMKitCore extends IUserService,IConversationService,IGroupService,IMessageService, IInputService {
 
     void initWith(Application application, Long appID, String appSign);
-
     void initNotifications();
     void unInitNotifications();
 

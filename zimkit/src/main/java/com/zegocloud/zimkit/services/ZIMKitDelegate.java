@@ -36,4 +36,6 @@ public interface ZIMKitDelegate {
     default ZIMKitErrorToast onErrorToastCallback(int errorCode, ZIMKitErrorToast defaultToast) {
         return null;
     }
+
+    default void onTokenWillExpire(int second){}
 }

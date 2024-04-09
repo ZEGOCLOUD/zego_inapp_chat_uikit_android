@@ -141,7 +141,11 @@ public class ZIMKit {
     }
 
     public static void connectUser(String userID, String userName, String avatarUrl, ConnectUserCallback callback) {
-        zimKitCore.connectUser(userID, userName, avatarUrl, callback);
+        zimKitCore.connectUser(userID, userName, avatarUrl,"", callback);
+    }
+
+    public static void connectUser(String userID, String userName, String avatarUrl,String token, ConnectUserCallback callback) {
+        zimKitCore.connectUser(userID, userName, avatarUrl,token, callback);
     }
 
     public static void disconnectUser() {

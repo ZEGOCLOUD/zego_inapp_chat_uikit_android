@@ -9,11 +9,11 @@ public interface IUserService {
 
     ZIMKitUser getLocalUser();
 
-    void connectUser(String userID,String userName,String avatarUrl, ConnectUserCallback callback);
+    void connectUser(String userID, String userName, String avatarUrl, String token, ConnectUserCallback callback);
 
     void disconnectUser();
 
-    void queryUserInfo(String userID,QueryUserCallback callback);
+    void queryUserInfo(String userID, QueryUserCallback callback);
 
     void updateUserAvatarUrl(String avatarUrl, UserAvatarUrlUpdateCallback callback);
 

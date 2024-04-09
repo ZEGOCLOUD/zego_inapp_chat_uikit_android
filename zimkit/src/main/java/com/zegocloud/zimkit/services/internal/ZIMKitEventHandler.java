@@ -1,5 +1,7 @@
 package com.zegocloud.zimkit.services.internal;
 
+import androidx.core.util.Consumer;
+import com.zegocloud.zimkit.services.ZIMKitDelegate;
 import com.zegocloud.zimkit.services.model.ZIMKitConversation;
 import com.zegocloud.zimkit.services.model.ZIMKitMessage;
 import com.zegocloud.zimkit.services.utils.MessageTransform;
@@ -45,6 +47,13 @@ public class ZIMKitEventHandler extends ZIMEventHandler {
         ZIMKitCore.getInstance().getZimkitNotifyList().notifyAllListener(zimKitDelegate -> {
             zimKitDelegate.onTotalUnreadMessageCountChange(totalUnreadMessageCount);
         });
+    }
+
+    @Override
+    public void onTokenWillExpire(ZIM zim, int second) {
+        super.onTokenWillExpire(zim, second);
+        ZIMKitCore.getInstance().getZimkitNotifyList().notifyAllListener(
+            zimKitDelegate -> zimKitDelegate.onTokenWillExpire(second));
     }
 
     @Override

@@ -27,12 +27,14 @@ public class UserService {
     private ZIMKitUser userInfo = new ZIMKitUser();
 
     /**
-     * Connects user to the ZIMKit server. This method can only be used after
-     * calling the [init] method and before you calling any other methods.
+     * Connects user to the ZIMKit server. This method can only be used after calling the [init] method and before you
+     * calling any other methods.
      *
+     * @param token
      * @param callback callback for the results that whether the connection is successful.
      */
-    public synchronized void connectUser(String userID, String userName, String avatarUrl, ConnectUserCallback callback) {
+    public synchronized void connectUser(String userID, String userName, String avatarUrl, String token,
+        ConnectUserCallback callback) {
         ZIM zim = ZIMKitCore.getInstance().zim();
         Application application = ZIMKitCore.getInstance().getApplication();
         if (zim == null && application != null) {
@@ -47,7 +49,7 @@ public class UserService {
         ZIMUserInfo mZIMUserInfo = new ZIMUserInfo();
         mZIMUserInfo.userID = userID;
         mZIMUserInfo.userName = userName;
-        zim.login(mZIMUserInfo, "", errorInfo -> {
+        zim.login(mZIMUserInfo, token, errorInfo -> {
             if (callback != null) {
                 if (errorInfo.code == ZIMErrorCode.USER_HAS_ALREADY_LOGGED) {
                     ZIMError zimError = new ZIMError();
