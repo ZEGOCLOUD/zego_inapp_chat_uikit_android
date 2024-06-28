@@ -100,6 +100,7 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
                 ((ZIMKitSingleMessageVM) mViewModel).setSingleOtherSideUserAvatar(avatar);
             } else if (type.equals(ZIMKitConstant.MessagePageConstant.TYPE_GROUP_MESSAGE)) {
                 mViewModel = new ViewModelProvider(requireActivity()).get(ZIMKitGroupMessageVM.class);
+                ((ZIMKitGroupMessageVM) mViewModel).setGroupTitle(title);
             }
             mBinding.setVariable(BR.vm, mViewModel);
             mViewModel.setId(id);

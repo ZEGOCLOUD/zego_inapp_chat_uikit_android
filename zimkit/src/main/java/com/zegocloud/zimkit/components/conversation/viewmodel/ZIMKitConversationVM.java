@@ -65,16 +65,13 @@ public class ZIMKitConversationVM extends ViewModel {
 
         @Override
         public void onConversationListChanged(ArrayList<ZIMKitConversation> conversations) {
-
-            if (conversations.isEmpty()) {
-                return;
-            }
             mItemModelCacheTreeSet.clear();
-            for (ZIMKitConversation info : conversations) {
-                ZIMKitConversationModel viewModel = new ZIMKitConversationModel(info.getZim(), ZIMConversationEvent.ADDED);
-                mItemModelCacheTreeSet.add(viewModel);
+            if (!conversations.isEmpty()) {
+                for (ZIMKitConversation info : conversations) {
+                    ZIMKitConversationModel viewModel = new ZIMKitConversationModel(info.getZim(), ZIMConversationEvent.ADDED);
+                    mItemModelCacheTreeSet.add(viewModel);
+                }
             }
-
             postList(conversations.isEmpty(), true, null, LoadData.DATA_STATE_CHANGE);
 
         }

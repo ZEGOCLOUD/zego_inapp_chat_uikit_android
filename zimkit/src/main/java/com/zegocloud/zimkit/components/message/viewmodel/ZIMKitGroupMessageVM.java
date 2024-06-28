@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import com.zegocloud.zimkit.common.utils.ZIMKitBackgroundTasks;
 import com.zegocloud.zimkit.common.utils.ZIMKitThreadHelper;
 import com.zegocloud.zimkit.services.ZIMKit;
+import com.zegocloud.zimkit.services.internal.ZIMKitCore;
 import com.zegocloud.zimkit.services.model.ZIMKitGroupMember;
 import com.zegocloud.zimkit.services.model.ZIMKitMessage;
 import com.zegocloud.zimkit.services.model.ZIMKitUser;
@@ -33,6 +34,7 @@ public class ZIMKitGroupMessageVM extends ZIMKitMessageVM {
 
     private final Map<String, String> mGroupUserInfoNameMap = new HashMap<>();
     private final Map<String, String> mGroupUserInfoAvatarMap = new HashMap<>();
+    private String title;
 
     public ZIMKitGroupMessageVM(@NonNull Application application) {
         super(application);
@@ -152,7 +154,8 @@ public class ZIMKitGroupMessageVM extends ZIMKitMessageVM {
     public void send(ZIMKitMessageModel model) {
         if (model instanceof TextMessageModel) {
             TextMessageModel textMessageModel = (TextMessageModel) model;
-            ZIMKit.sendTextMessage(textMessageModel.getContent(), mtoId, ZIMConversationType.GROUP, error -> targetDoesNotExist(error));
+            ZIMKit.sendGroupTextMessage(textMessageModel.getContent(), mtoId, title, ZIMConversationType.GROUP,
+                    error -> targetDoesNotExist(error));
         }
     }
 
@@ -172,17 +175,20 @@ public class ZIMKitGroupMessageVM extends ZIMKitMessageVM {
     public void sendMediaMessage(ZIMKitMessageModel messageModel) {
         if (messageModel instanceof ImageMessageModel) {
             ImageMessageModel imageMessageModel = (ImageMessageModel) messageModel;
-            ZIMKit.sendImageMessage(imageMessageModel.getFileLocalPath(), mtoId, ZIMConversationType.GROUP, error -> targetDoesNotExist(error));
+            ZIMKit.sendGroupImageMessage(imageMessageModel.getFileLocalPath(), mtoId,title, ZIMConversationType.GROUP, error -> targetDoesNotExist(error));
         } else if (messageModel instanceof VideoMessageModel) {
             VideoMessageModel videoMessageModel = (VideoMessageModel) messageModel;
-            ZIMKit.sendVideoMessage(videoMessageModel.getFileLocalPath(), videoMessageModel.getVideoDuration(), mtoId, ZIMConversationType.GROUP, error -> targetDoesNotExist(error));
+            ZIMKit.sendGroupVideoMessage(videoMessageModel.getFileLocalPath(), videoMessageModel.getVideoDuration(), mtoId, title,ZIMConversationType.GROUP, error -> targetDoesNotExist(error));
         } else if (messageModel instanceof AudioMessageModel) {
             AudioMessageModel audioMessageModel = (AudioMessageModel) messageModel;
-            ZIMKit.sendAudioMessage(audioMessageModel.getFileLocalPath(), audioMessageModel.getAudioDuration(), mtoId, ZIMConversationType.GROUP, error -> targetDoesNotExist(error));
+            ZIMKit.sendGroupAudioMessage(audioMessageModel.getFileLocalPath(), audioMessageModel.getAudioDuration(), mtoId, title,ZIMConversationType.GROUP, error -> targetDoesNotExist(error));
         } else if (messageModel instanceof FileMessageModel) {
             FileMessageModel fileMessageModel = (FileMessageModel) messageModel;
-            ZIMKit.sendFileMessage(fileMessageModel.getFileLocalPath(), mtoId, ZIMConversationType.GROUP, error -> targetDoesNotExist(error));
+            ZIMKit.sendGroupFileMessage(fileMessageModel.getFileLocalPath(), mtoId,title, ZIMConversationType.GROUP, error -> targetDoesNotExist(error));
         }
     }
 
+    public void setGroupTitle(String title) {
+        this.title = title;
+    }
 }

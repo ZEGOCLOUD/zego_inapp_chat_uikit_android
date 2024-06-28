@@ -2,6 +2,7 @@ package com.zegocloud.zimkit.services.internal;
 
 import android.app.Application;
 import android.text.TextUtils;
+import android.util.Log;
 import com.zegocloud.uikit.plugin.adapter.plugins.signaling.RenewTokenCallback;
 import com.zegocloud.uikit.plugin.signaling.ZegoSignalingPlugin;
 import com.zegocloud.zimkit.R;
@@ -11,6 +12,7 @@ import com.zegocloud.zimkit.common.utils.ZIMKitThreadHelper;
 import com.zegocloud.zimkit.components.conversation.interfaces.ZIMKitConversationListListener;
 import com.zegocloud.zimkit.components.message.interfaces.ZIMKitMessagesListListener;
 import com.zegocloud.zimkit.components.message.utils.notification.ZIMKitNotificationsManager;
+import com.zegocloud.zimkit.services.ZIMKitConfig;
 import com.zegocloud.zimkit.services.ZIMKitDelegate;
 import com.zegocloud.zimkit.services.callback.ClearUnreadCountCallback;
 import com.zegocloud.zimkit.services.callback.ConnectUserCallback;
@@ -84,10 +86,14 @@ public class ZIMKitCore implements IZIMKitCore {
     private boolean isLoadConversationList = false;
 
     private InputConfig inputConfig;
-    private String token;
+    private ZIMKitConfig zimKitConfig;
 
     public InputConfig getInputConfig() {
         return inputConfig;
+    }
+
+    public ZIMKitConfig getZimKitConfig() {
+        return zimKitConfig;
     }
 
     private final TreeSet<ZIMKitConversation> conversations = new TreeSet<>((model1, model2) -> {
@@ -111,7 +117,7 @@ public class ZIMKitCore implements IZIMKitCore {
     }
 
     @Override
-    public void initWith(Application application, Long appID, String appSign) {
+    public void initWith(Application application, Long appID, String appSign, ZIMKitConfig zimKitConfig) {
         this.application = application;
         this.totalUnreadMessageCount = 0;
         ZIMKitActivityUtils.init(application);
@@ -119,6 +125,7 @@ public class ZIMKitCore implements IZIMKitCore {
         ZegoSignalingPlugin.getInstance().init(application, appID, appSign);
         zim = ZIM.getInstance();
         ZegoSignalingPlugin.getInstance().registerZIMEventHandler(eventHandler);
+        this.zimKitConfig = zimKitConfig;
     }
 
     @Override
@@ -149,12 +156,16 @@ public class ZIMKitCore implements IZIMKitCore {
     @Override
     public void connectUser(String userID, String userName, String avatarUrl, String token,
         ConnectUserCallback callback) {
+        Log.d(TAG, "connectUser() called with: userID = [" + userID + "], userName = [" + userName + "], avatarUrl = ["
+            + avatarUrl + "], token = [" + token + "], callback = [" + callback + "]");
         eventHandler.setKickedOutAccount(false);
         userService.connectUser(userID, userName, avatarUrl, token, callback);
     }
 
+    private static final String TAG = "ZIMKitCore";
     @Override
     public void disconnectUser() {
+        Log.d(TAG, "disconnectUser() called");
         conversationListListener = null;
         messagesListListener = null;
         isLoadConversationList = false;
@@ -258,31 +269,61 @@ public class ZIMKitCore implements IZIMKitCore {
     @Override
     public void sendTextMessage(String text, String conversationID, ZIMConversationType type,
         MessageSentCallback callback) {
-        messageService.sendTextMessage(text, conversationID, type, callback);
+        messageService.sendTextMessage(text, conversationID, "", type, callback);
+    }
+
+    @Override
+    public void sendGroupTextMessage(String text, String conversationID,String title, ZIMConversationType type,
+        MessageSentCallback callback) {
+        messageService.sendTextMessage(text, conversationID, title, type ,callback);
     }
 
     @Override
     public void sendImageMessage(String imagePath, String conversationID, ZIMConversationType type,
         MessageSentCallback callback) {
-        messageService.sendImageMessage(imagePath, conversationID, type, callback);
+        messageService.sendImageMessage(imagePath, conversationID, "", type, callback);
+    }
+
+    @Override
+    public void sendGroupImageMessage(String imagePath, String conversationID, String title, ZIMConversationType type,
+        MessageSentCallback callback) {
+        messageService.sendImageMessage(imagePath, conversationID, title, type, callback);
     }
 
     @Override
     public void sendAudioMessage(String audioPath, long duration, String conversationID, ZIMConversationType type,
         MessageSentCallback callback) {
-        messageService.sendAudioMessage(audioPath, duration, conversationID, type, callback);
+        messageService.sendAudioMessage(audioPath, duration, conversationID,"", type, callback);
+    }
+
+    @Override
+    public void sendGroupAudioMessage(String audioPath, long duration, String conversationID, String title,
+        ZIMConversationType type, MessageSentCallback callback) {
+        messageService.sendAudioMessage(audioPath, duration, conversationID, title, type, callback);
     }
 
     @Override
     public void sendVideoMessage(String videoPath, long duration, String conversationID, ZIMConversationType type,
         MessageSentCallback callback) {
-        messageService.sendVideoMessage(videoPath, duration, conversationID, type, callback);
+        messageService.sendVideoMessage(videoPath, duration, conversationID,"", type, callback);
+    }
+
+    @Override
+    public void sendGroupVideoMessage(String videoPath, long duration, String conversationID, String title,
+        ZIMConversationType type, MessageSentCallback callback) {
+        messageService.sendVideoMessage(videoPath, duration, conversationID,title, type, callback);
     }
 
     @Override
     public void sendFileMessage(String filePath, String conversationID, ZIMConversationType type,
         MessageSentCallback callback) {
-        messageService.sendFileMessage(filePath, conversationID, type, callback);
+        messageService.sendFileMessage(filePath, conversationID,"", type, callback);
+    }
+
+    @Override
+    public void sendGroupFileMessage(String filePath, String conversationID, String title, ZIMConversationType type,
+        MessageSentCallback callback) {
+        messageService.sendFileMessage(filePath, conversationID,title, type, callback);
     }
 
     @Override

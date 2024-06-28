@@ -3,6 +3,7 @@ package com.zegocloud.zimkit.services.internal;
 import android.app.Application;
 import android.text.TextUtils;
 
+import com.zegocloud.uikit.plugin.signaling.ZegoSignalingPlugin;
 import com.zegocloud.zimkit.common.utils.ZLog;
 import com.zegocloud.zimkit.services.callback.ConnectUserCallback;
 import com.zegocloud.zimkit.services.callback.UserAvatarUrlUpdateCallback;
@@ -35,9 +36,8 @@ public class UserService {
      */
     public synchronized void connectUser(String userID, String userName, String avatarUrl, String token,
         ConnectUserCallback callback) {
-        ZIM zim = ZIMKitCore.getInstance().zim();
         Application application = ZIMKitCore.getInstance().getApplication();
-        if (zim == null && application != null) {
+        if (ZIMKitCore.getInstance().zim() == null && application != null) {
             ZLog.e(TAG, application.getString(R.string.zimkit_login_room_fail_zim_not_create_log));
             return;
         }
@@ -49,21 +49,33 @@ public class UserService {
         ZIMUserInfo mZIMUserInfo = new ZIMUserInfo();
         mZIMUserInfo.userID = userID;
         mZIMUserInfo.userName = userName;
-        zim.login(mZIMUserInfo, token, errorInfo -> {
-            if (callback != null) {
-                if (errorInfo.code == ZIMErrorCode.USER_HAS_ALREADY_LOGGED) {
-                    ZIMError zimError = new ZIMError();
-                    zimError.code = ZIMErrorCode.SUCCESS;
-                    callback.onConnectUser(zimError);
-                } else {
-                    callback.onConnectUser(errorInfo);
+        ZegoSignalingPlugin.getInstance().connectUser(userID, userName,
+            new com.zegocloud.uikit.plugin.adapter.plugins.signaling.ConnectUserCallback() {
+                @Override
+                public void onResult(int errorCode, String errorMessage) {
+                    if (callback != null) {
+                        ZIMError zimError = new ZIMError();
+                        if (errorCode == ZIMErrorCode.USER_HAS_ALREADY_LOGGED.value()) {
+                            zimError.code = ZIMErrorCode.SUCCESS;
+                        } else {
+                            zimError.code = ZIMErrorCode.getZIMErrorCode(errorCode);
+                            zimError.message = errorMessage;
+                        }
+                        callback.onConnectUser(zimError);
+                    }
+                    if ((errorCode == ZIMErrorCode.SUCCESS.value()
+                        || errorCode == ZIMErrorCode.USER_HAS_ALREADY_LOGGED.value())
+                        && !TextUtils.isEmpty(avatarUrl)) {
+                        updateUserAvatarUrl(avatarUrl, (userAvatarUrl, errorInfo1) -> {
+                            if (ZegoSignalingPlugin.getInstance().isHMOVPushEnabled()
+                                || ZegoSignalingPlugin.getInstance()
+                                .isFCMPushEnabled()) {
+                                ZegoSignalingPlugin.getInstance().registerPush();
+                            }
+                        });
+                    }
                 }
-            }
-            if ((errorInfo.code == ZIMErrorCode.SUCCESS || errorInfo.code == ZIMErrorCode.USER_HAS_ALREADY_LOGGED) && !TextUtils.isEmpty(avatarUrl)) {
-                updateUserAvatarUrl(avatarUrl, (userAvatarUrl, errorInfo1) -> {
-                });
-            }
-        });
+            });
     }
 
     /**
@@ -90,9 +102,7 @@ public class UserService {
      * Disconnects current user from ZIMKit server.
      */
     public synchronized void disconnectUser() {
-        if (ZIMKitCore.getInstance().zim() != null) {
-            ZIMKitCore.getInstance().zim().logout();
-        }
+        ZegoSignalingPlugin.getInstance().disconnectUser();
     }
 
     public void queryUserInfo(String userID, QueryUserCallback callback) {
@@ -102,7 +112,8 @@ public class UserService {
         config.isQueryFromServer = true;
         ZIMKitCore.getInstance().zim().queryUsersInfo(userIDs, config, new ZIMUsersInfoQueriedCallback() {
             @Override
-            public void onUsersInfoQueried(ArrayList<ZIMUserFullInfo> userList, ArrayList<ZIMErrorUserInfo> errorUserList, ZIMError errorInfo) {
+            public void onUsersInfoQueried(ArrayList<ZIMUserFullInfo> userList,
+                ArrayList<ZIMErrorUserInfo> errorUserList, ZIMError errorInfo) {
 
                 if (callback != null) {
                     ZIMKitUser userInfo = new ZIMKitUser();

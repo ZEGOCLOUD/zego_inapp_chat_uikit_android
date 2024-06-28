@@ -18,13 +18,23 @@ public interface IMessageService {
 
     void sendTextMessage(String text, String conversationID, ZIMConversationType type, MessageSentCallback callback);
 
+    void sendGroupTextMessage(String text, String conversationID,String title, ZIMConversationType type, MessageSentCallback callback);
+
     void sendImageMessage(String imagePath, String conversationID, ZIMConversationType type, MessageSentCallback callback);
+
+    void sendGroupImageMessage(String imagePath, String conversationID, String title, ZIMConversationType type, MessageSentCallback callback);
 
     void sendAudioMessage(String audioPath, long duration, String conversationID, ZIMConversationType type, MessageSentCallback callback);
 
+    void sendGroupAudioMessage(String audioPath, long duration, String conversationID,String title,  ZIMConversationType type, MessageSentCallback callback);
+
     void sendVideoMessage(String videoPath, long duration, String conversationID, ZIMConversationType type, MessageSentCallback callback);
 
+    void sendGroupVideoMessage(String videoPath, long duration, String conversationID,String title,  ZIMConversationType type, MessageSentCallback callback);
+
     void sendFileMessage(String filePath, String conversationID, ZIMConversationType type, MessageSentCallback callback);
+
+    void sendGroupFileMessage(String filePath, String conversationID,String title,  ZIMConversationType type, MessageSentCallback callback);
 
     void downloadMediaFile(ZIMKitMessage message, DownloadMediaFileCallback callback);
 
