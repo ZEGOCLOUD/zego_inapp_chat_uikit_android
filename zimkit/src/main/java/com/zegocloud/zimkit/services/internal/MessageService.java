@@ -3,6 +3,7 @@ package com.zegocloud.zimkit.services.internal;
 import android.media.MediaPlayer;
 
 import com.zegocloud.zimkit.R;
+import com.zegocloud.zimkit.components.message.model.ZIMKitMessageModel;
 import com.zegocloud.zimkit.components.message.utils.image.HEIFImageHelper;
 import com.zegocloud.zimkit.services.ZIMKitConfig;
 import com.zegocloud.zimkit.services.callback.DeleteMessageCallback;
@@ -13,6 +14,8 @@ import com.zegocloud.zimkit.services.callback.MessageSentCallback;
 import com.zegocloud.zimkit.services.model.ZIMKitMessage;
 import com.zegocloud.zimkit.services.model.ZIMKitUser;
 import com.zegocloud.zimkit.services.utils.MessageTransform;
+import im.zego.zim.callback.ZIMMessageRevokedCallback;
+import im.zego.zim.entity.ZIMMessageRevokeConfig;
 import im.zego.zim.entity.ZIMPushConfig;
 import im.zego.zim.enums.ZIMMessageType;
 import java.util.ArrayList;
@@ -119,13 +122,15 @@ public class MessageService {
             message = ZIMKitCore.getInstance().getApplication().getString(R.string.zimkit_message_audio);
         } else if (zimMessage.getType() == ZIMMessageType.FILE) {
             message = ZIMKitCore.getInstance().getApplication().getString(R.string.zimkit_message_file);
+        } else if (zimMessage.getType() == ZIMMessageType.REVOKE) {
         } else {
             message = ZIMKitCore.getInstance().getApplication().getString(R.string.zimkit_message_unknown);
         }
         return message;
     }
 
-    public void sendTextMessage(String text, String conversationID,  String title,ZIMConversationType type, MessageSentCallback callback) {
+    public void sendTextMessage(String text, String conversationID, String title, ZIMConversationType type,
+        MessageSentCallback callback) {
         ZIMMessage message = new ZIMTextMessage(text);
         ZIMKitMessage kitMessage = MessageTransform.parseMessage(message);
         AtomicBoolean canSendMessage = new AtomicBoolean(true);
@@ -206,8 +211,7 @@ public class MessageService {
     }
 
     public void sendAudioMessage(String audioPath, long duration, String conversationID, String title,
-        ZIMConversationType type,
-        MessageSentCallback callback) {
+        ZIMConversationType type, MessageSentCallback callback) {
         if (duration == 0) {
             duration = getDuration(audioPath);
         }
@@ -216,8 +220,7 @@ public class MessageService {
     }
 
     public void sendVideoMessage(String videoPath, long duration, String conversationID, String title,
-        ZIMConversationType type,
-        MessageSentCallback callback) {
+        ZIMConversationType type, MessageSentCallback callback) {
         if (duration == 0) {
             duration = getDuration(videoPath);
         }
@@ -231,8 +234,8 @@ public class MessageService {
         sendMediaMessage(message, conversationID, title, type, callback);
     }
 
-    private void sendMediaMessage(ZIMMediaMessage message, String conversationID, String title, ZIMConversationType type,
-        MessageSentCallback callback) {
+    private void sendMediaMessage(ZIMMediaMessage message, String conversationID, String title,
+        ZIMConversationType type, MessageSentCallback callback) {
 
         ZIMKitMessage kitMessage = MessageTransform.parseMessage(message);
         AtomicBoolean canSendMessage = new AtomicBoolean(true);
@@ -446,5 +449,9 @@ public class MessageService {
 
     public ZIMConversationType getConversationType() {
         return conversationType;
+    }
+
+    public void withDrawMessage(ZIMKitMessageModel model, ZIMMessageRevokedCallback callback) {
+        ZIMKitCore.getInstance().zim().revokeMessage(model.getMessage(), new ZIMMessageRevokeConfig(), callback);
     }
 }

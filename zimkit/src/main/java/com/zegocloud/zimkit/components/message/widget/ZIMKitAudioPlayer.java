@@ -3,13 +3,14 @@ package com.zegocloud.zimkit.components.message.widget;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.CountDownTimer;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
-
-import com.zegocloud.zimkit.common.utils.ZIMKitToastUtils;
-import java.io.File;
-
 import com.zegocloud.zimkit.R;
+import com.zegocloud.zimkit.common.utils.ZIMKitToastUtils;
 import com.zegocloud.zimkit.services.internal.ZIMKitCore;
+import java.io.File;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ZIMKitAudioPlayer {
 
@@ -17,18 +18,20 @@ public class ZIMKitAudioPlayer {
 
     //Maximum recording time limit, for error-proof plus 500
     public final static int DEFAULT_AUDIO_RECORD_MAX_TIME = 1000 * 60 + 500;
+    public final static int DEFAULT_AUDIO_RECORD_MIN_TIME = 1500;
 
-    private static ZIMKitAudioPlayer sInstance = new ZIMKitAudioPlayer();
-    private static String CURRENT_RECORD_FILE = getRecordDir() + "auto_";
-    private static int MAGIC_NUMBER = 500;
-    private RecordCallback mRecordCallback;
+    private static final ZIMKitAudioPlayer sInstance = new ZIMKitAudioPlayer();
+    private static final String CURRENT_RECORD_FILE = getRecordDir() + "auto_";
+    private static final int MAGIC_NUMBER = 500;
+    private final CopyOnWriteArrayList<MediaRecordCallback> audioRecordCallbackList = new CopyOnWriteArrayList<>();
     private PlayCallback mPlayCallback;
 
     private String mAudioRecordPath;
     private MediaPlayer mPlayer;
-    private MediaRecorder mRecorder;
-    //Recording Timer
-    private RecordCountDownTimer timer;
+    private MediaRecorder mMediaRecorder;
+    private RecordCountDownTimer recordCountDownTimer;
+    private Runnable captureSoundRunnable;
+    private Handler handler;
 
     public static ZIMKitAudioPlayer getInstance() {
         return sInstance;
@@ -42,47 +45,90 @@ public class ZIMKitAudioPlayer {
         return dir.getAbsolutePath();
     }
 
+    private ZIMKitAudioPlayer() {
+        handler = new Handler(Looper.getMainLooper());
+        captureSoundRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (mMediaRecorder != null) {
+                    int maxAmplitude = mMediaRecorder.getMaxAmplitude();
+                    double ratio = (double) maxAmplitude / BASE;
+                    double db = 0;//
+                    if (ratio > 1) {
+                        db = 20 * Math.log(ratio);
+                    }
+                    db = db - 100; // extra custom adjust
+                    for (MediaRecordCallback audioRecordCallback : audioRecordCallbackList) {
+                        audioRecordCallback.onRecordSoundVolume(db);
+                    }
+                    handler.postDelayed(captureSoundRunnable, CAPTURE_SOUND_INTERVAL);
+                }
+            }
+        };
+    }
+
     private static String getCacheDir() {
         return ZIMKitCore.getInstance().getApplication().getFilesDir().getAbsolutePath() + RECORD_DIR_SUFFIX;
     }
 
-    public void startRecord(RecordCallback callback) {
-        mRecordCallback = callback;
+    public void addAudioRecordCallback(MediaRecordCallback callback) {
+        audioRecordCallbackList.add(callback);
+    }
+
+    public void removeAudioRecordCallback(MediaRecordCallback callback) {
+        audioRecordCallbackList.remove(callback);
+    }
+
+    public void clearAudioRecordCallbacks() {
+        audioRecordCallbackList.clear();
+    }
+
+    public void startRecord() {
         try {
-            if (timer == null) {
-                timer = new RecordCountDownTimer(DEFAULT_AUDIO_RECORD_MAX_TIME, 1000);
+            if (recordCountDownTimer == null) {
+                recordCountDownTimer = new RecordCountDownTimer(DEFAULT_AUDIO_RECORD_MAX_TIME, 1000);
             }
             mAudioRecordPath = CURRENT_RECORD_FILE + System.currentTimeMillis() + ".m4a";
-            mRecorder = new MediaRecorder();
-            mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-            mRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-            mRecorder.setOutputFile(mAudioRecordPath);
-            mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
-            mRecorder.prepare();
-            mRecorder.start();
-            timer.start();
+            mMediaRecorder = new MediaRecorder();
+            mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+            mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+            mMediaRecorder.setOutputFile(mAudioRecordPath);
+            mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+            mMediaRecorder.prepare();
+            mMediaRecorder.start();
+            recordCountDownTimer.start();
+            for (MediaRecordCallback audioRecordCallback : audioRecordCallbackList) {
+                audioRecordCallback.onRecordStart();
+            }
+            startCaptureSound();
         } catch (Exception e) {
-            stopInternalRecord();
-            onRecordCompleted(false);
+            stopRecord();
+            for (MediaRecordCallback audioRecordCallback : audioRecordCallbackList) {
+                audioRecordCallback.onRecordStopped(MediaRecordCallback.STOP_EXCEPTION);
+            }
         }
     }
 
-    public void stopRecord() {
-        stopInternalRecord();
-        onRecordCompleted(true);
-        mRecordCallback = null;
-        if (timer != null) {
-            timer.cancel();
-        }
-        timer = null;
-    }
-
-    private void stopInternalRecord() {
-        if (mRecorder == null) {
+    private void stopRecord() {
+        if (mMediaRecorder == null) {
             return;
         }
-        mRecorder.release();
-        mRecorder = null;
+        mMediaRecorder.release();
+        mMediaRecorder = null;
+
+        if (recordCountDownTimer != null) {
+            recordCountDownTimer.cancel();
+        }
+        recordCountDownTimer = null;
+
+        handler.removeCallbacks(captureSoundRunnable);
+    }
+
+    private int BASE = 1;
+    private int CAPTURE_SOUND_INTERVAL = 200;// 间隔取样时间
+
+    public void startCaptureSound() {
+        handler.postDelayed(captureSoundRunnable, CAPTURE_SOUND_INTERVAL);
     }
 
     public void startPlay(String filePath, PlayCallback callback) {
@@ -122,10 +168,7 @@ public class ZIMKitAudioPlayer {
     }
 
     public boolean isPlaying() {
-        if (mPlayer != null && mPlayer.isPlaying()) {
-            return true;
-        }
-        return false;
+        return mPlayer != null && mPlayer.isPlaying();
     }
 
     private void onPlayCompleted(boolean success) {
@@ -133,13 +176,6 @@ public class ZIMKitAudioPlayer {
             mPlayCallback.onCompletion(success);
         }
         mPlayer = null;
-    }
-
-    private void onRecordCompleted(boolean success) {
-        if (mRecordCallback != null) {
-            mRecordCallback.onCompletion(success);
-        }
-        mRecorder = null;
     }
 
     public String getPath() {
@@ -173,35 +209,82 @@ public class ZIMKitAudioPlayer {
         return duration;
     }
 
+    private static final String TAG = "ZIMKitAudioPlayer";
+
+    public void finishAndSendAudioRecord() {
+        boolean timeShort = false;
+        if (recordCountDownTimer != null) {
+            timeShort = recordCountDownTimer.passedTime <= DEFAULT_AUDIO_RECORD_MIN_TIME;
+        }
+        stopRecord();
+        for (MediaRecordCallback audioRecordCallback : audioRecordCallbackList) {
+            if (timeShort) {
+                audioRecordCallback.onRecordStopped(MediaRecordCallback.STOP_TIME_SHORT);
+            } else {
+                audioRecordCallback.onRecordStopped(MediaRecordCallback.FINISHED_USER);
+            }
+        }
+    }
+
+    public void cancelAudioRecordBecauseTouch() {
+        stopRecord();
+        for (MediaRecordCallback audioRecordCallback : audioRecordCallbackList) {
+            audioRecordCallback.onRecordStopped(MediaRecordCallback.CANCELED_USER);
+        }
+    }
+
     //Record Video Timer
     private class RecordCountDownTimer extends CountDownTimer {
+
+        private final long totalTime;
+        private long passedTime;
+
         RecordCountDownTimer(long millisInFuture, long countDownInterval) {
             super(millisInFuture, countDownInterval);
+            this.totalTime = millisInFuture;
+            this.passedTime = 0;
         }
 
         @Override
         public void onTick(long millisUntilFinished) {
-            long countdown = millisUntilFinished / 1000;
-            if (mRecordCallback != null && countdown <= 10) {
-                mRecordCallback.onRecordCountDownTimer(millisUntilFinished);
+            for (MediaRecordCallback audioRecordCallback : audioRecordCallbackList) {
+                passedTime = (totalTime - millisUntilFinished);
+                audioRecordCallback.onRecordTimePassed(passedTime);
             }
         }
 
         @Override
         public void onFinish() {
-            stopInternalRecord();
-            onRecordCompleted(true);
-            mRecordCallback = null;
+            stopRecord();
+            for (MediaRecordCallback audioRecordCallback : audioRecordCallbackList) {
+                audioRecordCallback.onRecordStopped(MediaRecordCallback.FINISH_TIME_LIMIT);
+            }
         }
     }
 
-    public interface RecordCallback {
-        void onCompletion(Boolean success);
+    public interface MediaRecordCallback {
 
-        void onRecordCountDownTimer(long recordTime);
+        int CANCELED_USER = 1;
+        int FINISHED_USER = 2;
+        int FINISH_TIME_LIMIT = 3;
+        int STOP_TIME_SHORT = 4;
+        int STOP_EXCEPTION = 5;
+
+        default void onRecordStart() {
+        }
+
+        default void onRecordStopped(int status) {
+        }
+
+        default void onRecordTimePassed(long recordTime) {
+        }
+
+        default void onRecordSoundVolume(double volume) {
+        }
     }
 
     public interface PlayCallback {
+
         void onCompletion(Boolean success);
     }
 

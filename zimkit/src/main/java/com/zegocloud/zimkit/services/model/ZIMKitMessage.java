@@ -16,5 +16,6 @@ public class ZIMKitMessage {
     public AudioMessageContent audioContent = new AudioMessageContent();
     public VideoMessageContent videoContent = new VideoMessageContent();
     public FileMessageContent fileContent = new FileMessageContent();
+    public RevokeMessageContent revokeContent = new RevokeMessageContent();
 
 }

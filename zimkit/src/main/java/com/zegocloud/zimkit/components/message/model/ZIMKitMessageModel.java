@@ -2,7 +2,6 @@ package com.zegocloud.zimkit.components.message.model;
 
 import androidx.databinding.BaseObservable;
 import androidx.databinding.Bindable;
-
 import com.zegocloud.zimkit.BR;
 import im.zego.zim.entity.ZIMMessage;
 import im.zego.zim.enums.ZIMMessageDirection;
@@ -103,6 +102,7 @@ public abstract class ZIMKitMessageModel extends BaseObservable {
         return isCheck;
     }
 
+    private static final String TAG = "ZIMKitMessageModel";
     public void setCheck(boolean check) {
         this.isCheck = check;
         notifyPropertyChanged(BR.check);

@@ -2,7 +2,6 @@ package com.zegocloud.zimkit.services.internal;
 
 import android.app.Application;
 import android.text.TextUtils;
-import android.util.Log;
 import com.zegocloud.uikit.plugin.adapter.plugins.signaling.RenewTokenCallback;
 import com.zegocloud.uikit.plugin.signaling.ZegoSignalingPlugin;
 import com.zegocloud.zimkit.R;
@@ -10,7 +9,10 @@ import com.zegocloud.zimkit.common.utils.ZIMKitActivityUtils;
 import com.zegocloud.zimkit.common.utils.ZIMKitDateUtils;
 import com.zegocloud.zimkit.common.utils.ZIMKitThreadHelper;
 import com.zegocloud.zimkit.components.conversation.interfaces.ZIMKitConversationListListener;
+import com.zegocloud.zimkit.components.group.bean.ZIMKitGroupMemberInfo;
 import com.zegocloud.zimkit.components.message.interfaces.ZIMKitMessagesListListener;
+import com.zegocloud.zimkit.components.message.model.ZIMKitInputButtonModel;
+import com.zegocloud.zimkit.components.message.model.ZIMKitMessageModel;
 import com.zegocloud.zimkit.components.message.utils.notification.ZIMKitNotificationsManager;
 import com.zegocloud.zimkit.services.ZIMKitConfig;
 import com.zegocloud.zimkit.services.ZIMKitDelegate;
@@ -30,23 +32,34 @@ import com.zegocloud.zimkit.services.callback.LoadMoreMessageCallback;
 import com.zegocloud.zimkit.services.callback.MessageSentCallback;
 import com.zegocloud.zimkit.services.callback.QueryGroupInfoCallback;
 import com.zegocloud.zimkit.services.callback.QueryGroupMemberInfoCallback;
+import com.zegocloud.zimkit.services.callback.QueryGroupMemberListCallback;
 import com.zegocloud.zimkit.services.callback.QueryUserCallback;
 import com.zegocloud.zimkit.services.callback.UserAvatarUrlUpdateCallback;
 import com.zegocloud.zimkit.services.config.InputConfig;
+import com.zegocloud.zimkit.services.config.ZIMKitInputButtonName;
 import com.zegocloud.zimkit.services.internal.interfaces.IZIMKitCore;
 import com.zegocloud.zimkit.services.model.ZIMKitConversation;
-import com.zegocloud.zimkit.services.model.ZIMKitGroupMember;
 import com.zegocloud.zimkit.services.model.ZIMKitMessage;
 import com.zegocloud.zimkit.services.model.ZIMKitUser;
 import com.zegocloud.zimkit.services.utils.ZIMKitNotifyList;
 import im.zego.zim.ZIM;
+import im.zego.zim.callback.ZIMConversationNotificationStatusSetCallback;
+import im.zego.zim.callback.ZIMConversationPinnedStateUpdatedCallback;
+import im.zego.zim.callback.ZIMMessageRevokedCallback;
 import im.zego.zim.entity.ZIMConversation;
 import im.zego.zim.entity.ZIMError;
+import im.zego.zim.entity.ZIMGroupMemberInfo;
+import im.zego.zim.entity.ZIMGroupMemberQueryConfig;
+import im.zego.zim.entity.ZIMGroupOperatedInfo;
 import im.zego.zim.entity.ZIMMessage;
+import im.zego.zim.enums.ZIMConversationNotificationStatus;
 import im.zego.zim.enums.ZIMConversationType;
 import im.zego.zim.enums.ZIMErrorCode;
+import im.zego.zim.enums.ZIMGroupMemberEvent;
+import im.zego.zim.enums.ZIMGroupMemberState;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
@@ -56,6 +69,7 @@ public class ZIMKitCore implements IZIMKitCore {
     private static ZIMKitCore sInstance;
 
     private ZIMKitCore() {
+
     }
 
     public static ZIMKitCore getInstance() {
@@ -79,6 +93,7 @@ public class ZIMKitCore implements IZIMKitCore {
     private Map<String, String> mGroupUserInfoNameMap = new HashMap<>();
     private Map<String, String> mGroupUserInfoAvatarMap = new HashMap<>();
     private int totalUnreadMessageCount;
+    private Map<String, List<ZIMKitGroupMemberInfo>> groupList = new HashMap<>();
 
     private ZIMKitConversationListListener conversationListListener;
     private ZIMKitMessagesListListener messagesListListener;
@@ -95,6 +110,8 @@ public class ZIMKitCore implements IZIMKitCore {
     public ZIMKitConfig getZimKitConfig() {
         return zimKitConfig;
     }
+
+    private Map<ZIMKitInputButtonName, ZIMKitInputButtonModel> inputButtonMap = new HashMap<>();
 
     private final TreeSet<ZIMKitConversation> conversations = new TreeSet<>((model1, model2) -> {
         //Sort by orderKey
@@ -116,6 +133,9 @@ public class ZIMKitCore implements IZIMKitCore {
         return zim;
     }
 
+    public long appID;
+    public String appSign;
+
     @Override
     public void initWith(Application application, Long appID, String appSign, ZIMKitConfig zimKitConfig) {
         this.application = application;
@@ -126,6 +146,41 @@ public class ZIMKitCore implements IZIMKitCore {
         zim = ZIM.getInstance();
         ZegoSignalingPlugin.getInstance().registerZIMEventHandler(eventHandler);
         this.zimKitConfig = zimKitConfig;
+        this.appID = appID;
+        this.appSign = appSign;
+
+        inputButtonMap.put(ZIMKitInputButtonName.AUDIO,
+            new ZIMKitInputButtonModel(ZIMKitInputButtonName.AUDIO, application, R.string.zimkit_input_audio,
+                R.drawable.zimkit_input_btn_audio, R.drawable.zimkit_input_btn_audio_selected,
+                R.drawable.zimkit_input_btn_audio_expand));
+        inputButtonMap.put(ZIMKitInputButtonName.EMOJI,
+            new ZIMKitInputButtonModel(ZIMKitInputButtonName.EMOJI, application, R.string.zimkit_input_emoji,
+                R.drawable.zimkit_input_btn_emoji, R.drawable.zimkit_input_btn_emoji_selected,
+                R.drawable.zimkit_input_btn_emoji_expand));
+        inputButtonMap.put(ZIMKitInputButtonName.PICTURE,
+            new ZIMKitInputButtonModel(ZIMKitInputButtonName.PICTURE, application, R.string.zimkit_input_photo,
+                R.drawable.zimkit_input_btn_pic, R.drawable.zimkit_input_btn_pic,
+                R.drawable.zimkit_input_btn_pic_expand));
+        inputButtonMap.put(ZIMKitInputButtonName.EXPAND,
+            new ZIMKitInputButtonModel(ZIMKitInputButtonName.EXPAND, application, R.string.zimkit_input_emoji,
+                R.drawable.zimkit_input_btn_expand, R.drawable.zimkit_input_btn_expand_selected,
+                R.drawable.zimkit_input_btn_expand));
+        inputButtonMap.put(ZIMKitInputButtonName.TAKE_PHOTO,
+            new ZIMKitInputButtonModel(ZIMKitInputButtonName.TAKE_PHOTO, application, R.string.zimkit_take_photo,
+                R.drawable.zimkit_input_btn_camera, R.drawable.zimkit_input_btn_camera,
+                R.drawable.zimkit_input_btn_camera_expand));
+        inputButtonMap.put(ZIMKitInputButtonName.VOICE_CALL,
+            new ZIMKitInputButtonModel(ZIMKitInputButtonName.VOICE_CALL, application, R.string.zimkit_avcall,
+                R.drawable.zimkit_input_btn_avcall, R.drawable.zimkit_input_btn_avcall,
+                R.drawable.zimkit_input_btn_avcall_expand));
+        inputButtonMap.put(ZIMKitInputButtonName.VIDEO_CALL,
+            new ZIMKitInputButtonModel(ZIMKitInputButtonName.VIDEO_CALL, application, R.string.zimkit_avcall,
+                R.drawable.zimkit_input_btn_avcall, R.drawable.zimkit_input_btn_avcall,
+                R.drawable.zimkit_input_btn_avcall_expand));
+        inputButtonMap.put(ZIMKitInputButtonName.FILE,
+            new ZIMKitInputButtonModel(ZIMKitInputButtonName.FILE, application, R.string.zimkit_file,
+                R.drawable.zimkit_input_btn_file, R.drawable.zimkit_input_btn_file,
+                R.drawable.zimkit_input_btn_file_expand));
     }
 
     @Override
@@ -156,16 +211,14 @@ public class ZIMKitCore implements IZIMKitCore {
     @Override
     public void connectUser(String userID, String userName, String avatarUrl, String token,
         ConnectUserCallback callback) {
-        Log.d(TAG, "connectUser() called with: userID = [" + userID + "], userName = [" + userName + "], avatarUrl = ["
-            + avatarUrl + "], token = [" + token + "], callback = [" + callback + "]");
         eventHandler.setKickedOutAccount(false);
         userService.connectUser(userID, userName, avatarUrl, token, callback);
     }
 
     private static final String TAG = "ZIMKitCore";
+
     @Override
     public void disconnectUser() {
-        Log.d(TAG, "disconnectUser() called");
         conversationListListener = null;
         messagesListListener = null;
         isLoadConversationList = false;
@@ -176,11 +229,26 @@ public class ZIMKitCore implements IZIMKitCore {
         mGroupUserInfoAvatarMap.clear();
         zimkitNotifyList.clear();
         userService.disconnectUser();
+        groupList.clear();
+    }
+
+    public ZIMKitInputButtonModel getInputButtonModel(ZIMKitInputButtonName inputButtonName) {
+        return inputButtonMap.get(inputButtonName);
     }
 
     @Override
     public void queryUserInfo(String userID, QueryUserCallback callback) {
         userService.queryUserInfo(userID, callback);
+    }
+
+    public void setConversationPinnedState(boolean isPinned, String conversationID,
+        ZIMConversationType conversationType, ZIMConversationPinnedStateUpdatedCallback callback) {
+        conversationService.updateConversationPinnedState(isPinned, conversationID, conversationType, callback);
+    }
+
+    public void setConversationNotificationStatus(ZIMConversationNotificationStatus status, String conversationID,
+        ZIMConversationType conversationType, ZIMConversationNotificationStatusSetCallback callback) {
+        conversationService.setConversationNotificationStatus(status, conversationID, conversationType, callback);
     }
 
     @Override
@@ -208,7 +276,7 @@ public class ZIMKitCore implements IZIMKitCore {
     public void loadMoreConversation(LoadMoreConversationCallback callback) {
         ZIMKitConversation lastModel = conversations.last();
         if (lastModel != null) {
-            ZIMConversation conversation = lastModel.getZim();
+            ZIMConversation conversation = lastModel.getZimConversation();
             conversationService.loadMoreConversation(true, conversation, callback);
         } else {
             if (callback != null) {
@@ -253,7 +321,63 @@ public class ZIMKitCore implements IZIMKitCore {
 
     @Override
     public void queryGroupMemberInfo(String userID, String groupID, QueryGroupMemberInfoCallback callback) {
-        groupService.queryGroupMemberInfo(userID, groupID, callback);
+        groupService.queryGroupMemberInfo(userID, groupID, new QueryGroupMemberInfoCallback() {
+            @Override
+            public void onQueryGroupMemberInfo(ZIMKitGroupMemberInfo member, ZIMError error) {
+                if (error.code == ZIMErrorCode.SUCCESS) {
+                    if (member != null) {
+                        List<ZIMKitGroupMemberInfo> memberList = getOrNewGroupMemberList(groupID);
+                        boolean contains = false;
+                        for (ZIMKitGroupMemberInfo groupMember : memberList) {
+                            if (groupMember.getId().equals(userID)) {
+                                contains = true;
+                                groupMember = member;
+                                break;
+                            }
+                        }
+                        if (!contains) {
+                            memberList.add(member);
+                        }
+                    }
+                }
+                if (callback != null) {
+                    callback.onQueryGroupMemberInfo(member, error);
+                }
+            }
+        });
+    }
+
+    public List<ZIMKitGroupMemberInfo> getGroupMemberList(String groupID) {
+        return groupList.get(groupID);
+    }
+
+    List<ZIMKitGroupMemberInfo> getOrNewGroupMemberList(String groupID) {
+        List<ZIMKitGroupMemberInfo> list;
+        if (groupList.containsKey(groupID)) {
+            list = groupList.get(groupID);
+        } else {
+            list = new ArrayList<>();
+            groupList.put(groupID, list);
+        }
+        return list;
+    }
+
+    public void queryGroupMemberList(String groupID, ZIMGroupMemberQueryConfig config,
+        QueryGroupMemberListCallback callback) {
+        groupService.queryGroupMemberList(groupID, config, new QueryGroupMemberListCallback() {
+            @Override
+            public void onGroupMemberListQueried(String groupID, ArrayList<ZIMKitGroupMemberInfo> userList,
+                int nextFlag, ZIMError errorInfo) {
+                if (errorInfo.code == ZIMErrorCode.SUCCESS) {
+                    List<ZIMKitGroupMemberInfo> list = getOrNewGroupMemberList(groupID);
+                    list.clear();
+                    list.addAll(userList);
+                }
+                if (callback != null) {
+                    callback.onGroupMemberListQueried(groupID, userList, nextFlag, errorInfo);
+                }
+            }
+        });
     }
 
     @Override
@@ -273,9 +397,9 @@ public class ZIMKitCore implements IZIMKitCore {
     }
 
     @Override
-    public void sendGroupTextMessage(String text, String conversationID,String title, ZIMConversationType type,
+    public void sendGroupTextMessage(String text, String conversationID, String title, ZIMConversationType type,
         MessageSentCallback callback) {
-        messageService.sendTextMessage(text, conversationID, title, type ,callback);
+        messageService.sendTextMessage(text, conversationID, title, type, callback);
     }
 
     @Override
@@ -293,7 +417,7 @@ public class ZIMKitCore implements IZIMKitCore {
     @Override
     public void sendAudioMessage(String audioPath, long duration, String conversationID, ZIMConversationType type,
         MessageSentCallback callback) {
-        messageService.sendAudioMessage(audioPath, duration, conversationID,"", type, callback);
+        messageService.sendAudioMessage(audioPath, duration, conversationID, "", type, callback);
     }
 
     @Override
@@ -305,25 +429,25 @@ public class ZIMKitCore implements IZIMKitCore {
     @Override
     public void sendVideoMessage(String videoPath, long duration, String conversationID, ZIMConversationType type,
         MessageSentCallback callback) {
-        messageService.sendVideoMessage(videoPath, duration, conversationID,"", type, callback);
+        messageService.sendVideoMessage(videoPath, duration, conversationID, "", type, callback);
     }
 
     @Override
     public void sendGroupVideoMessage(String videoPath, long duration, String conversationID, String title,
         ZIMConversationType type, MessageSentCallback callback) {
-        messageService.sendVideoMessage(videoPath, duration, conversationID,title, type, callback);
+        messageService.sendVideoMessage(videoPath, duration, conversationID, title, type, callback);
     }
 
     @Override
     public void sendFileMessage(String filePath, String conversationID, ZIMConversationType type,
         MessageSentCallback callback) {
-        messageService.sendFileMessage(filePath, conversationID,"", type, callback);
+        messageService.sendFileMessage(filePath, conversationID, "", type, callback);
     }
 
     @Override
     public void sendGroupFileMessage(String filePath, String conversationID, String title, ZIMConversationType type,
         MessageSentCallback callback) {
-        messageService.sendFileMessage(filePath, conversationID,title, type, callback);
+        messageService.sendFileMessage(filePath, conversationID, title, type, callback);
     }
 
     @Override
@@ -357,7 +481,7 @@ public class ZIMKitCore implements IZIMKitCore {
         queryGroupMemberInfo(itemModel.getSenderUserID(), itemModel.getConversationID(),
             new QueryGroupMemberInfoCallback() {
                 @Override
-                public void onQueryGroupMemberInfo(ZIMKitGroupMember member, ZIMError error) {
+                public void onQueryGroupMemberInfo(ZIMKitGroupMemberInfo member, ZIMError error) {
                     if (error.code == ZIMErrorCode.SUCCESS) {
                         mGroupUserInfoNameMap.put(member.getId(), member.getName());
                         mGroupUserInfoAvatarMap.put(member.getId(), member.getAvatarUrl());
@@ -423,6 +547,21 @@ public class ZIMKitCore implements IZIMKitCore {
         return conversations;
     }
 
+    public ZIMKitConversation getZIMKitConversation(String conversationID) {
+        ZIMKitConversation conversation = null;
+        if (conversations != null && !conversations.isEmpty()) {
+            Iterator<ZIMKitConversation> iterator = conversations.iterator();
+            while (iterator.hasNext()) {
+                ZIMKitConversation element = iterator.next();
+                if (element.getId().equals(conversationID)) {
+                    conversation = element;
+                    break;
+                }
+            }
+        }
+        return conversation;
+    }
+
     public ArrayList<ZIMKitMessage> getMessageList() {
         return mMessageList;
     }
@@ -442,5 +581,35 @@ public class ZIMKitCore implements IZIMKitCore {
     @Override
     public void setInputConfig(InputConfig config) {
         inputConfig = config;
+    }
+
+    public void onGroupMemberStateChanged(ZIMGroupMemberState state, ZIMGroupMemberEvent event,
+        ArrayList<ZIMGroupMemberInfo> userList, ZIMGroupOperatedInfo operatedInfo, String groupID) {
+
+        List<ZIMKitGroupMemberInfo> memberList = getOrNewGroupMemberList(groupID);
+        if (state == ZIMGroupMemberState.ENTER) {
+            if (event == ZIMGroupMemberEvent.JOINED || event == ZIMGroupMemberEvent.INVITED) {
+                for (ZIMGroupMemberInfo info : userList) {
+                    ZIMKitGroupMemberInfo member = GroupService.transGroupMember(info);
+                    memberList.add(member);
+                }
+            }
+        } else if (state == ZIMGroupMemberState.QUIT) {
+            if (event == ZIMGroupMemberEvent.KICKED_OUT || event == ZIMGroupMemberEvent.LEFT) {
+                for (ZIMGroupMemberInfo info : userList) {
+                    final Iterator<ZIMKitGroupMemberInfo> iterator = memberList.iterator();
+                    while (iterator.hasNext()) {
+                        ZIMKitGroupMemberInfo next = iterator.next();
+                        if (next.getId().equals(info.userID)) {
+                            iterator.remove();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public void withDrawMessage(ZIMKitMessageModel model, ZIMMessageRevokedCallback callback) {
+        messageService.withDrawMessage(model, callback);
     }
 }

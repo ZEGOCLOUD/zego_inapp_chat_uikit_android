@@ -25,10 +25,10 @@ public class ZIMKitCustomToastUtil {
     }
 
     public static void showToast(Context context, String message, int iconTip) {
-        initView(context, message, iconTip);
+        initToastView(context, message, iconTip);
     }
 
-    private static void initView(Context context, String message, int iconTip) {
+    private static void initToastView(Context context, String message, int iconTip) {
         toastHandler.post(new Runnable() {
             @Override
             public void run() {

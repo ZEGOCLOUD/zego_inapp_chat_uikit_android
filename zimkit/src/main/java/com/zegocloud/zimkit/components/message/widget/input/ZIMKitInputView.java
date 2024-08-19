@@ -1,55 +1,59 @@
 package com.zegocloud.zimkit.components.message.widget.input;
 
-import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Rect;
+import android.graphics.drawable.StateListDrawable;
 import android.net.Uri;
 import android.provider.Settings;
 import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.util.TypedValue;
+import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.WindowManager;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ImageView;
+import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.GestureDetectorCompat;
 import androidx.databinding.DataBindingUtil;
-import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentActivity;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView.SimpleOnItemTouchListener;
+import com.permissionx.guolindev.callback.RequestCallback;
 import com.zegocloud.zimkit.R;
 import com.zegocloud.zimkit.common.base.BaseDialog;
 import com.zegocloud.zimkit.common.utils.PermissionHelper;
 import com.zegocloud.zimkit.common.utils.ZIMKitToastUtils;
 import com.zegocloud.zimkit.components.message.model.ZIMKitEmojiItemModel;
-import com.zegocloud.zimkit.components.message.model.ZIMKitInputModel;
+import com.zegocloud.zimkit.components.message.model.ZIMKitInputButtonModel;
 import com.zegocloud.zimkit.components.message.model.ZIMKitMessageModel;
-import com.zegocloud.zimkit.components.message.ui.ZIMKitEmojiFragment;
-import com.zegocloud.zimkit.components.message.ui.ZIMKitInputMoreFragment;
 import com.zegocloud.zimkit.components.message.utils.ChatMessageBuilder;
+import com.zegocloud.zimkit.components.message.widget.MessageRecyclerView;
 import com.zegocloud.zimkit.components.message.widget.ZIMKitAudioPlayer;
-import com.zegocloud.zimkit.databinding.ZimkitLayoutInputBinding;
+import com.zegocloud.zimkit.components.message.widget.ZIMKitAudioPlayer.MediaRecordCallback;
+import com.zegocloud.zimkit.databinding.ZimkitLayoutInputViewBinding;
+import com.zegocloud.zimkit.services.ZIMKitConfig;
+import com.zegocloud.zimkit.services.config.ZIMKitInputButtonName;
 import com.zegocloud.zimkit.services.internal.ZIMKitCore;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class ZIMKitInputView extends LinearLayout {
 
-    private ZimkitLayoutInputBinding mBinding;
-    private AppCompatActivity mActivity;
-    private ZIMKitInputModel mInputModel;
-    private MessageHandler mMessageHandler;
-    private ChatRecordHandler mChatRecordHandler;
-
-    private FragmentManager mFragmentManager;
-    private ZIMKitEmojiFragment mEmojiFragment;
-    private ZIMKitInputMoreFragment mInputMoreFragment;
-
-    private boolean mAudioCancel;
-    private float mStartRecordY;
+    private ZimkitLayoutInputViewBinding binding;
+    private GestureDetectorCompat gestureDetectorCompat;
+    private MessageRecyclerView recyclerView;
+    private InputCallback callback;
 
     public ZIMKitInputView(Context context) {
         super(context);
@@ -67,95 +71,267 @@ public class ZIMKitInputView extends LinearLayout {
     }
 
     private void initView(Context context) {
-        mActivity = (AppCompatActivity) getContext();
-        mBinding = DataBindingUtil.inflate(LayoutInflater.from(context), R.layout.zimkit_layout_input, this, true);
-        mInputModel = new ZIMKitInputModel();
-        mBinding.setModel(mInputModel);
-        mBinding.setConfig(ZIMKitCore.getInstance().getInputConfig());
+        binding = DataBindingUtil.inflate(LayoutInflater.from(context), R.layout.zimkit_layout_input_view, this, true);
+        gestureDetectorCompat = new GestureDetectorCompat(getContext(), new SimpleOnGestureListener() {
 
-        initListener();
-    }
-
-    private void initListener() {
-        mBinding.etMessage.setOnTouchListener(new OnTouchListener() {
             @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
-                    removeFragment();
-                    showSoftInput();
+            public boolean onScroll(@NonNull MotionEvent e1, @NonNull MotionEvent e2, float distanceX,
+                float distanceY) {
+                reset();
+                hideInputWindow(binding.inputEdittext);
+                return true;
+            }
+        });
+
+        binding.inputEdittext.setOnTouchListener(new OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent event) {
+                if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+                    reset();
+                    requestInputWindow(view);
+                    scrollMessageView();
                 }
                 return false;
             }
         });
 
-        //Input Box - Emoji Button
-        mBinding.btnEmoji.setOnClickListener(v -> {
-            boolean emojiStatus = !mInputModel.isShowEmoji.get();
-            mBinding.btnEmoji.setBackgroundResource(emojiStatus ? R.mipmap.zimkit_icon_emoji_audio_show : R.mipmap.zimkit_icon_emoji_close);
-            mInputModel.fileClick(false);
-            mInputModel.audioClick(false);
-            removeFragment();
-            if (emojiStatus) {
-                mInputModel.emojiClick(true);
-                showEmojiViewGroup();
-                mBinding.btnAudio.setBackgroundResource(R.mipmap.zimkit_icon_audio_close);
-            } else {
-                showSoftInput();
+        int maxButtons = 4;
+        ZIMKitConfig zimKitConfig = ZIMKitCore.getInstance().getZimKitConfig();
+        List<ZIMKitInputButtonModel> buttonModels = new ArrayList<>();
+        if (zimKitConfig.inputConfig != null) {
+            List<ZIMKitInputButtonName> buttonNames = new ArrayList<>(zimKitConfig.inputConfig.smallButtons);
+            if (buttonNames.contains(ZIMKitInputButtonName.VOICE_CALL) && buttonNames.contains(
+                ZIMKitInputButtonName.VIDEO_CALL)) {
+                buttonNames.remove(ZIMKitInputButtonName.VOICE_CALL);
+            }
+            if (buttonNames.size() > maxButtons) {
+                buttonNames = buttonNames.subList(0, maxButtons);
+            }
+            for (ZIMKitInputButtonName buttonName : buttonNames) {
+                ZIMKitInputButtonModel inputButtonModel = ZIMKitCore.getInstance().getInputButtonModel(buttonName);
+                buttonModels.add(inputButtonModel);
+            }
+        }
+        for (int i = 0; i < buttonModels.size(); i++) {
+            ZIMKitInputButtonModel inputButtonModel = buttonModels.get(i);
+            ImageView imageView = new ImageView(getContext());
+            LinearLayout.LayoutParams layoutParams = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+            DisplayMetrics displayMetrics = getContext().getResources().getDisplayMetrics();
+            layoutParams.leftMargin = dp2px(8, displayMetrics);
+            layoutParams.rightMargin = dp2px(20, displayMetrics);
+            layoutParams.topMargin = dp2px(7, displayMetrics);
+            imageView.setLayoutParams(layoutParams);
+            imageView.setScaleType(ScaleType.CENTER);
+
+            StateListDrawable stateListDrawable = new StateListDrawable();
+            stateListDrawable.addState(new int[]{android.R.attr.state_selected},
+                inputButtonModel.getSmallIconSelected());
+            stateListDrawable.addState(new int[]{}, inputButtonModel.getSmallIcon());
+            imageView.setImageDrawable(stateListDrawable);
+
+            binding.inputButtonsLayout.addView(imageView);
+
+            switch (inputButtonModel.getButtonName()) {
+                case AUDIO:
+                    initAudioButton(imageView, i, inputButtonModel);
+                    break;
+                case EMOJI:
+                    initEmojiButton(imageView, i, inputButtonModel);
+                    break;
+                case PICTURE:
+                    initSelectPicButton(imageView, i, inputButtonModel);
+                    break;
+                case EXPAND:
+                    initMoreButton(imageView, i, inputButtonModel);
+                    break;
+                case TAKE_PHOTO:
+                case VIDEO_CALL:
+                case VOICE_CALL:
+                case FILE:
+                    final int index = i;
+                    imageView.setOnClickListener(v -> {
+                        if (callback != null) {
+                            callback.onClickSmallItem(index, inputButtonModel);
+                        }
+                    });
+                    break;
+            }
+        }
+
+        ZIMKitAudioPlayer.getInstance().addAudioRecordCallback(new MediaRecordCallback() {
+            @Override
+            public void onRecordStopped(int status) {
+                if (status == MediaRecordCallback.FINISHED_USER) {
+                    if (callback != null) {
+                        int duration = ZIMKitAudioPlayer.getInstance().getDuration();
+                        ZIMKitMessageModel messageModel = ChatMessageBuilder.buildAudioMessage(
+                            ZIMKitAudioPlayer.getInstance().getPath(), duration);
+                        callback.onSendAudioMessage(messageModel);
+                    }
+                } else if (status == MediaRecordCallback.STOP_TIME_SHORT) {
+                    ZIMKitToastUtils.showToast(R.string.zimkit_audio_record_too_short);
+                }
             }
         });
 
-        //Input Box - more Button
-        mBinding.btnMore.setOnClickListener(v -> {
-            boolean moreStatus = !mInputModel.isShowFile.get();
-            mInputModel.emojiClick(false);
-            mInputModel.audioClick(false);
-            removeFragment();
-            if (moreStatus) {
-                mInputModel.fileClick(true);
-                //Show more message delivery layout
-                showInputMoreLayout();
-                mBinding.btnEmoji.setBackgroundResource(R.mipmap.zimkit_icon_emoji_close);
-                mBinding.btnAudio.setBackgroundResource(R.mipmap.zimkit_icon_audio_close);
-            } else {
-                showSoftInput();
+        binding.inputViewEmojiLayout.setEmojiListener(new ZIMKitEmojiView.OnEmojiClickListener() {
+            @Override
+            public void onEmojiDelete() {
+                int action = KeyEvent.ACTION_DOWN;
+                int code = KeyEvent.KEYCODE_DEL;
+                KeyEvent event = new KeyEvent(action, code);
+                binding.inputEdittext.onKeyDown(KeyEvent.KEYCODE_DEL, event);
+            }
+
+            @Override
+            public void onEmojiClick(ZIMKitEmojiItemModel emoji) {
+                int index = binding.inputEdittext.getSelectionStart();
+                Editable editable = binding.inputEdittext.getText();
+                editable.insert(index, emoji.getEmojiContent());
             }
         });
 
-        //Input Box - audio Button
-        mBinding.btnAudio.setOnClickListener(v -> {
-            PermissionHelper.onMicrophonePermissionGranted(mActivity, new PermissionHelper.GrantResult() {
+        binding.inputViewMoreLayout.setInputMoreCallback(new ZIMKitMoreView.InputMoreCallback() {
+            @Override
+            public void onClickMoreItem(int position, ZIMKitInputButtonModel itemModel) {
+                if (callback != null) {
+                    callback.onClickExpandItem(position, itemModel);
+                }
+            }
+        });
+        initSendMessageButton();
+    }
+
+    private static final String TAG = "ZIMKitInputView";
+
+    public static int dp2px(float v, DisplayMetrics displayMetrics) {
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v, displayMetrics);
+    }
+
+    private void initSelectPicButton(ImageView imageView, int index, ZIMKitInputButtonModel inputButtonModel) {
+        imageView.setOnClickListener(v -> {
+            reset();
+            hideInputWindow(binding.inputEdittext);
+            if (callback != null) {
+                callback.onClickSmallItem(index, inputButtonModel);
+            }
+        });
+    }
+
+    private void initSendMessageButton() {
+        binding.inputSend.setEnabled(false);
+        binding.inputEdittext.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                binding.inputSend.setEnabled(s.length() > 0);
+            }
+        });
+
+        binding.inputSend.setOnClickListener(v -> {
+            if (callback != null) {
+                String inputMsg = binding.inputEdittext.getText().toString();
+                ZIMKitMessageModel messageModel = ChatMessageBuilder.buildTextMessage(inputMsg);
+                callback.onSendTextMessage(messageModel);
+            }
+            binding.inputEdittext.setText("");
+        });
+    }
+
+    private void reset() {
+        hideAllSubContentViews();
+        unselectOtherButtons(null);
+        binding.inputContentContainer.setVisibility(View.GONE);
+    }
+
+    private void initMoreButton(ImageView imageView, int index, ZIMKitInputButtonModel inputButtonModel) {
+        imageView.setOnClickListener(v -> {
+            unselectOtherButtons(imageView);
+            hideAllSubContentViews();
+
+            boolean selected = v.isSelected();
+            boolean newState = !selected;
+            v.setSelected(newState);
+
+            if (newState) {
+                showMoreView();
+            } else {
+                hideMoreView();
+            }
+            scrollMessageView();
+            if (callback != null) {
+                callback.onClickSmallItem(index, inputButtonModel);
+            }
+        });
+    }
+
+    private void initEmojiButton(ImageView imageView, int index, ZIMKitInputButtonModel inputButtonModel) {
+        imageView.setOnClickListener(v -> {
+            unselectOtherButtons(imageView);
+            hideAllSubContentViews();
+
+            boolean selected = v.isSelected();
+            boolean newState = !selected;
+            v.setSelected(newState);
+
+            if (newState) {
+                showEmojiView();
+            } else {
+                hideEmojiView();
+            }
+            scrollMessageView();
+
+            if (callback != null) {
+                callback.onClickSmallItem(index, inputButtonModel);
+            }
+        });
+    }
+
+    private void initAudioButton(ImageView imageView, int index, ZIMKitInputButtonModel inputButtonModel) {
+        imageView.setOnClickListener(v -> {
+            FragmentActivity activity = (AppCompatActivity) getContext();
+            PermissionHelper.requestRecordAudioPermissionIfNeed(activity, new RequestCallback() {
                 @Override
-                public void onGrantResult(boolean allGranted) {
+                public void onResult(boolean allGranted, @NonNull List<String> grantedList,
+                    @NonNull List<String> deniedList) {
                     if (allGranted) {
-                        boolean audioStatus = !mInputModel.isShowAudio.get();
-                        mBinding.btnAudio.setBackgroundResource(audioStatus ? R.mipmap.zimkit_icon_emoji_audio_show : R.mipmap.zimkit_icon_audio_close);
-                        mInputModel.fileClick(false);
-                        mInputModel.emojiClick(false);
-                        removeFragment();
-                        if (audioStatus) {
-                            mInputModel.audioClick(true);
-                            hideSoftInput();
-                            mBinding.btnEmoji.setBackgroundResource(R.mipmap.zimkit_icon_emoji_close);
+                        unselectOtherButtons(imageView);
+                        hideAllSubContentViews();
+
+                        boolean selected = v.isSelected();
+                        boolean newState = !selected;
+                        v.setSelected(newState);
+                        if (newState) {
+                            showAudioRecordView();
                         } else {
-                            mInputModel.audioClick(false);
-                            mBinding.etMessage.postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
-                                    showSoftInput();
-                                }
-                            }, 100);
+                            hideRecordView();
+                        }
+                        scrollMessageView();
+
+                        if (callback != null) {
+                            callback.onClickSmallItem(index, inputButtonModel);
                         }
                     } else {
-                        BaseDialog baseDialog = new BaseDialog(mActivity);
-                        baseDialog.setMsgTitle(mActivity.getString(R.string.zimkit_photo_no_mic_tip));
-                        baseDialog.setMsgContent(mActivity.getString(R.string.zimkit_photo_no_mic_description));
-                        baseDialog.setLeftButtonContent(mActivity.getString(R.string.zimkit_access_later));
-                        baseDialog.setRightButtonContent(mActivity.getString(R.string.zimkit_go_setting));
+                        BaseDialog baseDialog = new BaseDialog(getContext());
+                        baseDialog.setMsgTitle(getContext().getString(R.string.zimkit_photo_no_mic_tip));
+                        baseDialog.setMsgContent(getContext().getString(R.string.zimkit_photo_no_mic_description));
+                        baseDialog.setLeftButtonContent(getContext().getString(R.string.zimkit_access_later));
+                        baseDialog.setRightButtonContent(getContext().getString(R.string.zimkit_go_setting));
                         baseDialog.setSureListener(v -> {
                             baseDialog.dismiss();
-                            Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                                    .setData(Uri.fromParts("package", mActivity.getPackageName(), null));
-                            mActivity.startActivityForResult(intent, 666);
+                            Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).setData(
+                                Uri.fromParts("package", activity.getPackageName(), null));
+                            activity.startActivityForResult(intent, 666);
                         });
                         baseDialog.setCancelListener(v -> {
                             baseDialog.dismiss();
@@ -164,338 +340,146 @@ public class ZIMKitInputView extends LinearLayout {
                 }
             });
         });
-
-        //Messaging
-        mBinding.btnSend.setOnClickListener(v -> {
-            String inputMsg = mInputModel.inputMessage.get();
-            if (inputMsg == null || inputMsg.trim().isEmpty()) {
-                ZIMKitToastUtils.showToast(mActivity.getString(R.string.zimkit_cant_send_empty_msg));
-                return;
-            }
-            if (mMessageHandler != null) {
-                mMessageHandler.sendMessage(ChatMessageBuilder.buildTextMessage(inputMsg));
-            }
-            mInputModel.inputMessage.set("");
-        });
-
-        //audio Recording
-        mBinding.chatAudioInput.setOnTouchListener(new OnTouchListener() {
-            @SuppressLint("ClickableViewAccessibility")
-            @Override
-            public boolean onTouch(View v, MotionEvent motionEvent) {
-                switch (motionEvent.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        mAudioCancel = true;
-                        mStartRecordY = motionEvent.getY();
-                        if (mChatRecordHandler != null) {
-                            mChatRecordHandler.onRecordStatusChanged(ChatRecordHandler.RECORD_START);
-                        }
-                        mInputModel.setAudioRecordBtn(true);
-                        mBinding.chatAudioInput.setText(mActivity.getString(R.string.zimkit_audio_record_release_to_send));
-                        ZIMKitAudioPlayer.getInstance().startRecord(new ZIMKitAudioPlayer.RecordCallback() {
-                            @Override
-                            public void onCompletion(Boolean success) {
-                                mInputModel.setAudioRecordBtn(false);
-                                recordComplete(success);
-                            }
-
-                            @Override
-                            public void onRecordCountDownTimer(long recordTime) {
-                                if (mChatRecordHandler != null) {
-                                    mChatRecordHandler.onRecordCountDownTimer(recordTime);
-                                }
-                            }
-                        });
-                        break;
-                    case MotionEvent.ACTION_MOVE:
-                        if (motionEvent.getY() - mStartRecordY < -100) {
-                            mAudioCancel = true;
-                            mBinding.chatAudioInput.setText(mActivity.getString(R.string.zimkit_audio_record_release_to_cancel));
-                            if (mChatRecordHandler != null) {
-                                mChatRecordHandler.onRecordStatusChanged(ChatRecordHandler.RECORD_CANCEL);
-                            }
-                        } else {
-                            if (mAudioCancel) {
-                                mBinding.chatAudioInput.setText(mActivity.getString(R.string.zimkit_audio_record_release_to_send));
-                                if (mChatRecordHandler != null) {
-                                    mChatRecordHandler.onRecordStatusChanged(ChatRecordHandler.RECORD_START);
-                                }
-                            }
-                            mAudioCancel = false;
-                        }
-                        break;
-                    case MotionEvent.ACTION_CANCEL:
-                    case MotionEvent.ACTION_UP:
-                        mAudioCancel = motionEvent.getY() - mStartRecordY < -100;
-                        if (mChatRecordHandler != null) {
-                            mChatRecordHandler.onRecordStatusChanged(ChatRecordHandler.RECORD_STOP);
-                        }
-                        ZIMKitAudioPlayer.getInstance().stopRecord();
-                        mBinding.chatAudioInput.setText(mActivity.getString(R.string.zimkit_audio_record_normal));
-                        break;
-                    default:
-                        break;
-                }
-
-                return false;
-            }
-        });
-
-        //Multiple choice deletion
-        mBinding.tvMultiDelete.setOnClickListener(view -> {
-            if (mMessageHandler != null) {
-                mMessageHandler.deleteMultiSelect();
-            }
-        });
     }
 
-    private void removeFragment() {
-        if (mEmojiFragment != null) {
-            mFragmentManager.beginTransaction().remove(mEmojiFragment).commitAllowingStateLoss();
-            mEmojiFragment = null;
-        }
-        if (mInputMoreFragment != null) {
-            mInputMoreFragment.setInputMoreCallback(null);
-            mFragmentManager.beginTransaction().remove(mInputMoreFragment).commitAllowingStateLoss();
-            mInputMoreFragment = null;
-        }
-    }
-
-    // show emoji
-    private void showEmojiViewGroup() {
-        if (mFragmentManager == null) {
-            mFragmentManager = mActivity.getSupportFragmentManager();
-        }
-        if (mEmojiFragment == null) {
-            mEmojiFragment = new ZIMKitEmojiFragment();
-        }
-        hideSoftInput();
-
-        mBinding.etMessage.postDelayed(new Runnable() {
+    private void showAudioRecordView() {
+        hideInputWindow(binding.inputEdittext);
+        postDelayed(new Runnable() {
             @Override
             public void run() {
-                mBinding.inputMoreView.setVisibility(View.VISIBLE);
-                mBinding.etMessage.requestFocus();
-                mFragmentManager.beginTransaction().replace(R.id.input_more_view, mEmojiFragment).commitAllowingStateLoss();
+                binding.inputViewAudioLayout.setVisibility(View.VISIBLE);
+                binding.inputContentContainer.setVisibility(View.VISIBLE);
             }
         }, 100);
 
-        mEmojiFragment.setEmojiListener(new ZIMKitEmojiFragment.OnEmojiClickListener() {
-            @Override
-            public void onEmojiDelete() {
-                int action = KeyEvent.ACTION_DOWN;
-                int code = KeyEvent.KEYCODE_DEL;
-                KeyEvent event = new KeyEvent(action, code);
-                mBinding.etMessage.onKeyDown(KeyEvent.KEYCODE_DEL, event);
-            }
-
-            @Override
-            public void onEmojiClick(ZIMKitEmojiItemModel emoji) {
-                int index = mBinding.etMessage.getSelectionStart();
-                Editable editable = mBinding.etMessage.getText();
-                editable.insert(index, emoji.getEmojiContent());
-            }
-        });
-
-        if (mMessageHandler != null) {
-            mMessageHandler.scrollToEnd();
-        }
     }
 
-    /**
-     * Show more
-     */
-    private void showInputMoreLayout() {
-        if (mFragmentManager == null) {
-            mFragmentManager = mActivity.getSupportFragmentManager();
-        }
-        if (mInputMoreFragment == null) {
-            mInputMoreFragment = new ZIMKitInputMoreFragment();
-        }
-        hideSoftInput();
-
-        mBinding.etMessage.postDelayed(new Runnable() {
+    private void hideRecordView() {
+        binding.inputViewAudioLayout.setVisibility(View.GONE);
+        binding.inputContentContainer.setVisibility(View.GONE);
+        postDelayed(new Runnable() {
             @Override
             public void run() {
-                mBinding.inputMoreView.setVisibility(View.VISIBLE);
-                mFragmentManager.beginTransaction().replace(R.id.input_more_view, mInputMoreFragment).commitAllowingStateLoss();
+                requestInputWindow(binding.inputEdittext);
+            }
+        }, 100);
+    }
+
+    private void showEmojiView() {
+        hideInputWindow(binding.inputEdittext);
+        postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                binding.inputContentContainer.setVisibility(View.VISIBLE);
+                binding.inputViewEmojiLayout.setVisibility(View.VISIBLE);
             }
         }, 100);
 
-        if (mMessageHandler != null) {
-            mMessageHandler.scrollToEnd();
-        }
-
-        if (mInputMoreFragment != null) {
-            mInputMoreFragment.setInputMoreCallback(new ZIMKitInputMoreFragment.InputMoreCallback() {
-                @Override
-                public void selectFile(Uri uri) {
-                    ZIMKitMessageModel info = ChatMessageBuilder.buildFileMessage(uri);
-                    if (mMessageHandler != null && info != null) {
-                        mMessageHandler.sendMediaMessage(info);
-                    }
-                }
-
-                @Override
-                public void selectPhoto() {
-                    if (mMessageHandler != null) {
-                        mMessageHandler.openPhoto();
-                    }
-                }
-            });
-        }
     }
 
-    /**
-     * Hide more
-     */
-    private void hideInputMoreLayout() {
-        mBinding.inputMoreView.setVisibility(View.GONE);
-    }
-
-    /**
-     * show keyboard
-     */
-    public void showSoftInput() {
-        hideInputMoreLayout();
-        mInputModel.emojiClick(false);
-        mInputModel.fileClick(false);
-        mInputModel.audioClick(false);
-        mBinding.btnEmoji.setBackgroundResource(R.mipmap.zimkit_icon_emoji_close);
-        mBinding.btnAudio.setBackgroundResource(R.mipmap.zimkit_icon_audio_close);
-        mBinding.etMessage.requestFocus();
-        InputMethodManager imm = (InputMethodManager) mBinding.etMessage.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.showSoftInput(mBinding.etMessage, InputMethodManager.SHOW_FORCED);
-
-        if (mMessageHandler != null) {
-            mMessageHandler.scrollToEnd();
-        }
-    }
-
-    /**
-     * Hide keyboard
-     */
-    public void hideSoftInput() {
-        InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(mBinding.etMessage.getWindowToken(), 0);
-        mBinding.etMessage.clearFocus();
-        mBinding.inputMoreView.setVisibility(View.GONE);
-    }
-
-    /**
-     * Show multi-selected delete button
-     */
-    public void showMultiSelectDelete() {
-        mInputModel.setBackgroundColorIsWhite(false);
-        mBinding.clInputView.setVisibility(GONE);
-        mBinding.tvMultiDelete.setVisibility(VISIBLE);
-        mBinding.btnEmoji.setBackgroundResource(R.mipmap.zimkit_icon_emoji_close);
-    }
-
-    /**
-     * Hide the multi-select delete button and restore the input box
-     */
-    public void hideMultiSelectDelete() {
-        mInputModel.setBackgroundColorIsWhite(!mInputModel.isShowAudio.get());
-        mBinding.clInputView.setVisibility(VISIBLE);
-        mBinding.tvMultiDelete.setVisibility(GONE);
-    }
-
-    /**
-     * Click on the blank area to put away the keyboard
-     */
-    public void onEmptyClick() {
-        hideSoftInput();
-        mBinding.btnEmoji.setBackgroundResource(R.mipmap.zimkit_icon_emoji_close);
-        mInputModel.emojiClick(false);
-        mInputModel.fileClick(false);
-    }
-
-    /**
-     * Display Keyboard
-     *
-     * @return
-     */
-    private boolean isSoftInputShown() {
-        View decorView = ((Activity) getContext()).getWindow().getDecorView();
-        int screenHeight = decorView.getHeight();
-        Rect rect = new Rect();
-        decorView.getWindowVisibleDisplayFrame(rect);
-        return screenHeight - rect.bottom - getNavigateBarHeight() >= 0;
-    }
-
-    /**
-     * Compatible with navigation keys
-     *
-     * @return
-     */
-    private int getNavigateBarHeight() {
-        DisplayMetrics metrics = new DisplayMetrics();
-        WindowManager windowManager = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
-        windowManager.getDefaultDisplay().getMetrics(metrics);
-        int usableHeight = metrics.heightPixels;
-        windowManager.getDefaultDisplay().getRealMetrics(metrics);
-        int realHeight = metrics.heightPixels;
-        if (realHeight > usableHeight) {
-            return realHeight - usableHeight;
-        } else {
-            return 0;
-        }
-    }
-
-    private void recordComplete(boolean success) {
-        int duration = ZIMKitAudioPlayer.getInstance().getDuration();
-        if (mChatRecordHandler != null) {
-            if (!success || duration == 0) {
-                mChatRecordHandler.onRecordStatusChanged(ChatRecordHandler.RECORD_FAILED);
-                return;
+    private void hideEmojiView() {
+        binding.inputViewEmojiLayout.setVisibility(View.GONE);
+        binding.inputContentContainer.setVisibility(View.GONE);
+        postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                requestInputWindow(binding.inputEdittext);
             }
-            if (mAudioCancel) {
-                mChatRecordHandler.onRecordStatusChanged(ChatRecordHandler.RECORD_CANCEL);
-                return;
+        }, 100);
+    }
+
+    private void showMoreView() {
+        hideInputWindow(binding.inputEdittext);
+        postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                binding.inputContentContainer.setVisibility(View.VISIBLE);
+                binding.inputViewMoreLayout.setVisibility(View.VISIBLE);
             }
-            if (duration < 1000) {
-                mChatRecordHandler.onRecordStatusChanged(ChatRecordHandler.RECORD_TOO_SHORT);
-                return;
+        }, 100);
+    }
+
+    private void hideMoreView() {
+        binding.inputViewMoreLayout.setVisibility(View.GONE);
+        binding.inputContentContainer.setVisibility(View.GONE);
+        postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                requestInputWindow(binding.inputEdittext);
             }
-            mChatRecordHandler.onRecordStatusChanged(ChatRecordHandler.RECORD_STOP);
+        }, 100);
+    }
+
+    private void hideAllSubContentViews() {
+        binding.inputViewEmojiLayout.setVisibility(View.GONE);
+        binding.inputViewMoreLayout.setVisibility(View.GONE);
+        binding.inputViewAudioLayout.setVisibility(View.GONE);
+    }
+
+    private void unselectOtherButtons(ImageView imageView) {
+        int childCount = binding.inputButtonsLayout.getChildCount();
+        for (int i = 0; i < childCount; i++) {
+            View child = binding.inputButtonsLayout.getChildAt(i);
+            if (child != imageView) {
+                child.setSelected(false);
+            }
         }
+    }
 
-        if (mMessageHandler != null && success) {
-            mMessageHandler.sendMediaMessage(ChatMessageBuilder.buildAudioMessage(ZIMKitAudioPlayer.getInstance().getPath(), duration));
+    private void scrollMessageView() {
+        postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                recyclerView.scrollToEnd();
+            }
+        }, 200);
+    }
+
+    public void attach(MessageRecyclerView recyclerView, ViewGroup parent) {
+        this.recyclerView = recyclerView;
+        recyclerView.addOnItemTouchListener(new SimpleOnItemTouchListener() {
+            @Override
+            public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
+                gestureDetectorCompat.onTouchEvent(e);
+                return super.onInterceptTouchEvent(rv, e);
+            }
+        });
+        //        parent.addOnLayoutChangeListener(new OnLayoutChangeListener() {
+        //            @Override
+        //            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop,
+        //                int oldRight, int oldBottom) {
+        //                //                Log.d(TAG, "onLayoutChange() called with: v = [" + v + "], left = [" + left + "], top = [" + top
+        //                //                    + "], right = [" + right + "], bottom = [" + bottom + "], oldLeft = [" + oldLeft + "], oldTop = ["
+        //                //                    + oldTop + "], oldRight = [" + oldRight + "], oldBottom = [" + oldBottom + "]");
+        //            }
+        //        });
+    }
+
+    public static void hideInputWindow(View view) {
+        InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        view.clearFocus();
+    }
+
+    public static void requestInputWindow(View view) {
+        view.requestFocus();
+        InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        boolean input = false;
+        if (view.isAttachedToWindow()) {
+            input = imm.showSoftInput(view, 0);
         }
     }
 
-    public void setMessageHandler(MessageHandler handler) {
-        this.mMessageHandler = handler;
+    public void setCallback(InputCallback callback) {
+        this.callback = callback;
     }
 
-    public void setChatRecordHandler(ChatRecordHandler handler) {
-        this.mChatRecordHandler = handler;
+    public void hide() {
+        reset();
+        hideInputWindow(binding.inputEdittext);
     }
 
-    public interface MessageHandler {
-        void sendMessage(ZIMKitMessageModel model);
-
-        void sendMediaMessage(ZIMKitMessageModel model);
-
-        void scrollToEnd();
-
-        void deleteMultiSelect();
-
-        void openPhoto();
+    public void setInputMoreItems(List<ZIMKitInputButtonModel> inputMoreItems) {
+        binding.inputViewMoreLayout.setInputMoreItems(inputMoreItems);
     }
-
-    public interface ChatRecordHandler {
-        int RECORD_START = 1;
-        int RECORD_STOP = 2;
-        int RECORD_CANCEL = 3;
-        int RECORD_TOO_SHORT = 4;
-        int RECORD_FAILED = 5;
-
-        void onRecordStatusChanged(int status);
-
-        void onRecordCountDownTimer(long recordTime);
-    }
-
 }

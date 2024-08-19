@@ -11,6 +11,8 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.util.DisplayMetrics;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,18 +20,15 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
+import com.zegocloud.zimkit.R;
 import com.zegocloud.zimkit.common.utils.ZIMKitScreenUtils;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.zegocloud.zimkit.R;
 
 public class MessagePopMenu {
 
@@ -64,7 +63,8 @@ public class MessagePopMenu {
         int spaceHeight = context.getResources().getDimensionPixelSize(R.dimen.message_pop_menu_item_space_height);
         Drawable divider = context.getResources().getDrawable(R.drawable.zimkit_shape_pop_menu_divider);
         recyclerView.addItemDecoration(new GridDecoration(divider, COLUMN_NUM, spaceWidth, spaceHeight));
-        popupWindow = new PopupWindow(popupView, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT, false);
+        popupWindow = new PopupWindow(popupView, ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT, false);
         popupWindow.setBackgroundDrawable(new ColorDrawable());
         popupWindow.setTouchable(true);
         popupWindow.setOutsideTouchable(true);
@@ -80,21 +80,18 @@ public class MessagePopMenu {
         anchorView.getLocationOnScreen(location);
         // Small triangle height
         int indicatorHeight = context.getResources().getDimensionPixelOffset(R.dimen.message_pop_menu_indicator_height);
-        int rowCount = (int) Math.ceil(chatPopMenuActionList.size() * 1.0f / COLUMN_NUM);
         if (popupWindow != null) {
-            int itemSpaceWidth = context.getResources().getDimensionPixelSize(R.dimen.message_pop_menu_item_space_width);
-            int itemSpaceHeight = context.getResources().getDimensionPixelSize(R.dimen.message_pop_menu_item_space_height);
 
-            int itemWidth = ZIMKitScreenUtils.dip2px(60f);
-            int itemHeight = ZIMKitScreenUtils.dip2px(60f);
+            DisplayMetrics displayMetrics = popupView.getContext().getResources().getDisplayMetrics();
+            int paddingLeft = dp2px(16.0f, displayMetrics);
+            int paddingTop = dp2px(12.0f, displayMetrics);
+            int paddingRight = dp2px(16.0f, displayMetrics);
+            int paddingBottom = dp2px(16.0f, displayMetrics);
+            recyclerView.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
 
-            int paddingLeftRight = ZIMKitScreenUtils.dip2px(18.0f);
-            int paddingTopBottom = ZIMKitScreenUtils.dip2px(12.5f);
-
-            int columnNum = Math.min(chatPopMenuActionList.size(), COLUMN_NUM);
-
-            int popWidth = itemWidth * columnNum + paddingLeftRight * 2 + (columnNum - 1) * itemSpaceWidth - SHADOW_WIDTH;
-            int popHeight = itemHeight * rowCount + paddingTopBottom * 2 + (rowCount - 1) * itemSpaceHeight - SHADOW_WIDTH;
+            popupView.measure(0, 0);
+            int popWidth = popupView.getMeasuredWidth();
+            int popHeight = popupView.getMeasuredHeight();
 
             float indicatorX = anchorWidth / 2;
             int screenWidth = ZIMKitScreenUtils.getScreenWidth(context);
@@ -119,8 +116,13 @@ public class MessagePopMenu {
             int radius = ZIMKitScreenUtils.dip2px(8.0f);
             Drawable drawable = getBackgroundDrawable(popWidth, popHeight, indicatorX, indicatorHeight, isTop, radius);
             popupView.setBackground(drawable);
+
             popupWindow.showAtLocation(anchorView, Gravity.NO_GRAVITY, x, y);
         }
+    }
+
+    public static int dp2px(float v, DisplayMetrics displayMetrics) {
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v, displayMetrics);
     }
 
     public void hide() {
@@ -146,30 +148,38 @@ public class MessagePopMenu {
     /**
      * Draw popup background with small triangle
      */
-    public Drawable getBackgroundDrawable(final float widthPixel, final float heightPixel, float indicatorX, float indicatorHeight, boolean isTop, float radius) {
+    public Drawable getBackgroundDrawable(final float widthPixel, final float heightPixel, float indicatorX,
+        float indicatorHeight, boolean isTop, float radius) {
         int borderWidth = SHADOW_WIDTH;
 
         Path path = new Path();
         Drawable drawable = new Drawable() {
             @Override
             public void draw(@NonNull Canvas canvas) {
+
+                //                Paint paint2 = new Paint();
+                //                paint2.setColor(Color.parseColor("#4400ff00"));
+                //                canvas.drawRect(0, 0, widthPixel, heightPixel, paint2);
+
                 Paint paint = new Paint();
                 paint.setColor(Color.parseColor("#cc000000"));
                 paint.setStyle(Paint.Style.FILL);
 
-//                paint.setShadowLayer(borderWidth, 0, 0, 0xFFAAAAAA);
-
                 // Small triangle arrow on top
                 if (isTop) {
-                    path.addRoundRect(new RectF(borderWidth, indicatorHeight + borderWidth, widthPixel - borderWidth, heightPixel + indicatorHeight - borderWidth), radius, radius, Path.Direction.CW);
-                    path.moveTo(indicatorX - indicatorHeight, indicatorHeight + borderWidth);
-                    path.lineTo(indicatorX, borderWidth);
-                    path.lineTo(indicatorX + indicatorHeight, indicatorHeight + borderWidth);
+                    float top = indicatorHeight + borderWidth - Y_OFFSET;
+                    path.addRoundRect(new RectF(borderWidth, top, widthPixel - borderWidth, heightPixel - borderWidth),
+                        radius, radius, Path.Direction.CW);
+                    path.moveTo(indicatorX - indicatorHeight, top);
+                    path.lineTo(indicatorX, borderWidth - Y_OFFSET);
+                    path.lineTo(indicatorX + indicatorHeight, top);
                 } else {
-                    path.addRoundRect(new RectF(borderWidth, borderWidth, widthPixel - borderWidth, heightPixel - borderWidth), radius, radius, Path.Direction.CW);
-                    path.moveTo(indicatorX - indicatorHeight, heightPixel - borderWidth);
-                    path.lineTo(indicatorX, heightPixel + indicatorHeight - borderWidth);
-                    path.lineTo(indicatorX + indicatorHeight, heightPixel - borderWidth);
+                    float bottom = heightPixel - borderWidth - Y_OFFSET;
+                    path.addRoundRect(new RectF(borderWidth, borderWidth, widthPixel - borderWidth, bottom), radius,
+                        radius, Path.Direction.CW);
+                    path.moveTo(indicatorX - indicatorHeight, bottom);
+                    path.lineTo(indicatorX, bottom + indicatorHeight);
+                    path.lineTo(indicatorX + indicatorHeight, bottom);
                 }
                 path.close();
                 canvas.drawPath(path, paint);
@@ -194,6 +204,7 @@ public class MessagePopMenu {
     }
 
     class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.MenuItemViewHolder> {
+
         @NonNull
         @Override
         public MenuAdapter.MenuItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -226,6 +237,7 @@ public class MessagePopMenu {
         }
 
         class MenuItemViewHolder extends RecyclerView.ViewHolder {
+
             public TextView title;
             public ImageView icon;
 
@@ -279,7 +291,8 @@ public class MessagePopMenu {
                 View endChild = parent.getChildAt(i * columnNum + (columnNum - 1));
                 final int bottom = startChild.getBottom();
                 final int top = bottom - divider.getIntrinsicHeight();
-                divider.setBounds(startChild.getLeft(), top + topBottomSpace / 2, endChild.getRight(), bottom + topBottomSpace / 2);
+                divider.setBounds(startChild.getLeft(), top + topBottomSpace / 2, endChild.getRight(),
+                    bottom + topBottomSpace / 2);
                 divider.draw(canvas);
             }
             canvas.restore();
@@ -287,6 +300,7 @@ public class MessagePopMenu {
     }
 
     public static class ChatPopMenuAction {
+
         private String actionName;
         private int actionIcon;
         private OnClickListener actionClickListener;
@@ -317,6 +331,7 @@ public class MessagePopMenu {
 
         @FunctionalInterface
         public interface OnClickListener {
+
             void onClick();
         }
     }

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools">
+
+  <data>
+
+  </data>
+
+  <androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <com.zegocloud.zimkit.common.components.widget.TitleBar
+      android:id="@+id/title_bar"
+      android:layout_width="match_parent"
+      android:layout_height="@dimen/title_bar_height"
+      app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+      android:id="@+id/content"
+      android:layout_width="match_parent"
+      android:layout_height="0dp"
+      android:background="@color/color_eff0f2"
+      android:paddingStart="16dp"
+      android:paddingEnd="16dp"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/title_bar"
+      app:layout_constraintVertical_bias="0.0"
+      tools:layout_editor_absoluteX="0dp">
+
+      <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/contact_info"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/zimkit_shape_8dp_white"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+          android:id="@+id/contact_icon"
+          android:layout_width="48dp"
+          android:layout_height="48dp"
+          android:layout_marginStart="16dp"
+          app:layout_constraintBottom_toBottomOf="parent"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+          android:id="@+id/contact_name"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginStart="12dp"
+          android:textColor="@color/color_2a2a2a"
+          android:textSize="17sp"
+          app:layout_constraintBottom_toBottomOf="@+id/contact_icon"
+          app:layout_constraintStart_toEndOf="@+id/contact_icon"
+          app:layout_constraintTop_toTopOf="@+id/contact_icon" />
+      </androidx.constraintlayout.widget.ConstraintLayout>
+
+      <LinearLayout
+        android:id="@+id/chat_setting"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/zimkit_shape_8dp_white"
+        android:orientation="vertical"
+        app:layout_constraintTop_toBottomOf="@+id/contact_info">
+
+        <com.zegocloud.zimkit.components.message.ui.AsynchronousSwitch
+          android:id="@+id/do_not_disturb"
+          android:layout_width="match_parent"
+          android:layout_height="54dp"
+          android:background="?selectableItemBackground"
+          android:gravity="center_vertical"
+          android:paddingStart="15dp"
+          android:paddingEnd="9dp"
+          android:text="@string/do_not_disturb"
+          android:textSize="15sp" />
+
+        <View
+          android:layout_width="match_parent"
+          android:layout_height="1dp"
+          android:layout_marginStart="16dp"
+          android:background="@color/color_e6e6e6" />
+
+        <com.zegocloud.zimkit.components.message.ui.AsynchronousSwitch
+          android:id="@+id/pin_chat"
+          android:layout_width="match_parent"
+          android:layout_height="54dp"
+          android:layout_marginTop="1dp"
+          android:background="?selectableItemBackground"
+          android:gravity="center_vertical"
+          android:paddingStart="15dp"
+          android:paddingEnd="9dp"
+          android:text="@string/chat_pin"
+          android:textSize="15sp" />
+      </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+  </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

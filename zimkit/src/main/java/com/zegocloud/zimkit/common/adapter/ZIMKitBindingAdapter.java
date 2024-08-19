@@ -3,19 +3,19 @@ package com.zegocloud.zimkit.common.adapter;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
-
+import android.widget.TextView;
 import androidx.databinding.BindingAdapter;
-
-import im.zego.zim.enums.ZIMConversationType;
 import com.zegocloud.zimkit.R;
-import com.zegocloud.zimkit.common.components.widget.UnreadCountView;
 import com.zegocloud.zimkit.common.glide.ZIMKitGlideLoader;
 import com.zegocloud.zimkit.common.utils.ZIMKitFileUtils;
 import com.zegocloud.zimkit.services.internal.ZIMKitCore;
+import im.zego.zim.enums.ZIMConversationNotificationStatus;
+import im.zego.zim.enums.ZIMConversationType;
 
 public class ZIMKitBindingAdapter {
+
     @BindingAdapter("unReadCount")
-    public static void setCount(UnreadCountView view, int count) {
+    public static void setCount(TextView view, int count) {
         if (count <= 0) {
             view.setVisibility(View.GONE);
         } else {
@@ -28,12 +28,31 @@ public class ZIMKitBindingAdapter {
         }
     }
 
+    @BindingAdapter("unReadCountBackground")
+    public static void setUnReadCountBackground(View view, ZIMConversationNotificationStatus notificationStatus) {
+        if (notificationStatus == ZIMConversationNotificationStatus.NOTIFY) {
+            view.setBackgroundResource(R.drawable.zimkit_shape_oval_ff4a50);
+        } else if (notificationStatus == ZIMConversationNotificationStatus.DO_NOT_DISTURB) {
+            view.setBackgroundResource(R.drawable.zimkit_shape_oval_babbc0);
+        }
+    }
+
+    @BindingAdapter("conversationItemBackground")
+    public static void setConversationItemBackground(View view, boolean isPinned) {
+        if (isPinned) {
+            view.setBackgroundColor(view.getResources().getColor(R.color.color_f8f8f8));
+        } else {
+            view.setBackgroundColor(view.getResources().getColor(R.color.color_ffffff));
+        }
+    }
+
     @BindingAdapter("backgroundColor")
     public static void setBackgroundColor(View view, boolean isShowWhite) {
         if (isShowWhite) {
             view.setBackgroundColor(ZIMKitCore.getInstance().getApplication().getResources().getColor(R.color.white));
         } else {
-            view.setBackgroundColor(ZIMKitCore.getInstance().getApplication().getResources().getColor(R.color.color_f2f2f2));
+            view.setBackgroundColor(
+                ZIMKitCore.getInstance().getApplication().getResources().getColor(R.color.color_eff0f2));
         }
     }
 

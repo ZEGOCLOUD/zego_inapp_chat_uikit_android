@@ -22,7 +22,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        tools:background="@color/color_f2f2f2">
+        tools:background="@color/color_eff0f2">
 
         <androidx.appcompat.widget.AppCompatCheckBox
             android:id="@+id/select_checkbox"

@@ -1,32 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+  xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <data>
+  <data>
 
-        <variable
-            name="view"
-            type="android.view.View" />
+    <variable
+      name="view"
+      type="android.view.View" />
 
-        <variable
-            name="model"
-            type="com.zegocloud.zimkit.components.message.model.ZIMKitEmojiItemModel" />
+    <variable
+      name="model"
+      type="com.zegocloud.zimkit.components.message.model.ZIMKitEmojiItemModel" />
 
-    </data>
+  </data>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+  <androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
 
-        <TextView
-            android:id="@+id/tv_emoji"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@{model.emojiContent}"
-            android:textSize="25dp"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+    <TextView
+      android:id="@+id/tv_emoji"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="@{model.emojiContent}"
+      android:textColor="@color/black"
+      android:textSize="24dp"
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintRight_toRightOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+  </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

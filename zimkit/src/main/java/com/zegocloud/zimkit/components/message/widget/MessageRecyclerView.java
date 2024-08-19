@@ -2,40 +2,42 @@ package com.zegocloud.zimkit.components.message.widget;
 
 import static android.content.Context.CLIPBOARD_SERVICE;
 
-import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Environment;
-import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.view.GestureDetector;
-import android.view.MotionEvent;
 import android.view.View;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SimpleItemAnimator;
-
+import com.zegocloud.zimkit.R;
 import com.zegocloud.zimkit.common.base.BaseDialog;
 import com.zegocloud.zimkit.common.components.CustomLinearLayoutManager;
-import com.zegocloud.zimkit.common.utils.PermissionHelper;
 import com.zegocloud.zimkit.common.utils.ZIMKitCustomToastUtil;
 import com.zegocloud.zimkit.common.utils.ZIMKitDateUtils;
 import com.zegocloud.zimkit.common.utils.ZIMKitSPUtils;
 import com.zegocloud.zimkit.common.utils.ZIMKitToastUtils;
 import com.zegocloud.zimkit.common.utils.ZLog;
 import com.zegocloud.zimkit.components.message.adapter.ZIMKitMessageAdapter;
+import com.zegocloud.zimkit.components.message.model.AudioMessageModel;
+import com.zegocloud.zimkit.components.message.model.FileMessageModel;
+import com.zegocloud.zimkit.components.message.model.TextMessageModel;
+import com.zegocloud.zimkit.components.message.model.ZIMKitMessageModel;
 import com.zegocloud.zimkit.components.message.viewmodel.ZIMKitMessageVM;
 import com.zegocloud.zimkit.components.message.widget.interfaces.IMessageLayout;
 import com.zegocloud.zimkit.components.message.widget.interfaces.OnItemClickListener;
 import com.zegocloud.zimkit.components.message.widget.interfaces.OnPopActionClickListener;
+import com.zegocloud.zimkit.services.internal.ZIMKitCore;
+import im.zego.zim.callback.ZIMMessageDeletedCallback;
+import im.zego.zim.callback.ZIMMessageRevokedCallback;
+import im.zego.zim.entity.ZIMError;
+import im.zego.zim.entity.ZIMMessage;
+import im.zego.zim.enums.ZIMConversationType;
+import im.zego.zim.enums.ZIMErrorCode;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -44,23 +46,11 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import im.zego.zim.callback.ZIMMessageDeletedCallback;
-import im.zego.zim.entity.ZIMError;
-import im.zego.zim.entity.ZIMMessage;
-import im.zego.zim.enums.ZIMConversationType;
-import im.zego.zim.enums.ZIMErrorCode;
-import com.zegocloud.zimkit.R;
-import com.zegocloud.zimkit.components.message.model.AudioMessageModel;
-import com.zegocloud.zimkit.components.message.model.FileMessageModel;
-import com.zegocloud.zimkit.components.message.model.TextMessageModel;
-import com.zegocloud.zimkit.components.message.model.ZIMKitMessageModel;
-import com.zegocloud.zimkit.services.internal.ZIMKitCore;
-
 
 public class MessageRecyclerView extends RecyclerView implements IMessageLayout {
 
     public static final String rootPath =
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/ZIMKit";
+        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/ZIMKit";
 
     // Take a large enough offset to ensure that you can scroll to the bottom in one go
     private static final int SCROLL_TO_END_OFFSET = -999999;
@@ -111,32 +101,34 @@ public class MessageRecyclerView extends RecyclerView implements IMessageLayout 
         }
 
         if (getContext() != null) {
-            addItemDecoration(new ZIMKitMessageTimeLineDecoration(getContext(), new ZIMKitMessageTimeLineDecoration.DecorationCallback() {
-                @Override
-                public boolean needAddTimeLine(int position) {
-                    if (position < 0) {
-                        return false;
+            addItemDecoration(new ZIMKitMessageTimeLineDecoration(getContext(),
+                new ZIMKitMessageTimeLineDecoration.DecorationCallback() {
+                    @Override
+                    public boolean needAddTimeLine(int position) {
+                        if (position < 0) {
+                            return false;
+                        }
+                        if (position == 0) {
+                            return mAdapter.getData().get(position).getMessage() != null;
+                        }
+                        ZIMMessage nowMessage = mAdapter.getData().get(position).getMessage();
+                        ZIMMessage lastMessage = mAdapter.getData().get(position - 1).getMessage();
+                        if (nowMessage == null || lastMessage == null) {
+                            return false;
+                        } else {
+                            return (nowMessage.getTimestamp() - lastMessage.getTimestamp()) > mTimeLineInterval;
+                        }
                     }
-                    if (position == 0) {
-                        return mAdapter.getData().get(position).getMessage() != null;
-                    }
-                    ZIMMessage nowMessage = mAdapter.getData().get(position).getMessage();
-                    ZIMMessage lastMessage = mAdapter.getData().get(position - 1).getMessage();
-                    if (nowMessage == null || lastMessage == null) {
-                        return false;
-                    } else {
-                        return (nowMessage.getTimestamp() - lastMessage.getTimestamp()) > mTimeLineInterval;
-                    }
-                }
 
-                @Override
-                public String getTimeLine(int position) {
-                    if (position < 0) {
-                        return "";
+                    @Override
+                    public String getTimeLine(int position) {
+                        if (position < 0) {
+                            return "";
+                        }
+                        return ZIMKitDateUtils.getMessageDate(
+                            mAdapter.getData().get(position).getMessage().getTimestamp(), true);
                     }
-                    return ZIMKitDateUtils.getMessageDate(mAdapter.getData().get(position).getMessage().getTimestamp(), true);
-                }
-            }));
+                }));
         }
 
         setOnScrollListener(new OnScrollListener() {
@@ -149,8 +141,6 @@ public class MessageRecyclerView extends RecyclerView implements IMessageLayout 
                 super.onScrollStateChanged(recyclerView, newState);
             }
         });
-
-        setClickEmptySpaceEvent();
     }
 
     public void setContent(ZIMConversationType conversationType, ZIMKitMessageVM mViewModel) {
@@ -160,7 +150,7 @@ public class MessageRecyclerView extends RecyclerView implements IMessageLayout 
 
     public void showItemPopMenu(final ZIMKitMessageModel messageInfo, View view) {
         initPopActions(messageInfo);
-        if (mPopActions.size() == 0) {
+        if (mPopActions.isEmpty()) {
             return;
         }
 
@@ -173,14 +163,14 @@ public class MessageRecyclerView extends RecyclerView implements IMessageLayout 
         int[] location = new int[2];
         getLocationOnScreen(location);
         mMessagePopMenu.show(view, location[1]);
-//        mMessagePopMenu.setEmptySpaceClickListener(new MessageRecyclerView.OnEmptySpaceClickListener() {
-//            @Override
-//            public void onClick() {
-//                if (mEmptySpaceClickListener != null) {
-//                    mEmptySpaceClickListener.onClick();
-//                }
-//            }
-//        });
+        //        mMessagePopMenu.setEmptySpaceClickListener(new MessageRecyclerView.OnEmptySpaceClickListener() {
+        //            @Override
+        //            public void onClick() {
+        //                if (mEmptySpaceClickListener != null) {
+        //                    mEmptySpaceClickListener.onClick();
+        //                }
+        //            }
+        //        });
     }
 
     /**
@@ -201,25 +191,62 @@ public class MessageRecyclerView extends RecyclerView implements IMessageLayout 
         if (model instanceof AudioMessageModel) {
             boolean isSpeaker = ZIMKitSPUtils.getBoolean(ZIMKitSPUtils.KEY_AUDIO_PLAY_MODE, true);
             action = new MessagePopMenu.ChatPopMenuAction();
-            action.setActionName(getContext().getString(isSpeaker ? R.string.zimkit_option_speaker_off : R.string.zimkit_option_speaker_on));
-            action.setActionIcon(isSpeaker ? R.mipmap.zimkit_icon_pop_menu_earpiece : R.mipmap.zimkit_icon_pop_menu_speakers);
+            action.setActionName(getContext().getString(
+                isSpeaker ? R.string.zimkit_option_speaker_off : R.string.zimkit_option_speaker_on));
+            action.setActionIcon(
+                isSpeaker ? R.drawable.zimkit_icon_reaction_earpiece : R.drawable.zimkit_icon_reaction_speaker);
             action.setActionClickListener(() -> {
                 mAdapter.setAudioPlayByEarPhone(!isSpeaker);
                 ZIMKitSPUtils.putBoolean(ZIMKitSPUtils.KEY_AUDIO_PLAY_MODE, !isSpeaker);
                 if (isSpeaker) {
-                    ZIMKitCustomToastUtil.showToast(getContext(), getContext().getString(R.string.zimkit_speaker_off_tip), R.mipmap.zimkit_icon_pop_menu_earpiece);
+                    ZIMKitCustomToastUtil.showToast(getContext(),
+                        getContext().getString(R.string.zimkit_speaker_off_tip),
+                        R.drawable.zimkit_icon_reaction_earpiece);
                 } else {
-                    ZIMKitCustomToastUtil.showToast(getContext(), getContext().getString(R.string.zimkit_speaker_on_tip), R.mipmap.zimkit_icon_pop_menu_speakers);
+                    ZIMKitCustomToastUtil.showToast(getContext(),
+                        getContext().getString(R.string.zimkit_speaker_on_tip),
+                        R.drawable.zimkit_icon_reaction_speaker);
                 }
 
             });
             actions.add(action);
         }
 
+        //Text Copy
+        if (model instanceof TextMessageModel) {
+            action = new MessagePopMenu.ChatPopMenuAction();
+            action.setActionName(getContext().getString(R.string.zimkit_option_copy));
+            action.setActionIcon(R.drawable.zimkit_icon_reaction_copy);
+            action.setActionClickListener(() -> copy(((TextMessageModel) model).getContent()));
+            actions.add(action);
+        }
+
+        //        //File Saving
+        if (model instanceof FileMessageModel) {
+            if (!TextUtils.isEmpty(((FileMessageModel) model).getFileLocalPath())) {
+                action = new MessagePopMenu.ChatPopMenuAction();
+                action.setActionName(getContext().getString(R.string.zimkit_option_save));
+                action.setActionIcon(R.drawable.zimkit_icon_reaction_save);
+                action.setActionClickListener(() -> downloadFile(((FileMessageModel) model).getFileLocalPath()));
+                actions.add(action);
+            }
+        }
+
+        //Multiple Choice
+        action = new MessagePopMenu.ChatPopMenuAction();
+        action.setActionName(getContext().getString(R.string.zimkit_multi_select));
+        action.setActionIcon(R.drawable.zimkit_icon_reaction_multi_select);
+        action.setActionClickListener(() -> {
+            if (mOnPopActionClickListener != null) {
+                mOnPopActionClickListener.onMultiSelectMessageClick(model);
+            }
+        });
+        actions.add(action);
+
         //Delete
         action = new MessagePopMenu.ChatPopMenuAction();
         action.setActionName(getContext().getString(R.string.zimkit_option_delete));
-        action.setActionIcon(R.mipmap.zimkit_icon_pop_menu_delete);
+        action.setActionIcon(R.drawable.zimkit_icon_reaction_delete);
         action.setActionClickListener(() -> {
             if (mMessagePopMenu != null) {
                 mMessagePopMenu.hide();
@@ -240,40 +267,37 @@ public class MessageRecyclerView extends RecyclerView implements IMessageLayout 
         });
         actions.add(action);
 
-        //Text Copy
-        if (model instanceof TextMessageModel) {
-            action = new MessagePopMenu.ChatPopMenuAction();
-            action.setActionName(getContext().getString(R.string.zimkit_option_copy));
-            action.setActionIcon(R.mipmap.zimkit_icon_pop_menu_copy);
-            action.setActionClickListener(() -> copy(((TextMessageModel) model).getContent()));
-            actions.add(action);
-        }
+        long duration = System.currentTimeMillis() - model.getMessage().getTimestamp();
 
-        //File Saving
-        if (model instanceof FileMessageModel) {
-            if (!TextUtils.isEmpty(((FileMessageModel) model).getFileLocalPath())) {
-                action = new MessagePopMenu.ChatPopMenuAction();
-                action.setActionName(getContext().getString(R.string.zimkit_option_save));
-                action.setActionIcon(R.mipmap.zimkit_icon_pop_menu_save);
-                action.setActionClickListener(() -> downloadFile(((FileMessageModel) model).getFileLocalPath()));
-                actions.add(action);
-            }
-        }
-
-        //Multiple Choice
-        action = new MessagePopMenu.ChatPopMenuAction();
-        action.setActionName(getContext().getString(R.string.zimkit_multi_select));
-        action.setActionIcon(R.mipmap.zimkit_icon_pop_menu_multiselect);
-        action.setActionClickListener(() -> {
-            if (mOnPopActionClickListener != null) {
-                mOnPopActionClickListener.onMultiSelectMessageClick(model);
-            }
-        });
-        actions.add(action);
+//        if (model.getMessage().getSenderUserID().equals(ZIMKit.getLocalUser().getId())) {
+//            //TODO should be server time.
+//            if (duration < 2 * 60 * 1000) {
+//                action = new MessagePopMenu.ChatPopMenuAction();
+//                action.setActionName(getContext().getString(R.string.zimkit_message_withdraw));
+//                action.setActionIcon(R.drawable.zimkit_icon_reaction_withdraw);
+//                action.setActionClickListener(() -> {
+//                    withDrawMessage(model);
+//                });
+//                actions.add(action);
+//            }
+//        }
 
         mPopActions.clear();
         mPopActions.addAll(actions);
         mPopActions.addAll(mMorePopActions);
+    }
+
+    private static final String TAG = "MessageRecyclerView";
+
+    private void withDrawMessage(ZIMKitMessageModel model) {
+        mViewModel.withDrawMessage(model, new ZIMMessageRevokedCallback() {
+            @Override
+            public void onMessageRevoked(ZIMMessage message, ZIMError errorInfo) {
+                if (errorInfo.code == ZIMErrorCode.SUCCESS) {
+                    mAdapter.deleteMessages(model);
+                }
+            }
+        });
     }
 
     public void setAdapterListener() {
@@ -281,33 +305,6 @@ public class MessageRecyclerView extends RecyclerView implements IMessageLayout 
             @Override
             public void onMessageLongClick(View view, int position, ZIMKitMessageModel messageInfo) {
                 showItemPopMenu(messageInfo, view);
-            }
-        });
-    }
-
-    /**
-     * Click on the blank area
-     */
-    private void setClickEmptySpaceEvent() {
-        GestureDetector.OnGestureListener gestureListener = new GestureDetector.SimpleOnGestureListener() {
-            @Override
-            public boolean onSingleTapUp(MotionEvent e) {
-                if (mEmptySpaceClickListener != null) {
-                    mEmptySpaceClickListener.onClick();
-                    return true;
-                }
-                return false;
-            }
-        };
-
-        GestureDetector gestureDetector = new GestureDetector(getContext(), gestureListener);
-        setOnTouchListener(new OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (v instanceof RecyclerView) {
-                    gestureDetector.onTouchEvent(event);
-                }
-                return false;
             }
         });
     }
@@ -338,6 +335,7 @@ public class MessageRecyclerView extends RecyclerView implements IMessageLayout 
     }
 
     public interface OnEmptySpaceClickListener {
+
         void onClick();
     }
 
@@ -346,7 +344,8 @@ public class MessageRecyclerView extends RecyclerView implements IMessageLayout 
         messageList.add(model.getMessage());
         mViewModel.deleteMessage(messageList, conversationType, new ZIMMessageDeletedCallback() {
             @Override
-            public void onMessageDeleted(String conversationID, ZIMConversationType conversationType, ZIMError errorInfo) {
+            public void onMessageDeleted(String conversationID, ZIMConversationType conversationType,
+                ZIMError errorInfo) {
                 if (errorInfo.code == ZIMErrorCode.SUCCESS) {
                     mAdapter.deleteMessages(model);
                 }
@@ -365,32 +364,6 @@ public class MessageRecyclerView extends RecyclerView implements IMessageLayout 
                 ((LinearLayoutManager) layoutManager).scrollToPositionWithOffset(itemCount - 1, SCROLL_TO_END_OFFSET);
             }
         }
-    }
-
-    private void requestPermission(String fileName, String filePath) {
-        PermissionHelper.onWriteSDCardPermissionGranted((FragmentActivity) getContext(), new PermissionHelper.GrantResult() {
-            @Override
-            public void onGrantResult(boolean allGranted) {
-                if (allGranted) {
-                    downloadFile(filePath);
-                } else {
-                    BaseDialog baseDialog = new BaseDialog(getContext());
-                    baseDialog.setMsgTitle(getContext().getString(R.string.zimkit_storage_permissions_tip));
-                    baseDialog.setMsgContent(getContext().getString(R.string.zimkit_storage_permissions_description));
-                    baseDialog.setLeftButtonContent(getContext().getString(R.string.zimkit_access_later));
-                    baseDialog.setRightButtonContent(getContext().getString(R.string.zimkit_go_setting));
-                    baseDialog.setSureListener(v -> {
-                        baseDialog.dismiss();
-                        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                                .setData(Uri.fromParts("package", getContext().getPackageName(), null));
-                        ((Activity) getContext()).startActivityForResult(intent, 666);
-                    });
-                    baseDialog.setCancelListener(v -> {
-                        baseDialog.dismiss();
-                    });
-                }
-            }
-        });
     }
 
     public static void downloadFile(String srcString) {
@@ -445,7 +418,9 @@ public class MessageRecyclerView extends RecyclerView implements IMessageLayout 
                 }
                 in.close();
                 out.close();
-                ZIMKitToastUtils.showToast(String.format(ZIMKitCore.getInstance().getApplication().getString(R.string.zimkit_file_save_path_tip), dest.getName()));
+                ZIMKitToastUtils.showToast(String.format(
+                    ZIMKitCore.getInstance().getApplication().getString(R.string.zimkit_file_save_path_tip),
+                    dest.getName()));
             } catch (IOException e) {
                 e.printStackTrace();
                 ZIMKitToastUtils.showToast(R.string.zimkit_file_save_fail);

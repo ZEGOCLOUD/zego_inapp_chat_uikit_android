@@ -4,13 +4,15 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Pair;
-
+import android.view.View;
 import androidx.databinding.ObservableField;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
-
+import com.zegocloud.zimkit.R;
 import com.zegocloud.zimkit.common.ZIMKitConstant;
+import com.zegocloud.zimkit.services.ZIMKit;
 import im.zego.zim.enums.ZIMErrorCode;
+import java.util.Objects;
 
 public class ZIMKitCreateSingleChatVM extends ViewModel {
 
@@ -37,11 +39,15 @@ public class ZIMKitCreateSingleChatVM extends ViewModel {
         };
     }
 
-    public void createSingleChat() {
-        Bundle bundle = new Bundle();
-        bundle.putString(ZIMKitConstant.GroupPageConstant.KEY_TITLE, mId.get());
-        bundle.putString(ZIMKitConstant.GroupPageConstant.KEY_ID, mId.get());
-        toChat(ZIMErrorCode.SUCCESS, bundle);
+    public void createSingleChat(View view) {
+        if (Objects.equals(ZIMKit.getLocalUser().getId(), mId.get())) {
+            toChat(ZIMErrorCode.FAILED, view.getContext().getString(R.string.zimkit_cannot_chat_self));
+        } else {
+            Bundle bundle = new Bundle();
+            bundle.putString(ZIMKitConstant.GroupPageConstant.KEY_TITLE, mId.get());
+            bundle.putString(ZIMKitConstant.GroupPageConstant.KEY_ID, mId.get());
+            toChat(ZIMErrorCode.SUCCESS, bundle);
+        }
     }
 
     private void toChat(ZIMErrorCode errorCode, Object data) {

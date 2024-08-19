@@ -1,8 +1,8 @@
 package com.zegocloud.zimkit.services.callback;
 
-import com.zegocloud.zimkit.services.model.ZIMKitGroupMember;
+import com.zegocloud.zimkit.components.group.bean.ZIMKitGroupMemberInfo;
 import im.zego.zim.entity.ZIMError;
 
 public interface QueryGroupMemberInfoCallback {
-    void onQueryGroupMemberInfo(ZIMKitGroupMember member, ZIMError error);
+    void onQueryGroupMemberInfo(ZIMKitGroupMemberInfo member, ZIMError error);
 }

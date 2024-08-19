@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto">
+
+  <data>
+
+  </data>
+
+  <androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/audio_layout"
+    android:layout_width="match_parent"
+    android:layout_height="352dp"
+    android:clickable="true"
+    app:layout_constraintTop_toTopOf="parent">
+
+    <TextView
+      android:id="@+id/audio_record_time"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="20dp"
+      android:text="0:00"
+      android:textColor="@color/color_8e9093"
+      android:textSize="16sp"
+      android:visibility="gone"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+      android:id="@+id/audio_record_cancel_tips"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="31dp"
+      android:text="@string/audio_record_cancel_tips"
+      android:textColor="@color/color_ff3c48"
+      android:textSize="15sp"
+      android:visibility="gone"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
+
+    <com.zegocloud.zimkit.components.message.widget.input.ZIMKitAudioWaveView
+      android:id="@+id/audio_record_wave"
+      android:layout_width="match_parent"
+      android:layout_height="12dp"
+      android:layout_marginTop="51dp"
+      android:paddingStart="16dp"
+      android:paddingEnd="16dp"
+      android:visibility="invisible"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageButton
+      android:id="@+id/audio_record_press_icon"
+      android:layout_width="100dp"
+      android:layout_height="100dp"
+      android:layout_marginTop="171dp"
+      android:background="@drawable/zimkit_input_audio_layout_icon"
+      android:scaleType="center"
+      android:src="@drawable/zimkit_input_audio_record"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+      android:id="@+id/audio_record_press_text"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginBottom="15dp"
+      android:gravity="center"
+      android:text="@string/input_audio_press_hint"
+      android:textColor="@color/color_8e9093"
+      app:layout_constraintBottom_toTopOf="@+id/audio_record_press_icon"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent" />
+
+    <ImageView
+      android:id="@+id/audio_record_cancel_icon"
+      android:layout_width="28dp"
+      android:layout_height="28dp"
+      android:layout_marginBottom="56dp"
+      android:background="@drawable/zimkit_shape_circular_white"
+      android:scaleType="center"
+      android:src="@drawable/zimkit_input_audio_cancel"
+      android:visibility="invisible"
+      app:layout_constraintBottom_toTopOf="@+id/audio_record_press_icon"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent" />
+
+    <ImageView
+      android:id="@+id/audio_record_cancel_icon_large"
+      android:layout_width="70dp"
+      android:layout_height="70dp"
+      android:layout_marginBottom="36dp"
+      android:background="@drawable/zimkit_shape_circular_red"
+      android:scaleType="center"
+      android:src="@drawable/zimkit_input_audio_cancel_large"
+      android:visibility="gone"
+      app:layout_constraintBottom_toTopOf="@+id/audio_record_press_icon"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent" />
+
+  </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

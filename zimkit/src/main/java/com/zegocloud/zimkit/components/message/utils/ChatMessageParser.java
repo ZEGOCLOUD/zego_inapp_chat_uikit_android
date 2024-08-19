@@ -1,5 +1,6 @@
 package com.zegocloud.zimkit.components.message.utils;
 
+import com.zegocloud.zimkit.components.message.model.RevokeMessageModel;
 import com.zegocloud.zimkit.components.message.model.ZIMKitMessageModel;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,9 +45,13 @@ public class ChatMessageParser {
             case FILE:
                 message = new FileMessageModel();
                 break;
+            case REVOKE:
+                message = new RevokeMessageModel();
+                break;
             default:
                 message = new TextMessageModel();
-                ((TextMessageModel) message).setContent(ZIMKitCore.getInstance().getApplication().getString(R.string.zimkit_message_unknown));
+                ((TextMessageModel) message).setContent(
+                    ZIMKitCore.getInstance().getApplication().getString(R.string.zimkit_message_unknown));
                 break;
         }
 
@@ -71,6 +76,9 @@ public class ChatMessageParser {
         for (int i = 0; i < zimMessageList.size(); i++) {
             ZIMMessage timMessage = zimMessageList.get(i);
             ZIMKitMessageModel message = parseMessage(timMessage);
+            if (message instanceof RevokeMessageModel) {
+                continue;
+            }
             if (message != null) {
                 messageList.add(message);
             }

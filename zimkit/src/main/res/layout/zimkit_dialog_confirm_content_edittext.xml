@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:layout_width="wrap_content"
+  android:layout_height="wrap_content">
+
+  <androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="270dp"
+    android:layout_height="165dp"
+    android:background="@drawable/zimkit_shape_12dp_white">
+
+    <TextView
+      android:id="@+id/title"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="16dp"
+      android:textColor="@color/color_2a2a2a"
+      android:textSize="16sp"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+      android:id="@+id/content"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="16dp"
+      android:layout_marginTop="13dp"
+      android:layout_marginEnd="16dp"
+      android:background="@drawable/zimkit_shape_8dp_f1f4f8"
+      android:padding="12dp"
+      android:textColorHint="@color/color_8e9093"
+      android:textSize="14sp"
+      app:layout_constraintTop_toBottomOf="@id/title" />
+
+    <View
+      android:layout_width="match_parent"
+      android:layout_height="1dp"
+      android:layout_marginTop="17dp"
+      android:background="@color/color_F1F4F8"
+      app:layout_constraintTop_toBottomOf="@+id/content" />
+
+    <TextView
+      android:id="@+id/cancel"
+      android:layout_width="0dp"
+      android:layout_height="50dp"
+      android:layout_marginTop="16dp"
+      android:gravity="center"
+      android:text="@string/zimkit_cancel"
+      android:textSize="16sp"
+      app:layout_constraintEnd_toStartOf="@id/center"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/content" />
+
+    <View
+      android:id="@+id/center"
+      android:layout_width="1dp"
+      android:layout_height="50dp"
+      android:layout_marginTop="16dp"
+      android:background="@color/color_F1F4F8"
+      app:layout_constraintEnd_toStartOf="@id/confirm"
+      app:layout_constraintStart_toEndOf="@id/cancel"
+      app:layout_constraintTop_toBottomOf="@+id/content" />
+
+    <TextView
+      android:id="@+id/confirm"
+      android:layout_width="0dp"
+      android:layout_height="50dp"
+      android:layout_marginTop="16dp"
+      android:gravity="center"
+      android:text="@string/zimkit_confirm"
+      android:textColor="@color/album_3478fc"
+      android:textSize="16sp"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toEndOf="@id/center"
+      app:layout_constraintTop_toBottomOf="@+id/content" />
+  </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

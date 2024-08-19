@@ -3,26 +3,24 @@ package com.zegocloud.zimkit.components.message.utils;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.text.TextUtils;
-
+import com.zegocloud.zimkit.R;
 import com.zegocloud.zimkit.common.utils.ZIMKitFileUtils;
 import com.zegocloud.zimkit.common.utils.ZIMKitToastUtils;
-import com.zegocloud.zimkit.components.message.utils.image.ImageSizeUtils;
-import com.zegocloud.zimkit.services.ZIMKit;
-import java.io.File;
-
-import im.zego.zim.entity.ZIMAudioMessage;
-import im.zego.zim.entity.ZIMFileMessage;
-import im.zego.zim.entity.ZIMImageMessage;
-import im.zego.zim.entity.ZIMMessage;
-import im.zego.zim.entity.ZIMTextMessage;
-import im.zego.zim.entity.ZIMVideoMessage;
-import com.zegocloud.zimkit.R;
 import com.zegocloud.zimkit.components.message.model.AudioMessageModel;
 import com.zegocloud.zimkit.components.message.model.FileMessageModel;
 import com.zegocloud.zimkit.components.message.model.ImageMessageModel;
 import com.zegocloud.zimkit.components.message.model.TextMessageModel;
 import com.zegocloud.zimkit.components.message.model.VideoMessageModel;
 import com.zegocloud.zimkit.components.message.model.ZIMKitMessageModel;
+import com.zegocloud.zimkit.components.message.utils.image.ImageSizeUtils;
+import com.zegocloud.zimkit.services.ZIMKit;
+import im.zego.zim.entity.ZIMAudioMessage;
+import im.zego.zim.entity.ZIMFileMessage;
+import im.zego.zim.entity.ZIMImageMessage;
+import im.zego.zim.entity.ZIMMessage;
+import im.zego.zim.entity.ZIMTextMessage;
+import im.zego.zim.entity.ZIMVideoMessage;
+import java.io.File;
 import java.io.IOException;
 
 public class ChatMessageBuilder {
@@ -132,7 +130,8 @@ public class ChatMessageBuilder {
      * @param duration
      * @return
      */
-    public static ZIMKitMessageModel buildVideoMessage(String imgPath, String videoPath, int width, int height, long duration) {
+    public static ZIMKitMessageModel buildVideoMessage(String imgPath, String videoPath, int width, int height,
+        long duration) {
         ZIMVideoMessage message = new ZIMVideoMessage(videoPath, (int) duration / 1000);
         VideoMessageModel messageModel = new VideoMessageModel();
         messageModel.setCommonAttribute(message);
@@ -162,6 +161,10 @@ public class ChatMessageBuilder {
         if (file.exists()) {
             if (file.length() == 0) {
                 ZIMKitToastUtils.showToast(R.string.zimkit_file_empty_error_tips);
+                return null;
+            }
+            if (file.length() >= 100 * 1024 * 1024) {
+                ZIMKitToastUtils.showToast(R.string.zimkit_file_too_large);
                 return null;
             }
             ZIMFileMessage message = new ZIMFileMessage(filePath);

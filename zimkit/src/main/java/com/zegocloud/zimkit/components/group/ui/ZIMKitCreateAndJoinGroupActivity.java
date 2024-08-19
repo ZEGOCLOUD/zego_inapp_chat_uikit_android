@@ -74,7 +74,7 @@ public class ZIMKitCreateAndJoinGroupActivity extends
 
     private void showDialog(int titleRes, String msg) {
         new AlertDialog.Builder(this).setTitle(titleRes)
-                .setPositiveButton("ok", (dialog, id) -> dialog.cancel())
+                .setPositiveButton(R.string.zimkit_confirm, (dialog, id) -> dialog.cancel())
                 .setMessage(msg).show();
     }
 

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/zimkit_shape_12dp_topradius_white"
+    android:divider="@drawable/zimkit_shape_1px_e6e6e6"
+    android:dividerPadding="24dp"
+    android:orientation="vertical"
+    android:paddingTop="11dp"
+    android:paddingBottom="12dp"
+    android:showDividers="middle">
+
+    <FrameLayout
+      android:id="@+id/audio_call"
+      android:layout_width="match_parent"
+      android:layout_height="50dp"
+      android:background="?selectableItemBackground"
+      android:clickable="true">
+
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_gravity="center"
+        android:drawableStart="@drawable/zimkit_icon_audio_call"
+        android:drawablePadding="12dp"
+        android:gravity="center"
+        android:paddingLeft="24dp"
+        android:paddingRight="24dp"
+        android:text="@string/zimkit_audio_call"
+        android:textColor="@color/color_2a2a2a"
+        android:textSize="15sp" />
+    </FrameLayout>
+
+    <FrameLayout
+      android:id="@+id/video_call"
+      android:layout_width="match_parent"
+      android:layout_height="50dp"
+      android:background="?selectableItemBackground"
+      android:clickable="true"
+      android:paddingLeft="24dp"
+      android:paddingRight="24dp">
+
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:drawableStart="@drawable/zimkit_icon_video_call"
+        android:drawablePadding="12dp"
+        android:gravity="center"
+        android:text="@string/zimkit_video_call"
+        android:textColor="@color/color_2a2a2a"
+        android:textSize="15sp" />
+    </FrameLayout>
+
+    <FrameLayout
+      android:id="@+id/cancel"
+      android:layout_width="match_parent"
+      android:layout_height="50dp"
+      android:background="?selectableItemBackground"
+      android:clickable="true"
+      android:paddingLeft="24dp"
+      android:paddingRight="24dp">
+
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:drawablePadding="12dp"
+        android:text="@string/zimkit_cancel"
+        android:textColor="@color/color_2a2a2a"
+        android:textSize="15sp" />
+    </FrameLayout>
+
+  </LinearLayout>
+</layout>

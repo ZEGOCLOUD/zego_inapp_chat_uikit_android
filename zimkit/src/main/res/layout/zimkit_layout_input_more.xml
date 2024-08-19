@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <data>
+
+  </data>
+
+
+  <androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/color_F5F6F7">
+
+    <androidx.recyclerview.widget.RecyclerView
+      android:id="@+id/input_more_recyclerview"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content" />
+
+    <!--    <LinearLayout-->
+    <!--      android:id="@+id/take_pic"-->
+    <!--      android:layout_width="wrap_content"-->
+    <!--      android:layout_height="wrap_content"-->
+    <!--      android:layout_marginTop="20dp"-->
+    <!--      android:orientation="vertical"-->
+    <!--      app:layout_constraintEnd_toStartOf="@+id/audio_video_call"-->
+    <!--      app:layout_constraintHorizontal_chainStyle="spread"-->
+    <!--      app:layout_constraintStart_toStartOf="parent"-->
+    <!--      app:layout_constraintTop_toTopOf="parent">-->
+
+    <!--      <ImageView-->
+    <!--        android:layout_width="52dp"-->
+    <!--        android:layout_height="52dp"-->
+    <!--        android:layout_gravity="center"-->
+    <!--        android:background="@drawable/zimkit_shape_12dp_white"-->
+    <!--        android:scaleType="center"-->
+    <!--        android:src="@drawable/zimkit_more_camera" />-->
+
+    <!--      <TextView-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_gravity="center"-->
+    <!--        android:layout_marginTop="4dp"-->
+    <!--        android:gravity="center"-->
+    <!--        android:text="@string/zimkit_take_photo"-->
+    <!--        android:textColor="@color/color_646A73"-->
+    <!--        android:textSize="12sp" />-->
+    <!--    </LinearLayout>-->
+
+    <!--    <LinearLayout-->
+    <!--      android:id="@+id/audio_video_call"-->
+    <!--      android:layout_width="wrap_content"-->
+    <!--      android:layout_height="wrap_content"-->
+    <!--      android:layout_marginTop="20dp"-->
+    <!--      android:orientation="vertical"-->
+    <!--      app:layout_constraintEnd_toStartOf="@+id/cl_file"-->
+    <!--      app:layout_constraintStart_toEndOf="@id/take_pic"-->
+    <!--      app:layout_constraintTop_toTopOf="parent">-->
+
+    <!--      <ImageView-->
+    <!--        android:layout_width="52dp"-->
+    <!--        android:layout_height="52dp"-->
+    <!--        android:layout_gravity="center"-->
+    <!--        android:background="@drawable/zimkit_shape_12dp_white"-->
+    <!--        android:scaleType="center"-->
+    <!--        android:src="@drawable/zimkit_av_call" />-->
+
+    <!--      <TextView-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_gravity="center"-->
+    <!--        android:layout_marginTop="4dp"-->
+    <!--        android:gravity="center"-->
+    <!--        android:text="@string/zimkit_avcall"-->
+    <!--        android:textColor="@color/color_646A73"-->
+    <!--        android:textSize="12sp" />-->
+    <!--    </LinearLayout>-->
+
+    <!--    <LinearLayout-->
+    <!--      android:id="@+id/cl_file"-->
+    <!--      android:layout_width="wrap_content"-->
+    <!--      android:layout_height="wrap_content"-->
+    <!--      android:layout_marginTop="20dp"-->
+    <!--      android:orientation="vertical"-->
+    <!--      app:layout_constraintEnd_toStartOf="@id/input_empty"-->
+    <!--      app:layout_constraintStart_toEndOf="@+id/audio_video_call"-->
+    <!--      app:layout_constraintTop_toTopOf="parent">-->
+
+    <!--      <ImageView-->
+    <!--        android:layout_width="52dp"-->
+    <!--        android:layout_height="52dp"-->
+    <!--        android:layout_gravity="center"-->
+    <!--        android:background="@drawable/zimkit_shape_12dp_white"-->
+    <!--        android:scaleType="center"-->
+    <!--        android:src="@drawable/zimkit_icon_file" />-->
+
+    <!--      <TextView-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_gravity="center"-->
+    <!--        android:layout_marginTop="4dp"-->
+    <!--        android:text="@string/zimkit_file"-->
+    <!--        android:textColor="@color/color_646A73"-->
+    <!--        android:textSize="12sp" />-->
+
+    <!--    </LinearLayout>-->
+
+    <!--    <LinearLayout-->
+    <!--      android:id="@+id/input_empty"-->
+    <!--      android:layout_width="wrap_content"-->
+    <!--      android:layout_height="wrap_content"-->
+    <!--      android:layout_marginTop="20dp"-->
+    <!--      android:orientation="vertical"-->
+    <!--      app:layout_constraintEnd_toEndOf="parent"-->
+    <!--      app:layout_constraintStart_toEndOf="@id/cl_file"-->
+    <!--      app:layout_constraintTop_toTopOf="parent">-->
+
+    <!--      <ImageView-->
+    <!--        android:layout_width="52dp"-->
+    <!--        android:layout_height="52dp"-->
+    <!--        android:scaleType="center" />-->
+
+    <!--    </LinearLayout>-->
+
+  </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

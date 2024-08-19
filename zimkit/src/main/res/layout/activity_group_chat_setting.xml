@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools">
+
+  <data>
+
+  </data>
+
+  <androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_eff0f2"
+    tools:context=".components.message.ui.ZIMKitGroupChatSettingActivity">
+
+    <com.zegocloud.zimkit.common.components.widget.TitleBar
+      android:id="@+id/group_set_title_bar"
+      android:layout_width="match_parent"
+      android:layout_height="@dimen/title_bar_height"
+      android:background="@color/white"
+      app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+      android:id="@+id/group_set_members"
+      android:layout_width="match_parent"
+      android:layout_height="200dp"
+      android:layout_marginStart="16dp"
+      android:layout_marginTop="20dp"
+      android:layout_marginEnd="16dp"
+      android:background="@drawable/zimkit_shape_8dp_white"
+      app:layout_constraintTop_toBottomOf="@+id/group_set_title_bar">
+
+      <TextView
+        android:id="@+id/group_members"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/title_bar_height"
+        android:gravity="center"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:text="@string/chat_group_member"
+        android:textColor="@color/color_2a2a2a"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+      <TextView
+        android:id="@+id/group_members_count"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/title_bar_height"
+        android:drawableEnd="@drawable/zimkit_icon_group_item_next"
+        android:gravity="center"
+        android:paddingStart="9dp"
+        android:paddingEnd="9dp"
+        android:text="@string/group_members_detail"
+        android:textColor="@color/color_8e9093"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+      <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/group_chat_members_recyclerview"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/group_members" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <LinearLayout
+      android:id="@+id/chat_setting"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_margin="16dp"
+      android:background="@drawable/zimkit_shape_8dp_white"
+      android:orientation="vertical"
+      app:layout_constraintTop_toBottomOf="@+id/group_set_members">
+
+      <com.zegocloud.zimkit.components.message.ui.AsynchronousSwitch
+        android:id="@+id/do_not_disturb"
+        android:layout_width="match_parent"
+        android:layout_height="54dp"
+        android:background="?selectableItemBackground"
+        android:gravity="center_vertical"
+        android:paddingStart="15dp"
+        android:paddingEnd="9dp"
+        android:text="@string/do_not_disturb"
+        android:textSize="15sp" />
+
+      <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginStart="16dp"
+        android:background="@color/color_e6e6e6" />
+
+      <com.zegocloud.zimkit.components.message.ui.AsynchronousSwitch
+        android:id="@+id/pin_chat"
+        android:layout_width="match_parent"
+        android:layout_height="54dp"
+        android:layout_marginTop="1dp"
+        android:background="?selectableItemBackground"
+        android:gravity="center_vertical"
+        android:paddingStart="15dp"
+        android:paddingEnd="9dp"
+        android:text="@string/chat_pin"
+        android:textSize="15sp" />
+    </LinearLayout>
+  </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

@@ -2,30 +2,36 @@ package com.zegocloud.zimkit.components.message.adapter;
 
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
-
 import androidx.annotation.NonNull;
 import androidx.databinding.DataBindingUtil;
 import androidx.databinding.ViewDataBinding;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.zegocloud.zimkit.BR;
-import java.util.List;
-
 import com.zegocloud.zimkit.R;
 import com.zegocloud.zimkit.components.message.model.ZIMKitEmojiItemModel;
+import com.zegocloud.zimkit.components.message.utils.EmojiUtils;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ZIMKitEmojiAdapter extends RecyclerView.Adapter<ZIMKitEmojiAdapter.EmojiItemViewHolder> {
 
     private List<ZIMKitEmojiItemModel> mList;
 
-    public ZIMKitEmojiAdapter(List<ZIMKitEmojiItemModel> mList) {
-        this.mList = mList;
+    public ZIMKitEmojiAdapter() {
+        List<ZIMKitEmojiItemModel> emojiModel = new ArrayList<>();
+        List<String> emojis = EmojiUtils.createEmojiData();
+        for (String emoji : emojis) {
+            ZIMKitEmojiItemModel model = new ZIMKitEmojiItemModel(emoji);
+            emojiModel.add(model);
+        }
+        this.mList = emojiModel;
     }
 
     @NonNull
     @Override
     public EmojiItemViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        ViewDataBinding binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()), R.layout.zimkit_item_emoji, parent, false);
+        ViewDataBinding binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
+            R.layout.zimkit_item_emoji, parent, false);
         return new EmojiItemViewHolder(binding);
     }
 
@@ -46,6 +52,7 @@ public class ZIMKitEmojiAdapter extends RecyclerView.Adapter<ZIMKitEmojiAdapter.
     }
 
     public interface IOnItemClickListener {
+
         void onClick(ZIMKitEmojiItemModel model);
     }
 
@@ -56,6 +63,7 @@ public class ZIMKitEmojiAdapter extends RecyclerView.Adapter<ZIMKitEmojiAdapter.
     }
 
     public static class EmojiItemViewHolder extends RecyclerView.ViewHolder {
+
         private final ViewDataBinding mBinding;
 
         public EmojiItemViewHolder(ViewDataBinding binding) {

@@ -21,4 +21,6 @@
 
     <dimen name="album_item_height">72dp</dimen>
 
+    <dimen name="title_bar_height">54dp</dimen>
+
 </resources>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools">
+
+  <data>
+
+  </data>
+
+  <RelativeLayout
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_eff0f2"
+    tools:context=".components.group.ui.ZIMKitGroupMembersActivity">
+
+    <com.zegocloud.zimkit.common.components.widget.TitleBar
+      android:id="@+id/title"
+      android:layout_width="match_parent"
+      android:layout_height="@dimen/title_bar_height"
+      android:background="@color/white"
+      app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+      android:id="@+id/add"
+      android:layout_width="64dp"
+      android:layout_height="@dimen/title_bar_height"
+      android:layout_alignParentEnd="true"
+      android:gravity="center"
+      android:text="@string/zimkit_add"
+      android:textColor="@color/color_ff3478fc"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.recyclerview.widget.RecyclerView
+      android:id="@+id/recyclerview"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_below="@+id/title"
+      android:layout_marginTop="1dp"
+      android:background="@color/white"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/title" />
+  </RelativeLayout>
+</layout>

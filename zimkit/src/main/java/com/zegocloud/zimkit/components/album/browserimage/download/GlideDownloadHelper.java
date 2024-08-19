@@ -1,12 +1,19 @@
 package com.zegocloud.zimkit.components.album.browserimage.download;
 
+import android.app.Application;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Process;
 
+import android.provider.MediaStore;
 import com.zegocloud.zimkit.common.glide.ZIMKitGlideLoader;
+import com.zegocloud.zimkit.components.album.MimeType;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -77,6 +84,7 @@ public class GlideDownloadHelper {
             }
             String fileName = System.currentTimeMillis() + "_zimkit." + suffix;
             File originFile = startDownload();
+//            saveToSystem(fileName,suffix);
             File targetFile = new File(getCacheDir(), fileName);
             FileUtils.copy(originFile, targetFile);
             FileUtils.deleteFile(originFile);
@@ -88,6 +96,52 @@ public class GlideDownloadHelper {
                     getListener().success(url, targetFile.getAbsolutePath(), fileName);
                 }
             });
+        }
+
+        //  https://mp.weixin.qq.com/s?__biz=MzA5MzI3NjE2MA==&mid=2650249029&idx=1&sn=6ab18477950e5f4e1a14dc47ecc4f763&chksm=8863662abf14ef3c1500d64c106ab2e5a6c95e716ff6e57ba379e2aabca7b6046060ccb78af2&scene=21#wechat_redirect
+        //  https://developer.android.google.cn/training/data-storage/shared/media?hl=zh-cn#add-item
+
+        private void saveToSystem(String fileName,String extension) {
+            // Add a media item that other apps don't see until the item is
+            // fully written to the media store.
+            ContentResolver resolver = context.getApplicationContext().getContentResolver();
+
+            ContentValues imageDetails = new ContentValues();
+            imageDetails.put(MediaStore.Images.Media.DISPLAY_NAME, fileName);
+            imageDetails.put(MediaStore.Images.Media.IS_PENDING, 1);
+
+            String mimeType = null;
+            if ("jpg".equals(extension) || "jpeg".equals(extension)) {
+                mimeType = "image/jpeg";
+            } else if ("png".equals(extension)) {
+                mimeType = "image/png";
+            }
+            imageDetails.put(MediaStore.Images.Media.MIME_TYPE, mimeType);
+
+            Uri imageCollection;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                imageCollection = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY);
+                imageDetails.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES);
+            } else {
+                imageCollection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+                imageDetails.put(MediaStore.MediaColumns.DATA,
+                    Environment.getExternalStorageDirectory().getPath() + "/" + Environment.DIRECTORY_PICTURES + "/"
+                        + fileName);
+            }
+
+            Uri songContentUri = resolver.insert(imageCollection, imageDetails);
+
+            // "w" for write.
+//            try (ParcelFileDescriptor pfd = resolver.openFileDescriptor(songContentUri, "w", null)) {
+//                // Write data into the pending audio file.
+//            }
+
+            // Now that you're finished, release the "pending" status and let other apps
+            // play the audio track.
+            imageDetails.clear();
+            imageDetails.put(MediaStore.Audio.Media.IS_PENDING, 0);
+            resolver.update(songContentUri, imageDetails, null, null);
+
         }
 
         @Override

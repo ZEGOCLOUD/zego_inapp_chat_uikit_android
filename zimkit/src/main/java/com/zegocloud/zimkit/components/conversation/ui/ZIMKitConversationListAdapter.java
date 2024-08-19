@@ -2,16 +2,15 @@ package com.zegocloud.zimkit.components.conversation.ui;
 
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
-
 import androidx.annotation.NonNull;
 import androidx.databinding.DataBindingUtil;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.zegocloud.zimkit.common.adapter.BaseDifferRvAdapter;
-import com.zegocloud.zimkit.components.conversation.ui.ZIMKitConversationListAdapter.ConversationItemViewHolder;
 import com.zegocloud.zimkit.R;
+import com.zegocloud.zimkit.common.adapter.BaseDifferRvAdapter;
 import com.zegocloud.zimkit.components.conversation.model.ZIMKitConversationModel;
+import com.zegocloud.zimkit.components.conversation.ui.ZIMKitConversationListAdapter.ConversationItemViewHolder;
 import com.zegocloud.zimkit.databinding.ZimkitItemConversationBinding;
+import java.util.Objects;
 
 public class ZIMKitConversationListAdapter extends
     BaseDifferRvAdapter<ConversationItemViewHolder, ZIMKitConversationModel> {
@@ -22,23 +21,23 @@ public class ZIMKitConversationListAdapter extends
     }
 
     @Override
-    protected boolean contentsTheSame(@NonNull ZIMKitConversationModel oldItem, @NonNull ZIMKitConversationModel newItem) {
+    protected boolean contentsTheSame(@NonNull ZIMKitConversationModel oldItem,
+        @NonNull ZIMKitConversationModel newItem) {
+        boolean lastMessageChanged = Objects.equals(oldItem.getLastMsgContent(), newItem.getLastMsgContent());
         return oldItem.getConversation().unreadMessageCount == newItem.getConversation().unreadMessageCount
-                && oldItem.getConversation().conversationName.equals(newItem.getConversation().conversationName)
-                && (oldItem.getConversation().lastMessage == null ? 0 : oldItem.getConversation().lastMessage.getTimestamp())
-                == (newItem.getConversation().lastMessage == null ? 0 : newItem.getConversation().lastMessage.getTimestamp())
-                && oldItem.getSendState() == newItem.getSendState();
+            && oldItem.getConversation().conversationName.equals(newItem.getConversation().conversationName)
+            && lastMessageChanged
+            && (oldItem.getConversation().lastMessage == null ? 0 : oldItem.getConversation().lastMessage.getTimestamp())
+                == (newItem.getConversation().lastMessage == null ? 0
+                : newItem.getConversation().lastMessage.getTimestamp())
+            && oldItem.getSendState() == newItem.getSendState()
+            && oldItem.isPinned() == newItem.isPinned()
+            && oldItem.isDoNotDisturb() == newItem.isDoNotDisturb();
     }
 
     @Override
     protected void onBind(ConversationItemViewHolder holder, ZIMKitConversationModel model, int position) {
         holder.bind(model);
-        holder.mBinding.getRoot().setOnLongClickListener(v -> {
-            if (mLongClickListener != null) {
-                mLongClickListener.onLongClick(model);
-            }
-            return true;
-        });
         holder.mBinding.getRoot().setOnClickListener(v -> {
             if (mOnClickListener != null) {
                 mOnClickListener.onClick(model);
@@ -46,17 +45,24 @@ public class ZIMKitConversationListAdapter extends
         });
     }
 
+    public ZIMKitConversationModel getModel(int position) {
+        return mDiffer.getCurrentList().get(position);
+    }
+
     @Override
     protected ConversationItemViewHolder getHolder(@NonNull ViewGroup parent, int position) {
-        ZimkitItemConversationBinding binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()), R.layout.zimkit_item_conversation, parent, false);
+        ZimkitItemConversationBinding binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
+            R.layout.zimkit_item_conversation, parent, false);
         return new ConversationItemViewHolder(binding);
     }
 
     public interface ILongClickListener {
+
         void onLongClick(ZIMKitConversationModel model);
     }
 
     public interface IOnItemClickListener {
+
         void onClick(ZIMKitConversationModel model);
     }
 
@@ -72,6 +78,7 @@ public class ZIMKitConversationListAdapter extends
     }
 
     public static class ConversationItemViewHolder extends RecyclerView.ViewHolder {
+
         private final ZimkitItemConversationBinding mBinding;
 
         public ConversationItemViewHolder(ZimkitItemConversationBinding binding) {

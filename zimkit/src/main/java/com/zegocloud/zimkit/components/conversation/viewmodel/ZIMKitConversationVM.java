@@ -2,14 +2,13 @@ package com.zegocloud.zimkit.components.conversation.viewmodel;
 
 import androidx.databinding.ObservableField;
 import androidx.lifecycle.ViewModel;
-
+import com.zegocloud.zimkit.components.conversation.model.ZIMKitConversationModel;
 import com.zegocloud.zimkit.services.ZIMKit;
 import com.zegocloud.zimkit.services.ZIMKitDelegate;
+import com.zegocloud.zimkit.services.callback.GetConversationListCallback;
 import com.zegocloud.zimkit.services.callback.LoadMoreConversationCallback;
+import com.zegocloud.zimkit.services.internal.ZIMKitCore;
 import com.zegocloud.zimkit.services.model.ZIMKitConversation;
-import java.util.ArrayList;
-import java.util.TreeSet;
-
 import im.zego.zim.entity.ZIMConversation;
 import im.zego.zim.entity.ZIMError;
 import im.zego.zim.enums.ZIMConnectionEvent;
@@ -17,9 +16,8 @@ import im.zego.zim.enums.ZIMConnectionState;
 import im.zego.zim.enums.ZIMConversationEvent;
 import im.zego.zim.enums.ZIMConversationType;
 import im.zego.zim.enums.ZIMErrorCode;
-import com.zegocloud.zimkit.components.conversation.model.ZIMKitConversationModel;
-import com.zegocloud.zimkit.services.callback.GetConversationListCallback;
-import com.zegocloud.zimkit.services.internal.ZIMKitCore;
+import java.util.ArrayList;
+import java.util.TreeSet;
 
 public class ZIMKitConversationVM extends ViewModel {
 
@@ -68,7 +66,8 @@ public class ZIMKitConversationVM extends ViewModel {
             mItemModelCacheTreeSet.clear();
             if (!conversations.isEmpty()) {
                 for (ZIMKitConversation info : conversations) {
-                    ZIMKitConversationModel viewModel = new ZIMKitConversationModel(info.getZim(), ZIMConversationEvent.ADDED);
+                    ZIMKitConversationModel viewModel = new ZIMKitConversationModel(info.getZimConversation(),
+                        ZIMConversationEvent.ADDED);
                     mItemModelCacheTreeSet.add(viewModel);
                 }
             }
@@ -114,7 +113,10 @@ public class ZIMKitConversationVM extends ViewModel {
         }
         ArrayList<ZIMKitConversationModel> newViewModels = new ArrayList<>();
         for (ZIMKitConversation zimConversation : newConversationList) {
-            newViewModels.add(new ZIMKitConversationModel(zimConversation.getZim(), ZIMConversationEvent.ADDED));
+            ZIMKitConversationModel conversationModel = new ZIMKitConversationModel(zimConversation.getZimConversation(),
+                ZIMConversationEvent.ADDED);
+            newViewModels.add(conversationModel);
+            mItemModelCacheTreeSet.remove(conversationModel);
         }
         mItemModelCacheTreeSet.addAll(newViewModels);
         postList(false, true, null, state);
@@ -151,6 +153,7 @@ public class ZIMKitConversationVM extends ViewModel {
     }
 
     public static class LoadData {
+
         public final static int DATA_STATE_CHANGE = 0;
         public final static int DATA_STATE_LOAD_FIRST = 1;
         public final static int DATA_STATE_LOAD_NEXT = 2;
@@ -173,6 +176,7 @@ public class ZIMKitConversationVM extends ViewModel {
     }
 
     public interface OnLoadConversationListener {
+
         void onSuccess(LoadData data);
 
         void onFail(ZIMError error);
@@ -183,6 +187,7 @@ public class ZIMKitConversationVM extends ViewModel {
     }
 
     public interface IConnectionStateListener {
+
         void onConnectionStateChange(ZIMConnectionEvent connectionEvent, ZIMConnectionState connectionState);
     }
 

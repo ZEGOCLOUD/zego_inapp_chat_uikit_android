@@ -17,13 +17,13 @@ public class ZIMKitConversation {
     private int unreadMessageCount;
     private ZIMKitMessage lastMessage;
     private long orderKey;
-    private ZIMConversation zim;
+    private ZIMConversation zimConversation;
 
     public ZIMKitConversation(ZIMConversation conversation) {
         if (conversation == null) {
             return;
         }
-        this.zim = conversation;
+        this.zimConversation = conversation;
         this.setId(conversation.conversationID);
         this.setName(conversation);
         this.setAvatarUrl(conversation.conversationAvatarUrl);
@@ -100,11 +100,11 @@ public class ZIMKitConversation {
         this.orderKey = orderKey;
     }
 
-    public ZIMConversation getZim() {
-        return zim;
+    public ZIMConversation getZimConversation() {
+        return zimConversation;
     }
 
-    public void setZim(ZIMConversation zim) {
-        this.zim = zim;
+    public void setZimConversation(ZIMConversation zimConversation) {
+        this.zimConversation = zimConversation;
     }
 }

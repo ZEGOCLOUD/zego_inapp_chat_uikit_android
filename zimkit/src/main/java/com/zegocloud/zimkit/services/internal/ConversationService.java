@@ -4,6 +4,9 @@ import com.zegocloud.zimkit.services.callback.ClearUnreadCountCallback;
 import com.zegocloud.zimkit.services.callback.DeleteConversationCallback;
 import com.zegocloud.zimkit.services.callback.LoadMoreConversationCallback;
 import com.zegocloud.zimkit.services.model.ZIMKitConversation;
+import im.zego.zim.callback.ZIMConversationNotificationStatusSetCallback;
+import im.zego.zim.callback.ZIMConversationPinnedStateUpdatedCallback;
+import im.zego.zim.enums.ZIMConversationNotificationStatus;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -39,41 +42,47 @@ public class ConversationService {
         }
     }
 
-    public void deleteConversation(String conversationID, ZIMConversationType type, DeleteConversationCallback callback) {
-        ZIMKitCore.getInstance().zim().deleteConversation(conversationID, type, new ZIMConversationDeleteConfig(), (conversationID1, conversationType, errorInfo) -> {
-            if (errorInfo.code == ZIMErrorCode.SUCCESS) {
-                Iterator<ZIMKitConversation> iterator = ZIMKitCore.getInstance().getConversations().iterator();
-                while (iterator.hasNext()) {
-                    ZIMKitConversation model = iterator.next();
-                    if (model.getId().equals(conversationID) && conversationType == model.getType()) {
-                        iterator.remove();
-                        break;
+    public void deleteConversation(String conversationID, ZIMConversationType type,
+        DeleteConversationCallback callback) {
+        ZIMKitCore.getInstance().zim().deleteConversation(conversationID, type, new ZIMConversationDeleteConfig(),
+            (conversationID1, conversationType, errorInfo) -> {
+                if (errorInfo.code == ZIMErrorCode.SUCCESS) {
+                    Iterator<ZIMKitConversation> iterator = ZIMKitCore.getInstance().getConversations().iterator();
+                    while (iterator.hasNext()) {
+                        ZIMKitConversation model = iterator.next();
+                        if (model.getId().equals(conversationID) && conversationType == model.getType()) {
+                            iterator.remove();
+                            break;
+                        }
                     }
                 }
-            }
-            if (callback != null) {
-                callback.onDeleteConversation(errorInfo);
-            }
+                if (callback != null) {
+                    callback.onDeleteConversation(errorInfo);
+                }
 
-            ZIMKitCore.getInstance().getZimkitNotifyList().notifyAllListener(zimKitDelegate -> {
-                zimKitDelegate.onConversationListChanged(new ArrayList<>(ZIMKitCore.getInstance().getConversations()));
+                ZIMKitCore.getInstance().getZimkitNotifyList().notifyAllListener(zimKitDelegate -> {
+                    zimKitDelegate.onConversationListChanged(
+                        new ArrayList<>(ZIMKitCore.getInstance().getConversations()));
+                });
+
             });
-
-        });
     }
 
     public void clearUnreadCount(String conversationID, ZIMConversationType type, ClearUnreadCountCallback callback) {
-        ZIMKitCore.getInstance().zim().clearConversationUnreadMessageCount(conversationID, type, new ZIMConversationUnreadMessageCountClearedCallback() {
-            @Override
-            public void onConversationUnreadMessageCountCleared(String conversationID, ZIMConversationType conversationType, ZIMError errorInfo) {
-                if (callback != null) {
-                    callback.onClearUnreadCount(errorInfo);
+        ZIMKitCore.getInstance().zim().clearConversationUnreadMessageCount(conversationID, type,
+            new ZIMConversationUnreadMessageCountClearedCallback() {
+                @Override
+                public void onConversationUnreadMessageCountCleared(String conversationID,
+                    ZIMConversationType conversationType, ZIMError errorInfo) {
+                    if (callback != null) {
+                        callback.onClearUnreadCount(errorInfo);
+                    }
                 }
-            }
-        });
+            });
     }
 
-    public void loadMoreConversation(boolean isCallbackListChanged, ZIMConversation conversation, LoadMoreConversationCallback callback) {
+    public void loadMoreConversation(boolean isCallbackListChanged, ZIMConversation conversation,
+        LoadMoreConversationCallback callback) {
 
         ZIMConversationQueryConfig config = new ZIMConversationQueryConfig();
         config.count = MAX_PAGE_COUNT;
@@ -91,7 +100,8 @@ public class ConversationService {
 
             if (isCallbackListChanged) {
                 ZIMKitCore.getInstance().getZimkitNotifyList().notifyAllListener(zimKitDelegate -> {
-                    zimKitDelegate.onConversationListChanged(new ArrayList<>(ZIMKitCore.getInstance().getConversations()));
+                    zimKitDelegate.onConversationListChanged(
+                        new ArrayList<>(ZIMKitCore.getInstance().getConversations()));
                 });
             }
 
@@ -110,4 +120,15 @@ public class ConversationService {
         ZIMKitCore.getInstance().getConversations().addAll(newViewModels);
     }
 
+    public void updateConversationPinnedState(boolean isPinned, String conversationID,
+        ZIMConversationType conversationType, ZIMConversationPinnedStateUpdatedCallback callback) {
+        ZIMKitCore.getInstance().zim()
+            .updateConversationPinnedState(isPinned, conversationID, conversationType, callback);
+    }
+
+    public void setConversationNotificationStatus(ZIMConversationNotificationStatus status, String conversationID,
+        ZIMConversationType conversationType, ZIMConversationNotificationStatusSetCallback callback) {
+        ZIMKitCore.getInstance().zim()
+            .setConversationNotificationStatus(status, conversationID, conversationType, callback);
+    }
 }

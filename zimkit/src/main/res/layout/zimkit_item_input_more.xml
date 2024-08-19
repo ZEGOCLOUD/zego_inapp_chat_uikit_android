@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto">
+
+  <data>
+
+    <variable
+      name="model"
+      type="com.zegocloud.zimkit.components.message.model.ZIMKitInputButtonModel" />
+
+  </data>
+
+  <LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="20dp"
+    android:clickable="true"
+    android:gravity="center"
+    android:orientation="vertical"
+    app:layout_constraintEnd_toStartOf="@+id/audio_video_call"
+    app:layout_constraintHorizontal_chainStyle="spread"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent">
+
+    <ImageView
+      android:layout_width="52dp"
+      android:layout_height="52dp"
+      android:layout_gravity="center"
+      android:background="@drawable/zimkit_shape_12dp_white"
+      android:scaleType="center"
+      android:src="@{model.expandIcon}" />
+
+    <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center"
+      android:layout_marginTop="4dp"
+      android:gravity="center"
+      android:text="@{model.desc}"
+      android:textColor="@color/color_646A73"
+      android:textSize="12sp" />
+  </LinearLayout>
+</layout>

@@ -68,7 +68,7 @@
             android:layout_marginTop="16dp"
             android:background="@drawable/zimkit_selector_8dp_ff3478fc"
             android:enabled="@{vm.mButtonState}"
-            android:onClick="@{() ->vm.createSingleChat()}"
+            android:onClick="@{(view) ->vm.createSingleChat(view)}"
             android:paddingTop="7dp"
             android:paddingBottom="7dp"
             android:text="@string/zimkit_create_chat"

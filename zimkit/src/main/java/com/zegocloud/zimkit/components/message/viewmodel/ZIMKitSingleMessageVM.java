@@ -1,24 +1,22 @@
 package com.zegocloud.zimkit.components.message.viewmodel;
 
 import android.app.Application;
-
 import androidx.annotation.NonNull;
-
-import com.zegocloud.zimkit.services.ZIMKit;
-import com.zegocloud.zimkit.services.model.ZIMKitMessage;
-import java.util.ArrayList;
-import java.util.List;
-
-import im.zego.zim.entity.ZIMMessage;
-import im.zego.zim.enums.ZIMConversationType;
-import im.zego.zim.enums.ZIMMessageDirection;
 import com.zegocloud.zimkit.components.message.model.AudioMessageModel;
 import com.zegocloud.zimkit.components.message.model.FileMessageModel;
 import com.zegocloud.zimkit.components.message.model.ImageMessageModel;
+import com.zegocloud.zimkit.components.message.model.RevokeMessageModel;
 import com.zegocloud.zimkit.components.message.model.TextMessageModel;
 import com.zegocloud.zimkit.components.message.model.VideoMessageModel;
 import com.zegocloud.zimkit.components.message.model.ZIMKitMessageModel;
 import com.zegocloud.zimkit.components.message.utils.ChatMessageParser;
+import com.zegocloud.zimkit.services.ZIMKit;
+import com.zegocloud.zimkit.services.model.ZIMKitMessage;
+import im.zego.zim.entity.ZIMMessage;
+import im.zego.zim.enums.ZIMConversationType;
+import im.zego.zim.enums.ZIMMessageDirection;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ZIMKitSingleMessageVM extends ZIMKitMessageVM {
 
@@ -62,6 +60,9 @@ public class ZIMKitSingleMessageVM extends ZIMKitMessageVM {
         ArrayList<ZIMKitMessageModel> models = new ArrayList<>();
         for (ZIMKitMessage zimMessage : messages) {
             ZIMKitMessageModel itemModel = ChatMessageParser.parseMessage(zimMessage.zim);
+            if (itemModel instanceof RevokeMessageModel) {
+                continue;
+            }
             if (zimMessage.zim.getDirection() == ZIMMessageDirection.RECEIVE) {
                 setNickNameAndAvatar(itemModel, mSingleOtherSideUserName, mSingleOtherSideUserAvatar);
             } else {
@@ -92,6 +93,9 @@ public class ZIMKitSingleMessageVM extends ZIMKitMessageVM {
         ArrayList<ZIMKitMessageModel> models = new ArrayList<>();
         for (ZIMKitMessage zimMessage : messageList) {
             ZIMKitMessageModel itemModel = ChatMessageParser.parseMessage(zimMessage.zim);
+            if (itemModel instanceof RevokeMessageModel) {
+                continue;
+            }
             if (zimMessage.zim.getDirection() == ZIMMessageDirection.RECEIVE) {
                 setNickNameAndAvatar(itemModel, mSingleOtherSideUserName, mSingleOtherSideUserAvatar);
             }
@@ -101,7 +105,7 @@ public class ZIMKitSingleMessageVM extends ZIMKitMessageVM {
     }
 
     @Override
-    public void send(ZIMKitMessageModel model) {
+    public void sendTextMessage(ZIMKitMessageModel model) {
         if (model instanceof TextMessageModel) {
             TextMessageModel textMessageModel = (TextMessageModel) model;
             ZIMKit.sendTextMessage(textMessageModel.getContent(), mtoId, ZIMConversationType.PEER, error -> targetDoesNotExist(error));

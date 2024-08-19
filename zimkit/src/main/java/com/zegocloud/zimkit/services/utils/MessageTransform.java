@@ -2,25 +2,25 @@ package com.zegocloud.zimkit.services.utils;
 
 import android.graphics.Bitmap;
 import android.text.TextUtils;
-
-import java.io.IOException;
-import java.util.ArrayList;
-
-import im.zego.zim.entity.ZIMAudioMessage;
-import im.zego.zim.entity.ZIMFileMessage;
-import im.zego.zim.entity.ZIMImageMessage;
-import im.zego.zim.entity.ZIMMessage;
-import im.zego.zim.entity.ZIMSystemMessage;
-import im.zego.zim.entity.ZIMTextMessage;
-import im.zego.zim.entity.ZIMVideoMessage;
-import im.zego.zim.enums.ZIMMessageSentStatus;
-import im.zego.zim.enums.ZIMMessageType;
+import android.util.Log;
 import com.zegocloud.zimkit.R;
 import com.zegocloud.zimkit.common.utils.ZIMKitFileUtils;
 import com.zegocloud.zimkit.components.message.utils.image.ImageSizeUtils;
 import com.zegocloud.zimkit.services.internal.ZIMKitCore;
 import com.zegocloud.zimkit.services.model.MediaTransferProgress;
 import com.zegocloud.zimkit.services.model.ZIMKitMessage;
+import im.zego.zim.entity.ZIMAudioMessage;
+import im.zego.zim.entity.ZIMFileMessage;
+import im.zego.zim.entity.ZIMImageMessage;
+import im.zego.zim.entity.ZIMMessage;
+import im.zego.zim.entity.ZIMRevokeMessage;
+import im.zego.zim.entity.ZIMSystemMessage;
+import im.zego.zim.entity.ZIMTextMessage;
+import im.zego.zim.entity.ZIMVideoMessage;
+import im.zego.zim.enums.ZIMMessageSentStatus;
+import im.zego.zim.enums.ZIMMessageType;
+import java.io.IOException;
+import java.util.ArrayList;
 
 public class MessageTransform {
 
@@ -135,13 +135,21 @@ public class MessageTransform {
                     }
                 }
                 break;
+            case REVOKE:
+                if (zimMessage instanceof ZIMRevokeMessage) {
+                    ZIMRevokeMessage revokeMessage = (ZIMRevokeMessage) zimMessage;
+                }
+                break;
             default:
-                zimKitMessage.textContent.content = ZIMKitCore.getInstance().getApplication().getString(R.string.zimkit_message_unknown);
+                zimKitMessage.textContent.content = ZIMKitCore.getInstance().getApplication()
+                    .getString(R.string.zimkit_message_unknown);
                 break;
         }
 
         return zimKitMessage;
     }
+
+    private static final String TAG = "MessageTransform";
 
     private static void setVideoMessage(ZIMKitMessage zimKitMessage, ZIMVideoMessage videoMessage) {
         android.media.MediaMetadataRetriever mmr = new android.media.MediaMetadataRetriever();
@@ -172,7 +180,8 @@ public class MessageTransform {
         }
     }
 
-    public static ZIMKitMessage updateUploadProgress(ZIMKitMessage zimKitMessage, long currentFileSize, long totalFileSize) {
+    public static ZIMKitMessage updateUploadProgress(ZIMKitMessage zimKitMessage, long currentFileSize,
+        long totalFileSize) {
         if (zimKitMessage == null) {
             return null;
         }
@@ -210,7 +219,8 @@ public class MessageTransform {
 
     }
 
-    public static ZIMKitMessage updateDownloadProgress(ZIMKitMessage zimKitMessage, long currentFileSize, long totalFileSize) {
+    public static ZIMKitMessage updateDownloadProgress(ZIMKitMessage zimKitMessage, long currentFileSize,
+        long totalFileSize) {
         if (zimKitMessage == null) {
             return null;
         }
