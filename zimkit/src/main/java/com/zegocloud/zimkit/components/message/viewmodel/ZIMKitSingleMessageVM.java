@@ -98,6 +98,8 @@ public class ZIMKitSingleMessageVM extends ZIMKitMessageVM {
             }
             if (zimMessage.zim.getDirection() == ZIMMessageDirection.RECEIVE) {
                 setNickNameAndAvatar(itemModel, mSingleOtherSideUserName, mSingleOtherSideUserAvatar);
+            }else {
+                setNickNameAndAvatar(itemModel, ZIMKit.getLocalUser().getName(), ZIMKit.getLocalUser().getAvatarUrl());
             }
             models.add(itemModel);
         }

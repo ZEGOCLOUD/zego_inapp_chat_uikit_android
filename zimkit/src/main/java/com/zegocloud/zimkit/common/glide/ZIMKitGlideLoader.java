@@ -1,17 +1,26 @@
 package com.zegocloud.zimkit.common.glide;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.widget.ImageView;
 
+import androidx.annotation.Nullable;
+
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.load.resource.bitmap.CenterCrop;
+import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
 
 import java.io.File;
 import java.util.concurrent.ExecutionException;
 
 import im.zego.zim.enums.ZIMConversationType;
+
+import com.bumptech.glide.request.target.Target;
+import com.squareup.picasso.Picasso;
 import com.zegocloud.zimkit.R;
 
 public class ZIMKitGlideLoader {
@@ -94,12 +103,14 @@ public class ZIMKitGlideLoader {
      * @param url
      */
     public static void displayMessageAvatarImage(ImageView imageView, String url) {
-        Glide.with(imageView)
-                .load(url)
-                .placeholder(R.drawable.zimkit_icon_avatar_placeholder)
-                .error(R.drawable.zimkit_icon_avatar_placeholder)
-                .diskCacheStrategy(DiskCacheStrategy.ALL) // Setting the policy for caching
-                .into(imageView);
+//        Glide.with(imageView)
+//                .load(url)
+//                .placeholder(R.drawable.zimkit_icon_avatar_placeholder)
+//                .error(R.drawable.zimkit_icon_avatar_placeholder)
+//                .diskCacheStrategy(DiskCacheStrategy.ALL) // Setting the policy for caching
+//                })
+//                .into(imageView);
+        Picasso.get().load(url).fit().placeholder(R.drawable.zimkit_icon_avatar_placeholder).into(imageView);
     }
 
 

@@ -32,6 +32,7 @@
       android:paddingBottom="12dp"
       android:textColorHint="@color/color_8e9093"
       android:textSize="15sp"
+      android:textColor="@color/color_2a2a2a"
       app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout

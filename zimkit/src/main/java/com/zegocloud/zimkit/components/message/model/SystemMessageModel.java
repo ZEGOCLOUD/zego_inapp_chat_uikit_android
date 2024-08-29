@@ -5,6 +5,7 @@ import android.text.TextUtils;
 import androidx.databinding.Bindable;
 
 import im.zego.zim.entity.ZIMMessage;
+import im.zego.zim.entity.ZIMSystemMessage;
 import im.zego.zim.entity.ZIMTextMessage;
 
 public class SystemMessageModel extends ZIMKitMessageModel {
@@ -17,6 +18,10 @@ public class SystemMessageModel extends ZIMKitMessageModel {
             if (!TextUtils.isEmpty(((ZIMTextMessage) message).message)) {
                 this.mContent = ((ZIMTextMessage) message).message;
             }
+        }else if (message instanceof ZIMSystemMessage) {
+            if (!TextUtils.isEmpty(((ZIMSystemMessage) message).message)) {
+                this.mContent = ((ZIMSystemMessage) message).message;
+            }
         }
     }
 
@@ -27,5 +32,10 @@ public class SystemMessageModel extends ZIMKitMessageModel {
 
     public void setContent(String content) {
         this.mContent = content;
+    }
+
+    @Override
+    public int getType() {
+        return 99;
     }
 }

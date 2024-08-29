@@ -1,5 +1,6 @@
 package com.zegocloud.zimkit.components.message.utils;
 
+import com.zegocloud.zimkit.components.message.model.SystemMessageModel;
 import com.zegocloud.zimkit.components.message.model.RevokeMessageModel;
 import com.zegocloud.zimkit.components.message.model.ZIMKitMessageModel;
 import java.util.ArrayList;
@@ -44,6 +45,9 @@ public class ChatMessageParser {
                 break;
             case FILE:
                 message = new FileMessageModel();
+                break;
+            case SYSTEM:
+                message = new SystemMessageModel();
                 break;
             case REVOKE:
                 message = new RevokeMessageModel();

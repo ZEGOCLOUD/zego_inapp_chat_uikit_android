@@ -2,6 +2,7 @@ package com.zegocloud.zimkit.components.message.ui;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.TextUtils;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
@@ -10,7 +11,10 @@ import com.zegocloud.zimkit.R;
 import com.zegocloud.zimkit.common.ZIMKitConstant;
 import com.zegocloud.zimkit.common.base.BaseActivity;
 import com.zegocloud.zimkit.common.utils.ZIMKitActivityUtils;
+import com.zegocloud.zimkit.components.message.interfaces.ZIMKitMessagesListListener;
+import com.zegocloud.zimkit.components.message.model.ZIMKitHeaderBar;
 import com.zegocloud.zimkit.databinding.ZimkitActivityMessageBinding;
+import com.zegocloud.zimkit.services.internal.ZIMKitCore;
 
 public class ZIMKitMessageActivity extends BaseActivity<ZimkitActivityMessageBinding, ViewModel> {
 
@@ -129,6 +133,20 @@ public class ZIMKitMessageActivity extends BaseActivity<ZimkitActivityMessageBin
                 }
             });
         }
+
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                ZIMKitMessagesListListener listener = ZIMKitCore.getInstance().getMessageListListener();
+                if (listener != null) {
+                    ZIMKitHeaderBar headerBar = listener.getMessageListHeaderBar(fragment);
+                    if (headerBar != null) {
+                        mBinding.titleBar.setHeaderBar(headerBar);
+                    }
+                }
+            }
+        }, 200);
+
     }
 
 }

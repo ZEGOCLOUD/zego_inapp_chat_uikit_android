@@ -10,6 +10,7 @@ public class ZIMKitInputConfig {
     public List<ZIMKitInputButtonName> smallButtons;
     public List<ZIMKitInputButtonName> expandButtons;
     public List<String> emojis;
+    public CharSequence inputHint = null;
 
     public ZIMKitInputConfig() {
         smallButtons = new ArrayList<>(
