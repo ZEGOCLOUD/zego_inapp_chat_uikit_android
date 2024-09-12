@@ -37,7 +37,7 @@ public class ZIMKit {
     private static IZIMKitCore zimKitCore;
 
     public static void initWith(Application application, Long appID, String appSign) {
-        initWith(application, appID, appSign, null);
+        initWith(application, appID, appSign, new ZIMKitConfig());
     }
 
     public static void initWith(Application application, Long appID, String appSign, ZIMKitConfig zimKitConfig) {
@@ -52,7 +52,7 @@ public class ZIMKit {
      * @param appID
      */
     public static void initWith(Application application, Long appID) {
-        initWith(application, appID, "", null);
+        initWith(application, appID, "", new ZIMKitConfig());
     }
 
     /**
@@ -145,7 +145,7 @@ public class ZIMKit {
         zimKitCore.sendTextMessage(text, conversationID, type, callback);
     }
 
-    public static void sendGroupTextMessage(String text, String conversationID,String title, ZIMConversationType type,
+    public static void sendGroupTextMessage(String text, String conversationID, String title, ZIMConversationType type,
         MessageSentCallback callback) {
         zimKitCore.sendGroupTextMessage(text, conversationID, title, type, callback);
     }
@@ -156,8 +156,7 @@ public class ZIMKit {
     }
 
     public static void sendGroupImageMessage(String imagePath, String conversationID, String title,
-        ZIMConversationType type,
-        MessageSentCallback callback) {
+        ZIMConversationType type, MessageSentCallback callback) {
         zimKitCore.sendGroupImageMessage(imagePath, conversationID, title, type, callback);
     }
 
@@ -166,9 +165,9 @@ public class ZIMKit {
         zimKitCore.sendAudioMessage(audioPath, duration, conversationID, type, callback);
     }
 
-    public static void sendGroupAudioMessage(String audioPath, long duration, String conversationID,
-        String title,ZIMConversationType type, MessageSentCallback callback) {
-        zimKitCore.sendGroupAudioMessage(audioPath, duration, conversationID,title, type, callback);
+    public static void sendGroupAudioMessage(String audioPath, long duration, String conversationID, String title,
+        ZIMConversationType type, MessageSentCallback callback) {
+        zimKitCore.sendGroupAudioMessage(audioPath, duration, conversationID, title, type, callback);
     }
 
     public static void sendVideoMessage(String videoPath, long duration, String conversationID,
@@ -176,8 +175,8 @@ public class ZIMKit {
         zimKitCore.sendVideoMessage(videoPath, duration, conversationID, type, callback);
     }
 
-    public static void sendGroupVideoMessage(String videoPath, long duration, String conversationID,
-        String title,ZIMConversationType type, MessageSentCallback callback) {
+    public static void sendGroupVideoMessage(String videoPath, long duration, String conversationID, String title,
+        ZIMConversationType type, MessageSentCallback callback) {
         zimKitCore.sendGroupVideoMessage(videoPath, duration, conversationID, title, type, callback);
     }
 
@@ -187,8 +186,7 @@ public class ZIMKit {
     }
 
     public static void sendGroupFileMessage(String filePath, String conversationID, String title,
-        ZIMConversationType type,
-        MessageSentCallback callback) {
+        ZIMConversationType type, MessageSentCallback callback) {
         zimKitCore.sendGroupFileMessage(filePath, conversationID, title, type, callback);
     }
 

@@ -148,5 +148,4 @@ public class ZIMKitMessageActivity extends BaseActivity<ZimkitActivityMessageBin
         }, 200);
 
     }
-
 }
