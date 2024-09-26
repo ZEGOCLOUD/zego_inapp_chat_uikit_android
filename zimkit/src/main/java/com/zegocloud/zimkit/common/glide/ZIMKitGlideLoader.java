@@ -2,6 +2,7 @@ package com.zegocloud.zimkit.common.glide;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.text.TextUtils;
 import android.widget.ImageView;
 
 import androidx.annotation.Nullable;
@@ -35,16 +36,16 @@ public class ZIMKitGlideLoader {
      */
     public static void displayMessageImage(ImageView imageView, String url, int width, int height) {
         RequestOptions options = new RequestOptions()
-                .override(width, height)
-                .transform(new CenterCrop())
-                .dontAnimate();
+            .override(width, height)
+            .transform(new CenterCrop())
+            .dontAnimate();
         Glide.with(imageView)
-                .load(url)
-                .placeholder(R.drawable.zimkit_icon_image_placeholder)
-                .error(R.drawable.zimkit_icon_image_placeholder)
-                .apply(options)
-                .diskCacheStrategy(DiskCacheStrategy.ALL) // Setting the policy for caching
-                .into(imageView);
+            .load(url)
+            .placeholder(R.drawable.zimkit_icon_image_placeholder)
+            .error(R.drawable.zimkit_icon_image_placeholder)
+            .apply(options)
+            .diskCacheStrategy(DiskCacheStrategy.ALL) // Setting the policy for caching
+            .into(imageView);
     }
 
     /**
@@ -57,16 +58,16 @@ public class ZIMKitGlideLoader {
      */
     public static void displayMessageGifImage(ImageView imageView, String url, int width, int height) {
         RequestOptions options = new RequestOptions()
-                .override(width, height)
-                .transform(new CenterCrop());
+            .override(width, height)
+            .transform(new CenterCrop());
         Glide.with(imageView)
-                .asGif()
-                .load(url)
-                .placeholder(R.drawable.zimkit_icon_image_placeholder)
-                .error(R.drawable.zimkit_icon_image_placeholder)
-                .apply(options)
-                .diskCacheStrategy(DiskCacheStrategy.ALL) // Setting the policy for caching
-                .into(imageView);
+            .asGif()
+            .load(url)
+            .placeholder(R.drawable.zimkit_icon_image_placeholder)
+            .error(R.drawable.zimkit_icon_image_placeholder)
+            .apply(options)
+            .diskCacheStrategy(DiskCacheStrategy.ALL) // Setting the policy for caching
+            .into(imageView);
     }
 
     /**
@@ -76,7 +77,8 @@ public class ZIMKitGlideLoader {
      * @param imageUrl
      * @return
      */
-    public static File downloadNetWorkResource(Context context, String imageUrl) throws ExecutionException, InterruptedException {
+    public static File downloadNetWorkResource(Context context, String imageUrl)
+        throws ExecutionException, InterruptedException {
         return Glide.with(context).asFile().load(imageUrl).submit().get();
     }
 
@@ -89,11 +91,11 @@ public class ZIMKitGlideLoader {
      */
     public static void displayConversationAvatarImage(ImageView imageView, String url, ZIMConversationType type) {
         Glide.with(imageView)
-                .load(type == ZIMConversationType.PEER ? url : R.drawable.zimkit_icon_group)
-                .placeholder(R.drawable.zimkit_icon_avatar_placeholder)
-                .error(R.drawable.zimkit_icon_avatar_placeholder)
-                .diskCacheStrategy(DiskCacheStrategy.ALL) // Setting the policy for caching
-                .into(imageView);
+            .load(type == ZIMConversationType.PEER ? url : R.drawable.zimkit_icon_group)
+            .placeholder(R.drawable.zimkit_icon_avatar_placeholder)
+            .error(R.drawable.zimkit_icon_avatar_placeholder)
+            .diskCacheStrategy(DiskCacheStrategy.ALL) // Setting the policy for caching
+            .into(imageView);
     }
 
     /**
@@ -103,14 +105,16 @@ public class ZIMKitGlideLoader {
      * @param url
      */
     public static void displayMessageAvatarImage(ImageView imageView, String url) {
-//        Glide.with(imageView)
-//                .load(url)
-//                .placeholder(R.drawable.zimkit_icon_avatar_placeholder)
-//                .error(R.drawable.zimkit_icon_avatar_placeholder)
-//                .diskCacheStrategy(DiskCacheStrategy.ALL) // Setting the policy for caching
-//                })
-//                .into(imageView);
-        Picasso.get().load(url).fit().placeholder(R.drawable.zimkit_icon_avatar_placeholder).into(imageView);
+        //        Glide.with(imageView)
+        //                .load(url)
+        //                .placeholder(R.drawable.zimkit_icon_avatar_placeholder)
+        //                .error(R.drawable.zimkit_icon_avatar_placeholder)
+        //                .diskCacheStrategy(DiskCacheStrategy.ALL) // Setting the policy for caching
+        //                })
+        //                .into(imageView);
+        if (!TextUtils.isEmpty(url)) {
+            Picasso.get().load(url).fit().placeholder(R.drawable.zimkit_icon_avatar_placeholder).into(imageView);
+        }
     }
 
 
@@ -122,10 +126,10 @@ public class ZIMKitGlideLoader {
      */
     public static void displayGifImage(ImageView imageView, int drawableGif) {
         Glide.with(imageView)
-                .asGif()
-                .load(drawableGif)
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .into(imageView);
+            .asGif()
+            .load(drawableGif)
+            .diskCacheStrategy(DiskCacheStrategy.ALL)
+            .into(imageView);
     }
 
     /**
@@ -136,9 +140,9 @@ public class ZIMKitGlideLoader {
      */
     public static void displayLocalImage(ImageView imageView, int drawable) {
         Glide.with(imageView)
-                .load(drawable)
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .into(imageView);
+            .load(drawable)
+            .diskCacheStrategy(DiskCacheStrategy.ALL)
+            .into(imageView);
     }
 
 }

@@ -159,20 +159,16 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
     public void updateMessageInfo(List<ZIMKitMessageModel> list) {
         for (int j = 0; j < list.size(); j++) {
             ZIMKitMessageModel model = list.get(j);
-            if (model instanceof SystemMessageModel) {
-                addLocalMessageToBottom(model);
-            } else {
-                if (mList.size() > 0) {
-                    for (int i = 0; i < mList.size(); i++) {
-                        ZIMKitMessageModel messageLocalModel = mList.get(i);
-                        if (model.getMessage() != null && messageLocalModel.getMessage() != null) {
-                            if (model.getMessage().equals(messageLocalModel.getMessage())
-                                || model.getMessage().getLocalMessageID() == messageLocalModel.getMessage()
-                                .getLocalMessageID()) {
-                                mList.set(i, model);
-                                this.notifyItemChanged(i);
-                                break;
-                            }
+            if (mList.size() > 0) {
+                for (int i = 0; i < mList.size(); i++) {
+                    ZIMKitMessageModel messageLocalModel = mList.get(i);
+                    if (model.getMessage() != null && messageLocalModel.getMessage() != null) {
+                        if (model.getMessage().equals(messageLocalModel.getMessage())
+                            || model.getMessage().getLocalMessageID() == messageLocalModel.getMessage()
+                            .getLocalMessageID()) {
+                            mList.set(i, model);
+                            this.notifyItemChanged(i);
+                            break;
                         }
                     }
                 }
