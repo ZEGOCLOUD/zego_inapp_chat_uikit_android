@@ -97,7 +97,7 @@ public class ZIMKitInputView extends LinearLayout {
 
         int maxButtons = 4;
         ZIMKitConfig zimKitConfig = ZIMKitCore.getInstance().getZimKitConfig();
-        if (zimKitConfig.inputConfig.inputHint != null) {
+        if (zimKitConfig != null && zimKitConfig.inputConfig != null && zimKitConfig.inputConfig.inputHint != null) {
             binding.inputEdittext.setHint(zimKitConfig.inputConfig.inputHint);
         }
         List<ZIMKitInputButtonModel> buttonModels = new ArrayList<>();

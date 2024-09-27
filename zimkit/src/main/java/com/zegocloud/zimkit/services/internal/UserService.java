@@ -10,7 +10,6 @@ import com.zegocloud.zimkit.services.callback.UserAvatarUrlUpdateCallback;
 import com.zegocloud.zimkit.services.model.ZIMKitUser;
 import java.util.ArrayList;
 
-import im.zego.zim.ZIM;
 import im.zego.zim.callback.ZIMUsersInfoQueriedCallback;
 import im.zego.zim.entity.ZIMError;
 import im.zego.zim.entity.ZIMErrorUserInfo;
@@ -67,7 +66,7 @@ public class UserService {
                         || errorCode == ZIMErrorCode.USER_HAS_ALREADY_LOGGED.value())
                         && !TextUtils.isEmpty(avatarUrl)) {
                         updateUserAvatarUrl(avatarUrl, (userAvatarUrl, errorInfo1) -> {
-                            if (ZegoSignalingPlugin.getInstance().isHMOVPushEnabled()
+                            if (ZegoSignalingPlugin.getInstance().isOtherPushEnabled()
                                 || ZegoSignalingPlugin.getInstance()
                                 .isFCMPushEnabled()) {
                                 ZegoSignalingPlugin.getInstance().registerPush();
