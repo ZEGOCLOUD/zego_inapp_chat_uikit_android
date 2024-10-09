@@ -18,6 +18,7 @@
   <string name="zimkit_message_video">[Video]</string>
   <string name="zimkit_message_audio">[Audio]</string>
   <string name="zimkit_message_file">[File]</string>
+  <string name="zimkit_message_revoke">have retracted a message</string>
   <string name="zimkit_message_unknown">This type of message is not supported, Please upgrade to the latest version.</string>
   <string name="zimkit_open_file_tips">Select an app to open the file</string>
   <string name="zimkit_title_cancel">Cancel</string>
@@ -146,6 +147,7 @@
   <string name="chat_group_member">Group Members</string>
   <string name="group_members_detail">See %d members detail</string>
   <string name="invite">Invite</string>
+  <string name="zimkit_you">You</string>
   <string name="zimkit_confirm">Confirm</string>
   <string name="zimkit_add_group_member">Add Group Member</string>
   <string name="zimkit_input_member_id">Input user ID to add</string>
@@ -171,4 +173,6 @@
   <string name="zimkit_file_too_large">The file is too large,Please choose again</string>
   <string name="zimkit_call_kit_plugin_not_existed">CallKit plugin not existed</string>
   <string name="zimkit_callkit_plugin_not_enabled">CallKit plugin not enabled</string>
+  <string name="zimkit_tips_group_create">%s initiated a group chat and invited %s to join this group.</string>
+  <string name="zimkit_tips_group_invite">%s invited %s to join this group</string>
 </resources>

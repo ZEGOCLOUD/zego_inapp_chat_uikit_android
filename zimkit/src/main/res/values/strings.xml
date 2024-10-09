@@ -17,6 +17,7 @@
   <string name="zimkit_message_video">[视频]</string>
   <string name="zimkit_message_audio">[语音]</string>
   <string name="zimkit_message_file">[文件]</string>
+  <string name="zimkit_message_revoke">撤回了一条消息</string>
   <string name="zimkit_message_unknown">暂不支持该类型消息，请升级到最新版本</string>
   <string name="zimkit_open_file_tips">选择要打开此文件的应用</string>
   <string name="zimkit_title_cancel">取消</string>
@@ -144,6 +145,7 @@
   <string name="chat_group_member">群聊成员</string>
   <string name="group_members_detail">查看%d位群成员</string>
   <string name="invite">邀请</string>
+  <string name="zimkit_you">你</string>
   <string name="zimkit_confirm">确定</string>
   <string name="zimkit_add_group_member">添加群成员</string>
   <string name="zimkit_input_member_id">请输入要添加的用户ID</string>
@@ -169,5 +171,7 @@
   <string name="zimkit_file_too_large">文件太大，请重新选择</string>
   <string name="zimkit_call_kit_plugin_not_existed">CallKit 插件不存在</string>
   <string name="zimkit_callkit_plugin_not_enabled">CallKit 插件未启用</string>
+  <string name="zimkit_tips_group_create">%s 发起群聊，并邀请 %s 加入此群</string>
+  <string name="zimkit_tips_group_invite">%s 邀请 %s 加入此群</string>
 
 </resources>

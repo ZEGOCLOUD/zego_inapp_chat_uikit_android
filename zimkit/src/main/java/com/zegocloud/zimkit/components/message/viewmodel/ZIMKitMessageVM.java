@@ -8,7 +8,6 @@ import androidx.lifecycle.AndroidViewModel;
 import com.zegocloud.zimkit.R;
 import com.zegocloud.zimkit.components.message.ZIMKitMessageManager;
 import com.zegocloud.zimkit.components.message.model.ImageMessageModel;
-import com.zegocloud.zimkit.components.message.model.RevokeMessageModel;
 import com.zegocloud.zimkit.components.message.model.SystemMessageModel;
 import com.zegocloud.zimkit.components.message.model.VideoMessageModel;
 import com.zegocloud.zimkit.components.message.model.ZIMKitMessageModel;
@@ -79,19 +78,18 @@ public abstract class ZIMKitMessageVM extends AndroidViewModel {
         private static final String TAG = "ZIMKitMessageVM";
 
         @Override
-        public void onMessageRevokeReceived(ArrayList<ZIMKitMessage> messageList) {
+        public void onMessageRevokeReceived(String conversationID, ZIMConversationType type,
+            ArrayList<ZIMKitMessage> messageList) {
             if (messageRevokeListener != null) {
                 messageRevokeListener.onMessageRevokeReceived(messageList);
             }
+//            onMessageReceived(conversationID, type, messageList);
         }
 
         @Override
         public void onMessageSentStatusChanged(ZIMKitMessage message) {
             ArrayList<ZIMKitMessageModel> models = new ArrayList<>();
             ZIMKitMessageModel itemModel = ChatMessageParser.parseMessage(message.zim);
-            if (itemModel instanceof RevokeMessageModel) {
-                return;
-            }
             setNickNameAndAvatar(itemModel, ZIMKit.getLocalUser().getName(), ZIMKit.getLocalUser().getAvatarUrl());
             boolean isSending = itemModel.getSentStatus() == ZIMMessageSentStatus.SENDING;
             if (!isSending) {
@@ -203,6 +201,10 @@ public abstract class ZIMKitMessageVM extends AndroidViewModel {
     abstract public void sendMediaMessage(List<ZIMKitMessageModel> messageModelList);
 
     abstract public void sendMediaMessage(ZIMKitMessageModel messageModel);
+
+    public void insertNewMessage(ZIMKitMessage zimMessage) {
+        handlerNewMessageList(new ArrayList<>(Collections.singletonList(zimMessage)));
+    }
 
     /**
      * Delete Message

@@ -3,10 +3,8 @@ package com.zegocloud.zimkit.services;
 import com.zegocloud.zimkit.services.model.ZIMKitConversation;
 import com.zegocloud.zimkit.services.model.ZIMKitErrorToast;
 import com.zegocloud.zimkit.services.model.ZIMKitMessage;
-import im.zego.zim.ZIM;
 import im.zego.zim.entity.ZIMGroupMemberInfo;
 import im.zego.zim.entity.ZIMGroupOperatedInfo;
-import im.zego.zim.entity.ZIMRevokeMessage;
 import im.zego.zim.enums.ZIMConnectionEvent;
 import im.zego.zim.enums.ZIMConnectionState;
 import im.zego.zim.enums.ZIMConversationType;
@@ -59,6 +57,6 @@ public interface ZIMKitDelegate {
         ArrayList<ZIMGroupMemberInfo> userList, ZIMGroupOperatedInfo operatedInfo, String groupID) {
     }
 
-    default void onMessageRevokeReceived(ArrayList<ZIMKitMessage> messageList) {
+    default void onMessageRevokeReceived(String conversationID, ZIMConversationType type, ArrayList<ZIMKitMessage> messageList) {
     }
 }

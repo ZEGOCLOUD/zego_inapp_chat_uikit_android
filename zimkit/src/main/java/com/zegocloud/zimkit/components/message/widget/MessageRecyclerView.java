@@ -27,10 +27,12 @@ import com.zegocloud.zimkit.components.message.model.AudioMessageModel;
 import com.zegocloud.zimkit.components.message.model.FileMessageModel;
 import com.zegocloud.zimkit.components.message.model.TextMessageModel;
 import com.zegocloud.zimkit.components.message.model.ZIMKitMessageModel;
+import com.zegocloud.zimkit.components.message.utils.ChatMessageParser;
 import com.zegocloud.zimkit.components.message.viewmodel.ZIMKitMessageVM;
 import com.zegocloud.zimkit.components.message.widget.interfaces.IMessageLayout;
 import com.zegocloud.zimkit.components.message.widget.interfaces.OnItemClickListener;
 import com.zegocloud.zimkit.components.message.widget.interfaces.OnPopActionClickListener;
+import com.zegocloud.zimkit.services.ZIMKit;
 import com.zegocloud.zimkit.services.internal.ZIMKitCore;
 import im.zego.zim.callback.ZIMMessageDeletedCallback;
 import im.zego.zim.callback.ZIMMessageRevokedCallback;
@@ -44,6 +46,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -294,7 +297,8 @@ public class MessageRecyclerView extends RecyclerView implements IMessageLayout 
             @Override
             public void onMessageRevoked(ZIMMessage message, ZIMError errorInfo) {
                 if (errorInfo.code == ZIMErrorCode.SUCCESS) {
-                    mAdapter.deleteMessages(model);
+                    ZIMKitMessageModel messageModel = ChatMessageParser.parseMessage(message);
+                    mAdapter.updateMessageInfo(Collections.singletonList(messageModel));
                 }
             }
         });

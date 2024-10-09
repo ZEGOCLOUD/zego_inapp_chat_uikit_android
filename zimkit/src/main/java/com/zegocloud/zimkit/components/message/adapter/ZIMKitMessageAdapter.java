@@ -15,7 +15,6 @@ import com.zegocloud.zimkit.R;
 import com.zegocloud.zimkit.components.message.ZIMKitMessageManager;
 import com.zegocloud.zimkit.components.message.model.AudioMessageModel;
 import com.zegocloud.zimkit.components.message.model.FileMessageModel;
-import com.zegocloud.zimkit.components.message.model.SystemMessageModel;
 import com.zegocloud.zimkit.components.message.model.VideoMessageModel;
 import com.zegocloud.zimkit.components.message.model.ZIMKitMessageModel;
 import com.zegocloud.zimkit.components.message.ui.ZIMKitVideoViewActivity;
@@ -26,13 +25,14 @@ import com.zegocloud.zimkit.components.message.widget.viewholder.FileMessageHold
 import com.zegocloud.zimkit.components.message.widget.viewholder.ImageMessageHolder;
 import com.zegocloud.zimkit.components.message.widget.viewholder.MessageSystemHolder;
 import com.zegocloud.zimkit.components.message.widget.viewholder.MessageViewHolder;
+import com.zegocloud.zimkit.components.message.widget.viewholder.RevokeMessageHolder;
 import com.zegocloud.zimkit.components.message.widget.viewholder.TextMessageHolder;
+import com.zegocloud.zimkit.components.message.widget.viewholder.TipsMessageHolder;
 import com.zegocloud.zimkit.components.message.widget.viewholder.VideoMessageHolder;
 import com.zegocloud.zimkit.services.ZIMKit;
 import com.zegocloud.zimkit.services.ZIMKitDelegate;
 import com.zegocloud.zimkit.services.model.ZIMKitMessage;
 import im.zego.zim.entity.ZIMMessage;
-import im.zego.zim.entity.ZIMRevokeMessage;
 import im.zego.zim.enums.ZIMMessageType;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -157,9 +157,12 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
      * @param list
      */
     public void updateMessageInfo(List<ZIMKitMessageModel> list) {
-        for (int j = 0; j < list.size(); j++) {
-            ZIMKitMessageModel model = list.get(j);
-            if (mList.size() > 0) {
+        if (mList.isEmpty()) {
+            mList.addAll(list);
+            notifyDataSetChanged();
+        } else {
+            for (int j = 0; j < list.size(); j++) {
+                ZIMKitMessageModel model = list.get(j);
                 for (int i = 0; i < mList.size(); i++) {
                     ZIMKitMessageModel messageLocalModel = mList.get(i);
                     if (model.getMessage() != null && messageLocalModel.getMessage() != null) {
@@ -188,57 +191,67 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
         } else {
             boolean isSend = (viewType / 100) == 0; // because send =0,RECEIVE = 1
             int type = (viewType % 100);
-            if (isSend) {
-                if (type == ZIMMessageType.TEXT.value()) {
-                    binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
-                        R.layout.zimkit_item_message_send_text, parent, false);
-                    viewHolder = new TextMessageHolder(binding);
-                } else if (type == ZIMMessageType.IMAGE.value()) {
-                    binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
-                        R.layout.zimkit_item_message_send_photo, parent, false);
-                    viewHolder = new ImageMessageHolder(binding);
-                } else if (type == ZIMMessageType.VIDEO.value()) {
-                    binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
-                        R.layout.zimkit_item_message_send_video, parent, false);
-                    viewHolder = new VideoMessageHolder(binding);
-                } else if (type == ZIMMessageType.AUDIO.value()) {
-                    binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
-                        R.layout.zimkit_item_message_send_audio, parent, false);
-                    viewHolder = new AudioMessageHolder(binding);
-                } else if (type == ZIMMessageType.FILE.value()) {
-                    binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
-                        R.layout.zimkit_item_message_send_file, parent, false);
-                    viewHolder = new FileMessageHolder(binding);
-                } else {
-                    binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
-                        R.layout.zimkit_item_message_send_text, parent, false);
-                    viewHolder = new TextMessageHolder(binding);
-                }
+            if (type == ZIMMessageType.TIPS.value()) {
+                binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
+                    R.layout.zimkit_item_message_tips, parent, false);
+                viewHolder = new TipsMessageHolder(binding);
+            } else if (type == ZIMMessageType.REVOKE.value()) {
+                binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
+                    R.layout.zimkit_item_message_revoke, parent, false);
+                viewHolder = new RevokeMessageHolder(binding);
             } else {
-                if (type == ZIMMessageType.TEXT.value()) {
-                    binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
-                        R.layout.zimkit_item_message_receive_text, parent, false);
-                    viewHolder = new TextMessageHolder(binding);
-                } else if (type == ZIMMessageType.IMAGE.value()) {
-                    binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
-                        R.layout.zimkit_item_message_receive_photo, parent, false);
-                    viewHolder = new ImageMessageHolder(binding);
-                } else if (type == ZIMMessageType.VIDEO.value()) {
-                    binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
-                        R.layout.zimkit_item_message_receive_video, parent, false);
-                    viewHolder = new VideoMessageHolder(binding);
-                } else if (type == ZIMMessageType.AUDIO.value()) {
-                    binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
-                        R.layout.zimkit_item_message_receive_audio, parent, false);
-                    viewHolder = new AudioMessageHolder(binding);
-                } else if (type == ZIMMessageType.FILE.value()) {
-                    binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
-                        R.layout.zimkit_item_message_receive_file, parent, false);
-                    viewHolder = new FileMessageHolder(binding);
+                if (isSend) {
+                    if (type == ZIMMessageType.TEXT.value()) {
+                        binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
+                            R.layout.zimkit_item_message_send_text, parent, false);
+                        viewHolder = new TextMessageHolder(binding);
+                    } else if (type == ZIMMessageType.IMAGE.value()) {
+                        binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
+                            R.layout.zimkit_item_message_send_photo, parent, false);
+                        viewHolder = new ImageMessageHolder(binding);
+                    } else if (type == ZIMMessageType.VIDEO.value()) {
+                        binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
+                            R.layout.zimkit_item_message_send_video, parent, false);
+                        viewHolder = new VideoMessageHolder(binding);
+                    } else if (type == ZIMMessageType.AUDIO.value()) {
+                        binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
+                            R.layout.zimkit_item_message_send_audio, parent, false);
+                        viewHolder = new AudioMessageHolder(binding);
+                    } else if (type == ZIMMessageType.FILE.value()) {
+                        binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
+                            R.layout.zimkit_item_message_send_file, parent, false);
+                        viewHolder = new FileMessageHolder(binding);
+                    } else {
+                        binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
+                            R.layout.zimkit_item_message_send_text, parent, false);
+                        viewHolder = new TextMessageHolder(binding);
+                    }
                 } else {
-                    binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
-                        R.layout.zimkit_item_message_receive_text, parent, false);
-                    viewHolder = new TextMessageHolder(binding);
+                    if (type == ZIMMessageType.TEXT.value()) {
+                        binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
+                            R.layout.zimkit_item_message_receive_text, parent, false);
+                        viewHolder = new TextMessageHolder(binding);
+                    } else if (type == ZIMMessageType.IMAGE.value()) {
+                        binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
+                            R.layout.zimkit_item_message_receive_photo, parent, false);
+                        viewHolder = new ImageMessageHolder(binding);
+                    } else if (type == ZIMMessageType.VIDEO.value()) {
+                        binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
+                            R.layout.zimkit_item_message_receive_video, parent, false);
+                        viewHolder = new VideoMessageHolder(binding);
+                    } else if (type == ZIMMessageType.AUDIO.value()) {
+                        binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
+                            R.layout.zimkit_item_message_receive_audio, parent, false);
+                        viewHolder = new AudioMessageHolder(binding);
+                    } else if (type == ZIMMessageType.FILE.value()) {
+                        binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
+                            R.layout.zimkit_item_message_receive_file, parent, false);
+                        viewHolder = new FileMessageHolder(binding);
+                    } else {
+                        binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
+                            R.layout.zimkit_item_message_receive_text, parent, false);
+                        viewHolder = new TextMessageHolder(binding);
+                    }
                 }
             }
         }

@@ -2,22 +2,22 @@ package com.zegocloud.zimkit.services.internal;
 
 import com.zegocloud.zimkit.services.callback.ClearUnreadCountCallback;
 import com.zegocloud.zimkit.services.callback.DeleteConversationCallback;
+import com.zegocloud.zimkit.services.callback.GetConversationListCallback;
 import com.zegocloud.zimkit.services.callback.LoadMoreConversationCallback;
 import com.zegocloud.zimkit.services.model.ZIMKitConversation;
 import im.zego.zim.callback.ZIMConversationNotificationStatusSetCallback;
 import im.zego.zim.callback.ZIMConversationPinnedStateUpdatedCallback;
-import im.zego.zim.enums.ZIMConversationNotificationStatus;
-import java.util.ArrayList;
-import java.util.Iterator;
-
 import im.zego.zim.callback.ZIMConversationUnreadMessageCountClearedCallback;
 import im.zego.zim.entity.ZIMConversation;
 import im.zego.zim.entity.ZIMConversationDeleteConfig;
 import im.zego.zim.entity.ZIMConversationQueryConfig;
 import im.zego.zim.entity.ZIMError;
+import im.zego.zim.enums.ZIMConversationNotificationStatus;
 import im.zego.zim.enums.ZIMConversationType;
 import im.zego.zim.enums.ZIMErrorCode;
-import com.zegocloud.zimkit.services.callback.GetConversationListCallback;
+import java.util.ArrayList;
+import java.util.Iterator;
+import timber.log.Timber;
 
 public class ConversationService {
 
@@ -87,7 +87,8 @@ public class ConversationService {
         ZIMConversationQueryConfig config = new ZIMConversationQueryConfig();
         config.count = MAX_PAGE_COUNT;
         config.nextConversation = conversation;
-
+        Timber.d("queryConversationList() called with: isCallbackListChanged = [" + isCallbackListChanged
+            + "], conversation = [" + conversation + "], callback = [" + callback + "]");
         ZIMKitCore.getInstance().zim().queryConversationList(config, (conversationList, errorInfo) -> {
 
             if (errorInfo.code == ZIMErrorCode.SUCCESS) {

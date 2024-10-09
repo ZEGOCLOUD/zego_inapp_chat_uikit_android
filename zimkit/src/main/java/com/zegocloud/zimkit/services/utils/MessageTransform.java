@@ -2,7 +2,6 @@ package com.zegocloud.zimkit.services.utils;
 
 import android.graphics.Bitmap;
 import android.text.TextUtils;
-import android.util.Log;
 import com.zegocloud.zimkit.R;
 import com.zegocloud.zimkit.common.utils.ZIMKitFileUtils;
 import com.zegocloud.zimkit.components.message.utils.image.ImageSizeUtils;
@@ -16,6 +15,7 @@ import im.zego.zim.entity.ZIMMessage;
 import im.zego.zim.entity.ZIMRevokeMessage;
 import im.zego.zim.entity.ZIMSystemMessage;
 import im.zego.zim.entity.ZIMTextMessage;
+import im.zego.zim.entity.ZIMTipsMessage;
 import im.zego.zim.entity.ZIMVideoMessage;
 import im.zego.zim.enums.ZIMMessageSentStatus;
 import im.zego.zim.enums.ZIMMessageType;
@@ -138,7 +138,12 @@ public class MessageTransform {
             case REVOKE:
                 if (zimMessage instanceof ZIMRevokeMessage) {
                     ZIMRevokeMessage revokeMessage = (ZIMRevokeMessage) zimMessage;
+                    zimKitMessage.revokeContent.revokeMessage = revokeMessage;
                 }
+                break;
+            case TIPS:
+                ZIMTipsMessage tipsMessage = (ZIMTipsMessage) zimMessage;
+                zimKitMessage.tipsMessageContent.tipsMessage = tipsMessage;
                 break;
             default:
                 zimKitMessage.textContent.content = ZIMKitCore.getInstance().getApplication()

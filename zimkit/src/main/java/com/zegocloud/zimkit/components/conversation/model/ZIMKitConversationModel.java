@@ -1,13 +1,15 @@
 package com.zegocloud.zimkit.components.conversation.model;
 
 import android.text.TextUtils;
-import android.util.Log;
 import androidx.databinding.BaseObservable;
 import androidx.databinding.Bindable;
 import com.zegocloud.zimkit.BR;
 import com.zegocloud.zimkit.R;
 import com.zegocloud.zimkit.common.utils.ZIMKitDateUtils;
 import com.zegocloud.zimkit.components.group.bean.ZIMKitGroupMemberInfo;
+import com.zegocloud.zimkit.components.message.model.TipsMessageModel;
+import com.zegocloud.zimkit.components.message.utils.ChatMessageParser;
+import com.zegocloud.zimkit.services.ZIMKit;
 import com.zegocloud.zimkit.services.callback.QueryGroupMemberInfoCallback;
 import com.zegocloud.zimkit.services.internal.ZIMKitCore;
 import im.zego.zim.entity.ZIMConversation;
@@ -82,44 +84,81 @@ public class ZIMKitConversationModel extends BaseObservable {
     }
 
     private void setLastMsgContent(ZIMConversation conversation) {
-        ZIMMessage message = conversation.lastMessage;
-        if (message == null) {
+        ZIMMessage lastMessage = conversation.lastMessage;
+        if (lastMessage == null) {
             return;
         }
-
-        List<ZIMKitGroupMemberInfo> groupMemberList = ZIMKitCore.getInstance()
-            .getGroupMemberList(conversation.conversationID);
-        if (conversation.type == ZIMConversationType.GROUP && groupMemberList == null) {
-            ZIMKitCore.getInstance().queryGroupMemberInfo(message.getSenderUserID(), conversation.conversationID,
-                new QueryGroupMemberInfoCallback() {
-                    @Override
-                    public void onQueryGroupMemberInfo(ZIMKitGroupMemberInfo member, ZIMError error) {
-                        String prefix;
-                        if (TextUtils.isEmpty(member.getNickName())) {
-                            prefix = member.getName();
-                        } else {
-                            prefix = member.getNickName();
-                        }
-                        updateLastMessage(message, prefix + ":");
-                    }
-                });
-
+        if (conversation.type == ZIMConversationType.PEER) {
+            if (lastMessage.getType() == ZIMMessageType.REVOKE) {
+                String prefix = ZIMKitCore.getInstance().getApplication().getString(R.string.zimkit_you);
+                updateLastMessage(lastMessage, prefix + " ");
+            } else {
+                updateLastMessage(lastMessage, "");
+            }
         } else {
-            String prefix = "";
-            if (groupMemberList != null) {
-                for (ZIMKitGroupMemberInfo groupMemberInfo : groupMemberList) {
-                    if (message.getSenderUserID().equals(groupMemberInfo.getId())) {
-                        if (TextUtils.isEmpty(groupMemberInfo.getNickName())) {
-                            prefix = groupMemberInfo.getName();
-                        } else {
-                            prefix = groupMemberInfo.getNickName();
+            if (Objects.equals(lastMessage.getSenderUserID(), ZIMKit.getLocalUser().getId())) {
+                String prefix = ZIMKitCore.getInstance().getApplication().getString(R.string.zimkit_you);
+                if (lastMessage.getType() == ZIMMessageType.TEXT || lastMessage.getType() == ZIMMessageType.IMAGE
+                    || lastMessage.getType() == ZIMMessageType.AUDIO || lastMessage.getType() == ZIMMessageType.VIDEO
+                    || lastMessage.getType() == ZIMMessageType.FILE) {
+                    prefix = prefix + ":";
+                } else if (lastMessage.getType() == ZIMMessageType.REVOKE
+                    || lastMessage.getType() == ZIMMessageType.TIPS) {
+                    prefix = prefix + " ";
+                }
+                updateLastMessage(lastMessage, prefix);
+            } else {
+                List<ZIMKitGroupMemberInfo> groupMemberList = ZIMKitCore.getInstance()
+                    .getGroupMemberList(conversation.conversationID);
+                if (groupMemberList == null || groupMemberList.isEmpty()) {
+                    ZIMKitCore.getInstance()
+                        .queryGroupMemberInfo(lastMessage.getSenderUserID(), conversation.conversationID,
+                            new QueryGroupMemberInfoCallback() {
+                                @Override
+                                public void onQueryGroupMemberInfo(ZIMKitGroupMemberInfo member, ZIMError error) {
+                                    String prefix;
+                                    if (TextUtils.isEmpty(member.getNickName())) {
+                                        prefix = member.getName();
+                                    } else {
+                                        prefix = member.getNickName();
+                                    }
+                                    if (lastMessage.getType() == ZIMMessageType.TEXT
+                                        || lastMessage.getType() == ZIMMessageType.IMAGE
+                                        || lastMessage.getType() == ZIMMessageType.AUDIO
+                                        || lastMessage.getType() == ZIMMessageType.VIDEO
+                                        || lastMessage.getType() == ZIMMessageType.FILE) {
+                                        prefix = prefix + ":";
+                                    } else if (lastMessage.getType() == ZIMMessageType.REVOKE
+                                        || lastMessage.getType() == ZIMMessageType.TIPS) {
+                                        prefix = prefix + " ";
+                                    }
+                                    updateLastMessage(lastMessage, prefix);
+                                }
+                            });
+                } else {
+                    String prefix = "";
+                    for (ZIMKitGroupMemberInfo groupMemberInfo : groupMemberList) {
+                        if (lastMessage.getSenderUserID().equals(groupMemberInfo.getId())) {
+                            if (TextUtils.isEmpty(groupMemberInfo.getNickName())) {
+                                prefix = groupMemberInfo.getName();
+                            } else {
+                                prefix = groupMemberInfo.getNickName();
+                            }
+                            break;
                         }
-                        prefix = prefix + ":";
-                        break;
                     }
+                    if (lastMessage.getType() == ZIMMessageType.TEXT || lastMessage.getType() == ZIMMessageType.IMAGE
+                        || lastMessage.getType() == ZIMMessageType.AUDIO
+                        || lastMessage.getType() == ZIMMessageType.VIDEO
+                        || lastMessage.getType() == ZIMMessageType.FILE) {
+                        prefix = prefix + ":";
+                    } else if (lastMessage.getType() == ZIMMessageType.REVOKE
+                        || lastMessage.getType() == ZIMMessageType.TIPS) {
+                        prefix = prefix + " ";
+                    }
+                    updateLastMessage(lastMessage, prefix);
                 }
             }
-            updateLastMessage(message, prefix);
         }
     }
 
@@ -142,7 +181,11 @@ public class ZIMKitConversationModel extends BaseObservable {
             mLastMsgContent =
                 prefix + ZIMKitCore.getInstance().getApplication().getString(R.string.zimkit_message_file);
         } else if (message.getType() == ZIMMessageType.REVOKE) {
-
+            mLastMsgContent =
+                prefix + ZIMKitCore.getInstance().getApplication().getString(R.string.zimkit_message_revoke);
+        } else if (message.getType() == ZIMMessageType.TIPS) {
+            TipsMessageModel tipsMessageModel = (TipsMessageModel) ChatMessageParser.parseMessage(message);
+            mLastMsgContent = tipsMessageModel.getContent();
         } else {
             mLastMsgContent = ZIMKitCore.getInstance().getApplication().getString(R.string.zimkit_message_unknown);
         }
@@ -230,9 +273,8 @@ public class ZIMKitConversationModel extends BaseObservable {
         ZIMKitConversationModel model = (ZIMKitConversationModel) o;
         return Objects.equals(model.getConversation().conversationID, mConversation.conversationID) && Objects.equals(
             model.getConversation().orderKey, mConversation.orderKey) && Objects.equals(
-            model.getConversation().type.value(), mConversation.type.value())
-            && Objects.equals(mLastMsgContent, model.mLastMsgContent)
-            ;
+            model.getConversation().type.value(), mConversation.type.value()) && Objects.equals(mLastMsgContent,
+            model.mLastMsgContent);
     }
 
     @Override

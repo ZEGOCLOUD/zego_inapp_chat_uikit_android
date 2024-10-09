@@ -1,24 +1,26 @@
 package com.zegocloud.zimkit.components.message.utils.notification;
 
+import com.zegocloud.zimkit.R;
 import com.zegocloud.zimkit.common.utils.ZIMKitActivityUtils;
+import com.zegocloud.zimkit.components.message.model.TipsMessageModel;
+import com.zegocloud.zimkit.components.message.utils.ChatMessageParser;
+import com.zegocloud.zimkit.components.message.utils.SortMessageComparator;
 import com.zegocloud.zimkit.services.ZIMKit;
 import com.zegocloud.zimkit.services.ZIMKitDelegate;
+import com.zegocloud.zimkit.services.internal.ZIMKitCore;
 import com.zegocloud.zimkit.services.model.ZIMKitConversation;
 import com.zegocloud.zimkit.services.model.ZIMKitMessage;
 import com.zegocloud.zimkit.services.utils.MessageTransform;
 import im.zego.zim.entity.ZIMConversation;
-import im.zego.zim.enums.ZIMConversationNotificationStatus;
-import java.util.ArrayList;
-import java.util.Collections;
-
 import im.zego.zim.entity.ZIMMessage;
 import im.zego.zim.entity.ZIMTextMessage;
+import im.zego.zim.entity.ZIMUserFullInfo;
+import im.zego.zim.enums.ZIMConversationNotificationStatus;
 import im.zego.zim.enums.ZIMConversationType;
 import im.zego.zim.enums.ZIMMessageDirection;
 import im.zego.zim.enums.ZIMMessageType;
-import com.zegocloud.zimkit.R;
-import com.zegocloud.zimkit.components.message.utils.SortMessageComparator;
-import com.zegocloud.zimkit.services.internal.ZIMKitCore;
+import java.util.ArrayList;
+import java.util.Collections;
 
 public class ZIMKitNotificationsManager {
 
@@ -93,6 +95,17 @@ public class ZIMKitNotificationsManager {
         } else if (zimMessage.getType() == ZIMMessageType.FILE) {
             message = ZIMKitCore.getInstance().getApplication().getString(R.string.zimkit_message_file);
         } else if (zimMessage.getType() == ZIMMessageType.REVOKE) {
+            ZIMUserFullInfo memoryUserInfo = ZIMKitCore.getInstance().getMemoryUserInfo(zimMessage.getSenderUserID());
+            if (memoryUserInfo == null) {
+                message = zimMessage.getSenderUserID() + " " + ZIMKitCore.getInstance().getApplication()
+                    .getString(R.string.zimkit_message_revoke);
+            } else {
+                message = memoryUserInfo.baseInfo.userName + " " + ZIMKitCore.getInstance().getApplication()
+                    .getString(R.string.zimkit_message_revoke);
+            }
+        } else if (zimMessage.getType() == ZIMMessageType.TIPS) {
+            TipsMessageModel tipsMessageModel = (TipsMessageModel) ChatMessageParser.parseMessage(zimMessage);
+            message = tipsMessageModel.getContent();
         } else {
             message = ZIMKitCore.getInstance().getApplication().getString(R.string.zimkit_message_unknown);
         }

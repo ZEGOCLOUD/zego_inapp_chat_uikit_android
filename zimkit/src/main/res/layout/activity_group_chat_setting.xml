@@ -82,6 +82,7 @@
         android:gravity="center_vertical"
         android:paddingStart="15dp"
         android:paddingEnd="9dp"
+        android:textColor="@color/color_2a2a2a"
         android:text="@string/do_not_disturb"
         android:textSize="15sp" />
 
@@ -96,6 +97,7 @@
         android:layout_width="match_parent"
         android:layout_height="54dp"
         android:layout_marginTop="1dp"
+        android:textColor="@color/color_2a2a2a"
         android:background="?selectableItemBackground"
         android:gravity="center_vertical"
         android:paddingStart="15dp"

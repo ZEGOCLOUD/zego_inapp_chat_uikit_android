@@ -5,7 +5,6 @@ import androidx.annotation.NonNull;
 import com.zegocloud.zimkit.components.message.model.AudioMessageModel;
 import com.zegocloud.zimkit.components.message.model.FileMessageModel;
 import com.zegocloud.zimkit.components.message.model.ImageMessageModel;
-import com.zegocloud.zimkit.components.message.model.RevokeMessageModel;
 import com.zegocloud.zimkit.components.message.model.TextMessageModel;
 import com.zegocloud.zimkit.components.message.model.VideoMessageModel;
 import com.zegocloud.zimkit.components.message.model.ZIMKitMessageModel;
@@ -60,9 +59,6 @@ public class ZIMKitSingleMessageVM extends ZIMKitMessageVM {
         ArrayList<ZIMKitMessageModel> models = new ArrayList<>();
         for (ZIMKitMessage zimMessage : messages) {
             ZIMKitMessageModel itemModel = ChatMessageParser.parseMessage(zimMessage.zim);
-            if (itemModel instanceof RevokeMessageModel) {
-                continue;
-            }
             if (zimMessage.zim.getDirection() == ZIMMessageDirection.RECEIVE) {
                 setNickNameAndAvatar(itemModel, mSingleOtherSideUserName, mSingleOtherSideUserAvatar);
             } else {
@@ -93,9 +89,6 @@ public class ZIMKitSingleMessageVM extends ZIMKitMessageVM {
         ArrayList<ZIMKitMessageModel> models = new ArrayList<>();
         for (ZIMKitMessage zimMessage : messageList) {
             ZIMKitMessageModel itemModel = ChatMessageParser.parseMessage(zimMessage.zim);
-            if (itemModel instanceof RevokeMessageModel) {
-                continue;
-            }
             if (zimMessage.zim.getDirection() == ZIMMessageDirection.RECEIVE) {
                 setNickNameAndAvatar(itemModel, mSingleOtherSideUserName, mSingleOtherSideUserAvatar);
             }else {

@@ -49,6 +49,7 @@ import com.zegocloud.zimkit.components.message.model.ZIMKitInputButtonModel;
 import com.zegocloud.zimkit.components.message.model.ZIMKitMessageModel;
 import com.zegocloud.zimkit.components.message.utils.AudioSensorBinder;
 import com.zegocloud.zimkit.components.message.utils.ChatMessageBuilder;
+import com.zegocloud.zimkit.components.message.utils.ChatMessageParser;
 import com.zegocloud.zimkit.components.message.utils.image.HEIFImageHelper;
 import com.zegocloud.zimkit.components.message.viewmodel.ZIMKitGroupMessageVM;
 import com.zegocloud.zimkit.components.message.viewmodel.ZIMKitMessageVM;
@@ -77,6 +78,7 @@ import im.zego.zim.enums.ZIMConversationType;
 import im.zego.zim.enums.ZIMErrorCode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBinding, ZIMKitMessageVM> {
 
@@ -193,11 +195,10 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
         mViewModel.setMessageRevokeListener(new MessageRevokeListener() {
             @Override
             public void onMessageRevokeReceived(ArrayList<ZIMKitMessage> messageList) {
-                for (ZIMKitMessage zimKitMessage : messageList) {
-                    if (zimKitMessage.zim.getConversationID().equals(conversationID)) {
-                        mAdapter.deleteMessages(zimKitMessage);
-                    }
-                }
+                List<ZIMKitMessageModel> collect = messageList.stream()
+                    .map(zimKitMessage -> ChatMessageParser.parseMessage(zimKitMessage.zim))
+                    .collect(Collectors.toList());
+                mAdapter.updateMessageInfo(collect);
             }
         });
 

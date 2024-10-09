@@ -17,10 +17,13 @@ import com.zegocloud.zimkit.services.utils.MessageTransform;
 import im.zego.zim.callback.ZIMMessageRevokedCallback;
 import im.zego.zim.entity.ZIMMessageRevokeConfig;
 import im.zego.zim.entity.ZIMPushConfig;
+import im.zego.zim.entity.ZIMUserFullInfo;
 import im.zego.zim.enums.ZIMMessageType;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import im.zego.zim.callback.ZIMMediaDownloadedCallback;
@@ -94,7 +97,15 @@ public class MessageService {
                     ZIMKitCore.getInstance().setGroupMemberInfo(messageList);
                     ArrayList<ZIMKitMessage> zimkitMessageList = MessageTransform.parseMessageList(messageList);
                     if (errorInfo.code == ZIMErrorCode.SUCCESS) {
-                        ZIMKitCore.getInstance().getMessageList().addAll(0, zimkitMessageList);
+                        ArrayList<ZIMKitMessage> messageList1 = ZIMKitCore.getInstance().getMessageList();
+                        for (ZIMKitMessage zimKitMessage : zimkitMessageList) {
+                            Optional<ZIMKitMessage> any = messageList1.stream().filter(
+                                    model -> Objects.equals(model.zim.getMessageID(), zimKitMessage.zim.getMessageID()))
+                                .findAny();
+                            if (!any.isPresent()) {
+                                messageList1.addAll(0, zimkitMessageList);
+                            }
+                        }
                     }
                     if (callback != null) {
                         callback.onLoadMoreMessage(errorInfo);
@@ -123,6 +134,14 @@ public class MessageService {
         } else if (zimMessage.getType() == ZIMMessageType.FILE) {
             message = ZIMKitCore.getInstance().getApplication().getString(R.string.zimkit_message_file);
         } else if (zimMessage.getType() == ZIMMessageType.REVOKE) {
+            ZIMUserFullInfo memoryUserInfo = ZIMKitCore.getInstance().getMemoryUserInfo(zimMessage.getSenderUserID());
+            if (memoryUserInfo == null) {
+                message = zimMessage.getSenderUserID() + " " + ZIMKitCore.getInstance().getApplication()
+                    .getString(R.string.zimkit_message_revoke);
+            } else {
+                message = memoryUserInfo.baseInfo.userName + " " + ZIMKitCore.getInstance().getApplication()
+                    .getString(R.string.zimkit_message_revoke);
+            }
         } else {
             message = ZIMKitCore.getInstance().getApplication().getString(R.string.zimkit_message_unknown);
         }

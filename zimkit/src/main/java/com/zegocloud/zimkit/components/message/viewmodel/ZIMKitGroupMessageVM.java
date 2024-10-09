@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 public class ZIMKitGroupMessageVM extends ZIMKitMessageVM {
 
@@ -109,26 +110,31 @@ public class ZIMKitGroupMessageVM extends ZIMKitMessageVM {
     protected void handlerHistoryMessageList(ArrayList<ZIMKitMessage> messageList, int state) {
         ArrayList<ZIMKitMessageModel> models = new ArrayList<>();
         for (ZIMKitMessage zimMessage : messageList) {
-            ZIMKitMessageModel itemModel = ChatMessageParser.parseMessage(zimMessage.zim);
-            if (itemModel instanceof RevokeMessageModel) {
-                continue;
-            }
-            String nickName = zimMessage.info.senderUserName;
-            String avatar = zimMessage.info.senderUserAvatarUrl;
-            if (!TextUtils.isEmpty(nickName)) {
-                setNickNameAndAvatar(itemModel, nickName, avatar);
-            } else {
-                String nickNameLocal = mGroupUserInfoNameMap.get(itemModel.getMessage().getSenderUserID());
-                String avatarLocal = mGroupUserInfoAvatarMap.get(itemModel.getMessage().getSenderUserID());
-                if (!TextUtils.isEmpty(nickNameLocal)) {
-                    setNickNameAndAvatar(itemModel, nickNameLocal, avatarLocal);
+            Optional<ZIMKitMessageModel> any = models.stream()
+                .filter(model -> Objects.equals(model.getMessage().getMessageID(), zimMessage.zim.getMessageID()))
+                .findAny();
+            if (!any.isPresent()) {
+                ZIMKitMessageModel itemModel = ChatMessageParser.parseMessage(zimMessage.zim);
+
+                String nickName = zimMessage.info.senderUserName;
+                String avatar = zimMessage.info.senderUserAvatarUrl;
+                if (!TextUtils.isEmpty(nickName)) {
+                    setNickNameAndAvatar(itemModel, nickName, avatar);
                 } else {
-                    setNickNameAndAvatar(itemModel, zimMessage.info.senderUserID, avatar);
-                    setGroupMemberInfo(itemModel);
+                    String nickNameLocal = mGroupUserInfoNameMap.get(itemModel.getMessage().getSenderUserID());
+                    String avatarLocal = mGroupUserInfoAvatarMap.get(itemModel.getMessage().getSenderUserID());
+                    if (!TextUtils.isEmpty(nickNameLocal)) {
+                        setNickNameAndAvatar(itemModel, nickNameLocal, avatarLocal);
+                    } else {
+                        setNickNameAndAvatar(itemModel, zimMessage.info.senderUserID, avatar);
+                        setGroupMemberInfo(itemModel);
+                    }
                 }
+                models.add(itemModel);
             }
-            models.add(itemModel);
+
         }
+
         if (state == LoadData.DATA_STATE_HISTORY_NEXT) {
             mMessageList.addAll(0, models);
         } else {
@@ -153,9 +159,6 @@ public class ZIMKitGroupMessageVM extends ZIMKitMessageVM {
         ArrayList<ZIMKitMessageModel> models = new ArrayList<>();
         for (ZIMKitMessage message : messageList) {
             ZIMKitMessageModel itemModel = ChatMessageParser.parseMessage(message.zim);
-            if (itemModel instanceof RevokeMessageModel) {
-                continue;
-            }
             String nickName = message.info.senderUserName;
             String avatar = message.info.senderUserAvatarUrl;
             if (!TextUtils.isEmpty(nickName)) {

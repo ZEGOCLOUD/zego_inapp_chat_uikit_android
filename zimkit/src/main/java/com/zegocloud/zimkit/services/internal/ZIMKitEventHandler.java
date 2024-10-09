@@ -97,15 +97,18 @@ public class ZIMKitEventHandler extends ZIMEventHandler {
     @Override
     public void onMessageRevokeReceived(ZIM zim, ArrayList<ZIMRevokeMessage> messageList) {
         super.onMessageRevokeReceived(zim, messageList);
-        ArrayList<ZIMMessage> messages = new ArrayList<>();
 
-        for (ZIMRevokeMessage revokeMessage : messageList) {
-            messages.add(revokeMessage);
+        if (messageList.isEmpty()) {
+            return;
         }
+
+        ArrayList<ZIMMessage> messages = new ArrayList<>(messageList);
+        String conversationID = messageList.get(0).getConversationID();
+        ZIMConversationType type = messageList.get(0).getConversationType();
         ArrayList<ZIMKitMessage> kitMessages = MessageTransform.parseMessageList(messages);
 
         ZIMKitCore.getInstance().getZimkitNotifyList().notifyAllListener(zimKitDelegate -> {
-            zimKitDelegate.onMessageRevokeReceived(kitMessages);
+            zimKitDelegate.onMessageRevokeReceived(conversationID, type, kitMessages);
         });
     }
 

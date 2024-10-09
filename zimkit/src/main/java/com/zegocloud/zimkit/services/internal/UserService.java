@@ -109,7 +109,7 @@ public class UserService {
         userIDs.add(userID);
         ZIMUsersInfoQueryConfig config = new ZIMUsersInfoQueryConfig();
         config.isQueryFromServer = true;
-        ZIMKitCore.getInstance().zim().queryUsersInfo(userIDs, config, new ZIMUsersInfoQueriedCallback() {
+        ZIMKitCore.getInstance().queryUsersInfo(userIDs, config, new ZIMUsersInfoQueriedCallback() {
             @Override
             public void onUsersInfoQueried(ArrayList<ZIMUserFullInfo> userList,
                 ArrayList<ZIMErrorUserInfo> errorUserList, ZIMError errorInfo) {

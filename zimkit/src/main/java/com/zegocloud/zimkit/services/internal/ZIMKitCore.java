@@ -46,12 +46,15 @@ import im.zego.zim.ZIM;
 import im.zego.zim.callback.ZIMConversationNotificationStatusSetCallback;
 import im.zego.zim.callback.ZIMConversationPinnedStateUpdatedCallback;
 import im.zego.zim.callback.ZIMMessageRevokedCallback;
+import im.zego.zim.callback.ZIMUsersInfoQueriedCallback;
 import im.zego.zim.entity.ZIMConversation;
 import im.zego.zim.entity.ZIMError;
 import im.zego.zim.entity.ZIMGroupMemberInfo;
 import im.zego.zim.entity.ZIMGroupMemberQueryConfig;
 import im.zego.zim.entity.ZIMGroupOperatedInfo;
 import im.zego.zim.entity.ZIMMessage;
+import im.zego.zim.entity.ZIMUserFullInfo;
+import im.zego.zim.entity.ZIMUsersInfoQueryConfig;
 import im.zego.zim.enums.ZIMConversationNotificationStatus;
 import im.zego.zim.enums.ZIMConversationType;
 import im.zego.zim.enums.ZIMErrorCode;
@@ -611,5 +614,14 @@ public class ZIMKitCore implements IZIMKitCore {
 
     public void withDrawMessage(ZIMKitMessageModel model, ZIMMessageRevokedCallback callback) {
         messageService.withDrawMessage(model, callback);
+    }
+
+    public void queryUsersInfo(ArrayList<String> userIDs, ZIMUsersInfoQueryConfig config,
+        ZIMUsersInfoQueriedCallback zimUsersInfoQueriedCallback) {
+        ZegoSignalingPlugin.getInstance().queryUserInfo(userIDs, config, zimUsersInfoQueriedCallback);
+    }
+
+    public ZIMUserFullInfo getMemoryUserInfo(String userID) {
+        return ZegoSignalingPlugin.getInstance().getMemoryUserInfo(userID);
     }
 }
