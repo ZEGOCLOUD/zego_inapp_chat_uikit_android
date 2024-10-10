@@ -42,6 +42,7 @@ import com.zegocloud.zimkit.components.album.internal.entity.Item;
 import com.zegocloud.zimkit.components.album.internal.utils.PathUtils;
 import com.zegocloud.zimkit.components.message.ZIMKitMessageManager;
 import com.zegocloud.zimkit.components.message.adapter.ZIMKitMessageAdapter;
+import com.zegocloud.zimkit.components.message.interfaces.NetworkConnectionListener;
 import com.zegocloud.zimkit.components.message.interfaces.ZIMKitMessagesListListener;
 import com.zegocloud.zimkit.components.message.model.ImageMessageModel;
 import com.zegocloud.zimkit.components.message.model.VideoMessageModel;
@@ -92,6 +93,7 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
     private static final int REQUEST_CODE_FILE = 1011;
     private static final int REQUEST_CODE_PHOTO = 1012;
     private Uri takePicUri;
+    private List<SendPicRunnable> runnableList = new ArrayList<>();
     private ActivityResultLauncher<Uri> takePicLauncher = registerForActivityResult(new TakePicture(),
         new ActivityResultCallback<Boolean>() {
 
@@ -105,18 +107,29 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
                         messageModel.setCommonAttribute(message);
                         messageModel.onProcessMessage(message);
                         messageModel.setFileLocalPath(filePath);
-                        mBinding.getRoot().post(new Runnable() {
-                            @Override
-                            public void run() {
-                                mViewModel.sendMediaMessage(messageModel);
-                                scrollToMessageEnd();
-                            }
-                        });
+
+                        SendPicRunnable sendPicRunnable = new SendPicRunnable();
+                        sendPicRunnable.setMessageModel(messageModel);
+                        if (ZIMKitCore.getInstance().isPluginConnected()) {
+                            mBinding.getRoot().post(sendPicRunnable);
+                        } else {
+                            runnableList.add(sendPicRunnable);
+                        }
                     }
                     takePicUri = null;
                 }
             }
         });
+    private NetworkConnectionListener connectionListener = new NetworkConnectionListener() {
+        @Override
+        public void onConnected() {
+            if (!runnableList.isEmpty()) {
+                runnableList.forEach(SendPicRunnable::run);
+            }
+            runnableList.clear();
+        }
+    };
+
     private BottomCallDialog bottomCallDialog;
     private OnBackPressedCallback onBackPressedCallback;
 
@@ -164,6 +177,7 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
     @Override
     protected void initData() {
         ZIMKitMessageManager.share().initNetworkConnection();
+        ZIMKitMessageManager.share().registerNetworkListener(connectionListener);
         if (getArguments() != null) {
             String type = getArguments().getString(ZIMKitConstant.MessagePageConstant.KEY_TYPE);
             String id = getArguments().getString(ZIMKitConstant.MessagePageConstant.KEY_ID);
@@ -736,5 +750,20 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
 
     public String getConversationName() {
         return conversationName;
+    }
+
+    class SendPicRunnable implements Runnable {
+
+        private ImageMessageModel messageModel;
+
+        public void setMessageModel(ImageMessageModel messageModel) {
+            this.messageModel = messageModel;
+        }
+
+        @Override
+        public void run() {
+            mViewModel.sendMediaMessage(messageModel);
+            scrollToMessageEnd();
+        }
     }
 }

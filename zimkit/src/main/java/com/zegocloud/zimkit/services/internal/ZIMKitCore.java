@@ -55,6 +55,7 @@ import im.zego.zim.entity.ZIMGroupOperatedInfo;
 import im.zego.zim.entity.ZIMMessage;
 import im.zego.zim.entity.ZIMUserFullInfo;
 import im.zego.zim.entity.ZIMUsersInfoQueryConfig;
+import im.zego.zim.enums.ZIMConnectionState;
 import im.zego.zim.enums.ZIMConversationNotificationStatus;
 import im.zego.zim.enums.ZIMConversationType;
 import im.zego.zim.enums.ZIMErrorCode;
@@ -233,6 +234,10 @@ public class ZIMKitCore implements IZIMKitCore {
         zimkitNotifyList.clear();
         userService.disconnectUser();
         groupList.clear();
+    }
+
+    public boolean isPluginConnected() {
+        return ZegoSignalingPlugin.getInstance().getConnectionState() == ZIMConnectionState.CONNECTED;
     }
 
     public ZIMKitInputButtonModel getInputButtonModel(ZIMKitInputButtonName inputButtonName) {
