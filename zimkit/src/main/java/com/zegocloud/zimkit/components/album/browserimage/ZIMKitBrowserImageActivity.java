@@ -10,10 +10,12 @@ import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager.widget.ViewPager;
 
+import com.permissionx.guolindev.callback.RequestCallback;
 import com.zegocloud.zimkit.common.base.BaseDialog;
 import com.zegocloud.zimkit.common.utils.PermissionHelper;
 import com.zegocloud.zimkit.common.utils.ZIMKitCheckDoubleClick;
@@ -23,6 +25,7 @@ import com.zegocloud.zimkit.components.album.internal.utils.Platform;
 import java.util.ArrayList;
 
 import com.zegocloud.zimkit.R;
+import java.util.List;
 
 /**
  * View larger image
@@ -111,9 +114,10 @@ public class ZIMKitBrowserImageActivity extends AppCompatActivity {
                 mPagerAdapter.loadImage(0);
                 return;
             }
-            PermissionHelper.onWriteSDCardPermissionGranted(this, new PermissionHelper.GrantResult() {
+            PermissionHelper.onWriteSDCardPermissionGranted(this, new RequestCallback() {
                 @Override
-                public void onGrantResult(boolean allGranted) {
+                public void onResult(boolean allGranted, @NonNull List<String> grantedList,
+                    @NonNull List<String> deniedList) {
                     if (allGranted) {
                         mPagerAdapter.downloadImage();
                     } else {
@@ -125,7 +129,7 @@ public class ZIMKitBrowserImageActivity extends AppCompatActivity {
                         baseDialog.setSureListener(v -> {
                             baseDialog.dismiss();
                             Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                                    .setData(Uri.fromParts("package", getPackageName(), null));
+                                .setData(Uri.fromParts("package", getPackageName(), null));
                             startActivityForResult(intent, 666);
                         });
                         baseDialog.setCancelListener(v -> {

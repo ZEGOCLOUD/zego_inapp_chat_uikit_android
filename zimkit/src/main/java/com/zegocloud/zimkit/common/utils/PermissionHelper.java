@@ -4,6 +4,7 @@ import android.Manifest;
 import android.Manifest.permission;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 import com.permissionx.guolindev.PermissionX;
@@ -16,41 +17,26 @@ public class PermissionHelper {
 
     private static final String TAG = "PermissionHelper";
 
-    public static void onWriteSDCardPermissionGranted(FragmentActivity activity, GrantResult grantResult) {
+    public static void onWriteSDCardPermissionGranted(FragmentActivity activity, RequestCallback requestCallback) {
         List<String> requestList = new ArrayList<>();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            requestList.add(Manifest.permission.READ_MEDIA_IMAGES);
-            requestList.add(Manifest.permission.READ_MEDIA_AUDIO);
-            requestList.add(Manifest.permission.READ_MEDIA_VIDEO);
+        // android 13 ,use media store api no need permission to write to public
+        //      pictures dir.
+        if (Build.VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
+            //            requestList.add(Manifest.permission.READ_MEDIA_IMAGES);
+            //            requestList.add(Manifest.permission.READ_MEDIA_AUDIO);
+            //            requestList.add(Manifest.permission.READ_MEDIA_VIDEO);
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            // android 10 - android 12 ,use media store api no need permission to write to public
+            // pictures dir.
+            //            requestList.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+            //            requestList.add(permission.WRITE_EXTERNAL_STORAGE);
         } else {
+            // below android 10,use media store api or File api both need WRITE_EXTERNAL_STORAGE permission
+            //  to write to public pictures dir.
             requestList.add(Manifest.permission.READ_EXTERNAL_STORAGE);
             requestList.add(permission.WRITE_EXTERNAL_STORAGE);
         }
-        boolean allPermissionGranted = true;
-        for (String permission : requestList) {
-            if (ContextCompat.checkSelfPermission(activity, permission) != PackageManager.PERMISSION_GRANTED) {
-                allPermissionGranted = false;
-            }
-        }
-        if (allPermissionGranted) {
-            grantResult.onGrantResult(true);
-            return;
-        }
-
-        PermissionX.init(activity).permissions(requestList)
-            .request((RequestCallback) ((allGranted, grantedList, deniedList) -> {
-                if (allGranted) {
-                    grantResult.onGrantResult(true);
-                } else {
-                    grantResult.onGrantResult(false);
-                }
-
-            }));
-    }
-
-    public interface GrantResult {
-
-        void onGrantResult(boolean allGranted);
+        requestPermissionsIfNeed(activity, requestList, requestCallback);
     }
 
     public static void requestReadSDCardPermissionIfNeed(FragmentActivity activity, RequestCallback callback) {

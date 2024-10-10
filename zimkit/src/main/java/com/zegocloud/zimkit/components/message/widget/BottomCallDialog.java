@@ -30,7 +30,13 @@ import com.zegocloud.zimkit.services.ZIMKitConfig;
 import com.zegocloud.zimkit.services.config.ZIMKitInputButtonName;
 import com.zegocloud.zimkit.services.internal.ZIMKitCore;
 import com.zegocloud.zimkit.services.model.ZIMKitConversation;
+import im.zego.zim.callback.ZIMUsersInfoQueriedCallback;
+import im.zego.zim.entity.ZIMError;
+import im.zego.zim.entity.ZIMErrorUserInfo;
+import im.zego.zim.entity.ZIMUserFullInfo;
+import im.zego.zim.entity.ZIMUsersInfoQueryConfig;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -109,37 +115,47 @@ public class BottomCallDialog extends BottomSheetDialogFragment {
     }
 
     private void sendCall(PluginCallType callType) {
-        Activity activity = (Activity) getContext();
-        ZegoCallPluginProtocol callkitPlugin = ZegoPluginAdapter.callkitPlugin();
-        ZIMKitConversation conversation = ZIMKitCore.getInstance().getZIMKitConversation(conversationID);
-
-        PluginCallUser callUser = new PluginCallUser();
-        callUser.userID = conversationID;
-        callUser.userName = conversation.getName();
-        callUser.avatar = conversation.getAvatarUrl();
-        List<PluginCallUser> callUsers = new ArrayList<>();
-        callUsers.add(callUser);
-
-        ZIMKitConfig zimKitConfig = ZIMKitCore.getInstance().getZimKitConfig();
-        ZegoSignalingPluginNotificationConfig notificationConfig = null;
-        if (zimKitConfig != null && zimKitConfig.callPluginConfig != null && !TextUtils.isEmpty(
-            zimKitConfig.callPluginConfig.resourceID)) {
-            notificationConfig = new ZegoSignalingPluginNotificationConfig();
-            notificationConfig.setResourceID(zimKitConfig.callPluginConfig.resourceID);
-        }
-        if (callkitPlugin != null && zimKitConfig != null && zimKitConfig.callPluginConfig != null) {
-            callkitPlugin.sendInvitationWithUIChange(activity, callUsers, callType, "", 60, null, notificationConfig,
-                new ZegoPluginCallback() {
+        ZIMKitCore.getInstance()
+            .queryUsersInfo(new ArrayList<>(Collections.singletonList(conversationID)), new ZIMUsersInfoQueryConfig(),
+                new ZIMUsersInfoQueriedCallback() {
                     @Override
-                    public void onSuccess() {
-                    }
+                    public void onUsersInfoQueried(ArrayList<ZIMUserFullInfo> userList,
+                        ArrayList<ZIMErrorUserInfo> errorUserList, ZIMError errorInfo) {
+                        if (!userList.isEmpty()) {
+                            PluginCallUser callUser = new PluginCallUser();
+                            callUser.userID = userList.get(0).baseInfo.userID;
+                            callUser.userName = userList.get(0).baseInfo.userName;
+                            callUser.avatar = userList.get(0).baseInfo.userAvatarUrl;
+                            List<PluginCallUser> callUsers = new ArrayList<>();
+                            callUsers.add(callUser);
 
-                    @Override
-                    public void onError(int errorCode, String errorMessage) {
+                            ZIMKitConfig zimKitConfig = ZIMKitCore.getInstance().getZimKitConfig();
+                            ZegoSignalingPluginNotificationConfig notificationConfig = null;
+                            if (zimKitConfig != null && zimKitConfig.callPluginConfig != null && !TextUtils.isEmpty(
+                                zimKitConfig.callPluginConfig.resourceID)) {
+                                notificationConfig = new ZegoSignalingPluginNotificationConfig();
+                                notificationConfig.setResourceID(zimKitConfig.callPluginConfig.resourceID);
+                            }
+                            Activity activity = (Activity) getContext();
+                            ZegoCallPluginProtocol callkitPlugin = ZegoPluginAdapter.callkitPlugin();
+                            if (callkitPlugin != null && zimKitConfig != null
+                                && zimKitConfig.callPluginConfig != null) {
+                                callkitPlugin.sendInvitationWithUIChange(activity, callUsers, callType, "", 60, null,
+                                    notificationConfig, new ZegoPluginCallback() {
+                                        @Override
+                                        public void onSuccess() {
+                                        }
+
+                                        @Override
+                                        public void onError(int errorCode, String errorMessage) {
+
+                                        }
+                                    });
+                            }
+                        }
 
                     }
                 });
-        }
     }
 
     public void showDialog(FragmentManager supportFragmentManager, boolean fromExpand) {
