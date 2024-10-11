@@ -73,7 +73,7 @@
         android:layout_marginRight="-6dp"
         android:gravity="center"
         android:textColor="@color/white"
-        android:textSize="11sp"
+        android:textSize="9sp"
         app:layout_constraintRight_toRightOf="@id/iv_avatar"
         app:layout_constraintTop_toTopOf="@id/iv_avatar"
         app:unReadCount="@{itemModel.unReadCount}"

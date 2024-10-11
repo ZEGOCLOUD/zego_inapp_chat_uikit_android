@@ -108,13 +108,15 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
                         messageModel.onProcessMessage(message);
                         messageModel.setFileLocalPath(filePath);
 
-                        SendPicRunnable sendPicRunnable = new SendPicRunnable();
-                        sendPicRunnable.setMessageModel(messageModel);
-                        if (ZIMKitCore.getInstance().isPluginConnected()) {
-                            mBinding.getRoot().post(sendPicRunnable);
-                        } else {
-                            runnableList.add(sendPicRunnable);
-                        }
+                        mBinding.getRoot().post(() -> {
+                            SendPicRunnable sendPicRunnable = new SendPicRunnable();
+                            sendPicRunnable.setMessageModel(messageModel);
+                            if (ZIMKitCore.getInstance().isPluginConnected()) {
+                                sendPicRunnable.run();
+                            } else {
+                                runnableList.add(sendPicRunnable);
+                            }
+                        });
                     }
                     takePicUri = null;
                 }
@@ -158,10 +160,10 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
             }
         };
         requireActivity().getOnBackPressedDispatcher().addCallback(this, onBackPressedCallback);
-        //        mBinding.refreshLayout.setOnRefreshListener(refreshLayout -> {
-        //            mViewModel.loadNextPage();
-        //        });
-        //        mBinding.refreshLayout.setEnableScrollContentWhenRefreshed(true);
+        mBinding.refreshLayout.setOnRefreshListener(refreshLayout -> {
+            mViewModel.loadNextPage();
+        });
+        mBinding.refreshLayout.setEnableScrollContentWhenRefreshed(true);
     }
 
     @Override
@@ -220,7 +222,7 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
             @Override
             public void onSuccess(ZIMKitMessageVM.LoadData loadData) {
                 if (loadData.data.isEmpty()) {
-                    //                    mBinding.refreshLayout.finishRefreshWithNoMoreData();
+                    mBinding.refreshLayout.finishRefreshWithNoMoreData();
                     return;
                 }
                 if (loadData.state == ZIMKitMessageVM.LoadData.DATA_STATE_HISTORY_FIRST) {
@@ -236,9 +238,9 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
                 if (loadData.state != ZIMKitMessageVM.LoadData.DATA_STATE_NEW
                     && loadData.state != ZIMKitMessageVM.LoadData.DATA_STATE_NEW_UPDATE) {
                     if (loadData.data.size() < ZIMKitMessageVM.QUERY_HISTORY_MESSAGE_COUNT) {
-                        //                        mBinding.refreshLayout.finishRefresh();
+                        mBinding.refreshLayout.finishRefresh();
                     } else {
-                        //                        mBinding.refreshLayout.finishRefreshWithNoMoreData();
+                        mBinding.refreshLayout.finishRefreshWithNoMoreData();
                     }
                 }
                 if (loadData.state != ZIMKitMessageVM.LoadData.DATA_STATE_HISTORY_NEXT
@@ -249,7 +251,7 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
 
             @Override
             public void onFail(ZIMError error) {
-                //                mBinding.refreshLayout.finishRefresh(false);
+                mBinding.refreshLayout.finishRefresh(false);
                 if (error.code != ZIMErrorCode.SUCCESS && getContext() != null) {
                     if (error.code == ZIMErrorCode.NETWORK_ERROR) {
                         ZIMKitToastUtils.showErrorMessageIfNeeded(error.code.value(),
