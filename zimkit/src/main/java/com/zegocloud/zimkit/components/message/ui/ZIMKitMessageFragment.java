@@ -6,6 +6,8 @@ import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -77,6 +79,7 @@ import im.zego.zim.entity.ZIMMessage;
 import im.zego.zim.entity.ZIMVideoMessage;
 import im.zego.zim.enums.ZIMConversationType;
 import im.zego.zim.enums.ZIMErrorCode;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -282,7 +285,6 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
             baseDialog.setSureListener(v -> {
                 baseDialog.dismiss();
                 deleteMessage(messageList);
-                hideMultiSelectMessage();
             });
             baseDialog.setCancelListener(v -> {
                 baseDialog.dismiss();
@@ -385,12 +387,18 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
                     String displayName = "zimkit_" + System.currentTimeMillis() + ".jpg";
                     values.put(MediaStore.MediaColumns.DISPLAY_NAME, displayName);
                     values.put(MediaStore.MediaColumns.MIME_TYPE, MimeType.JPEG.toString());
+
+                    PackageManager pm = getContext().getPackageManager();
+                    ApplicationInfo applicationInfo = getContext().getApplicationContext().getApplicationInfo();
+                    String appName = pm.getApplicationLabel(applicationInfo).toString();
+
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                        values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DCIM);
+                        values.put(MediaStore.MediaColumns.RELATIVE_PATH,
+                            Environment.DIRECTORY_PICTURES + File.separator + appName);
                     } else {
-                        values.put(MediaStore.MediaColumns.DATA,
-                            Environment.getExternalStorageDirectory().getPath() + "/" + Environment.DIRECTORY_DCIM + "/"
-                                + displayName);
+                        String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+                            + File.separator + appName;
+                        values.put(MediaStore.MediaColumns.DATA, path + File.separator + displayName);
                     }
                     takePicUri = requireActivity().getContentResolver()
                         .insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
@@ -446,8 +454,8 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
             public void onMessageDeleted(String conversationID, ZIMConversationType conversationType,
                 ZIMError errorInfo) {
                 if (errorInfo.code == ZIMErrorCode.SUCCESS) {
-                    mAdapter.setShowMultiSelectCheckBox(false);
                     mAdapter.deleteMultiMessages();
+                    hideMultiSelectMessage();
                     if (mOnTitleClickListener != null) {
                         mOnTitleClickListener.titleNormal();
                     }
@@ -487,8 +495,8 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
      * Hide Multiple Choice
      */
     public void hideMultiSelectMessage() {
-        mAdapter.setShowMultiSelectCheckBox(false);
         mBinding.multiSelectOperate.setVisibility(View.GONE);
+        mAdapter.setShowMultiSelectCheckBox(false);
         mAdapter.notifyDataSetChanged();
     }
 

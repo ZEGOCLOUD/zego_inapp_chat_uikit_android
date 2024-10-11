@@ -3,6 +3,7 @@ package com.zegocloud.zimkit.components.message.adapter;
 import android.content.Context;
 import android.media.AudioManager;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import timber.log.Timber;
 
 public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder> {
 
@@ -124,7 +126,13 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
      * Delete multi-select messages
      */
     public void deleteMultiMessages() {
+        Timber.d("deleteMultiMessages() called");
         Iterator<ZIMKitMessageModel> it = mList.iterator();
+
+        for (int i = 0; i < mList.size(); i++) {
+            Timber.d("deleteMultiMessages: " + i + "," + mList.get(i).isCheck());
+        }
+
         while (it.hasNext()) {
             ZIMKitMessageModel model = it.next();
             if (model.isCheck()) {
@@ -262,6 +270,8 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
     public void onBindViewHolder(@NonNull MessageViewHolder holder, int position) {
         ZIMKitMessageModel model = mList.get(holder.getAdapterPosition());
         model.setShowMultiSelectCheckBox(isShowMultiSelectCheckBox);
+        Timber.d("onBindViewHolder() called with: isShowMultiSelectCheckBox = [" + isShowMultiSelectCheckBox
+            + "], position = [" + position + "],model.isCheck():" + model.isCheck());
         if (!isShowMultiSelectCheckBox && model.isCheck()) {
             model.setCheck(false);
         }

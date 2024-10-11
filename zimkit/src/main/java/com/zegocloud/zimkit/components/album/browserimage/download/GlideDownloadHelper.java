@@ -4,6 +4,8 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -28,7 +30,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class GlideDownloadHelper {
 
     private static Context appContext;
-    private static final String dir_name = "zim";
     private static DownloadQueue downloadQueue;
 
     /**
@@ -48,7 +49,7 @@ public class GlideDownloadHelper {
         return new DownloadTaskImpl(appContext).setUrl(url);
     }
 
-//    private static String getCacheDir() {
+    //    private static String getCacheDir() {
     //        File dir = new File(rootPath);
     //        if (!dir.exists()) {
     //            dir.mkdirs();
@@ -81,12 +82,16 @@ public class GlideDownloadHelper {
             if (isCancel) {
                 return;
             }
+            PackageManager pm = context.getPackageManager();
+            ApplicationInfo applicationInfo = context.getApplicationContext().getApplicationInfo();
+            String appName = pm.getApplicationLabel(applicationInfo).toString();
+
             String fileName = System.currentTimeMillis() + "_zimkit." + suffix;
             File originFile = startDownload();
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                Api29Impl.saveToSystem(context, originFile, fileName, suffix, dir_name);
+                Api29Impl.saveToSystem(context, originFile, fileName, suffix, appName);
             } else {
-                ApiBelow.saveToSystem(context, originFile, fileName, suffix, dir_name);
+                ApiBelow.saveToSystem(context, originFile, fileName, suffix, appName);
             }
             FileUtils.deleteFile(originFile);
             if (isCancel) {
@@ -167,8 +172,7 @@ public class GlideDownloadHelper {
             values.put(MediaStore.Images.Media.MIME_TYPE, mimeType);
             String path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + File.separator
                 + relativePath;
-            values.put(MediaStore.MediaColumns.DATA,
-                path + File.separator + fileName);
+            values.put(MediaStore.MediaColumns.DATA, path + File.separator + fileName);
 
             ContentResolver contentResolver = context.getApplicationContext().getContentResolver();
             Uri imageCollection = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
