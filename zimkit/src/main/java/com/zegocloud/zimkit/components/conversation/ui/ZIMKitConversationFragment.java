@@ -3,20 +3,18 @@ package com.zegocloud.zimkit.components.conversation.ui;
 import android.Manifest.permission;
 import android.app.Application;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.View;
-import androidx.annotation.NonNull;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts.RequestPermission;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.ViewHolder;
-import com.permissionx.guolindev.PermissionX;
-import com.permissionx.guolindev.callback.ExplainReasonCallback;
-import com.permissionx.guolindev.callback.RequestCallback;
-import com.permissionx.guolindev.request.ExplainScope;
 import com.zegocloud.uikit.plugin.adapter.ZegoPluginAdapter;
 import com.zegocloud.uikit.plugin.adapter.plugins.call.ZegoCallPluginProtocol;
 import com.zegocloud.zimkit.BR;
@@ -62,6 +60,11 @@ public class ZIMKitConversationFragment extends BaseFragment<ZimkitFragmentConve
     private ZIMKitConversationListListener conversationListListener;
     private List<SwipeButton> swipeButtons = new ArrayList<>();
     private ZIMKitDelegate zimKitDelegate;
+    private ActivityResultLauncher<String> permissionRequest = registerForActivityResult(new RequestPermission(),
+        result -> {
+            if (result) {
+            }
+        });
 
     @Override
     protected int getLayoutId() {
@@ -198,11 +201,11 @@ public class ZIMKitConversationFragment extends BaseFragment<ZimkitFragmentConve
         }
     }
 
-//    @Override
-//    public void onResume() {
-//        super.onResume();
-//        mViewModel.loadConversation();
-//    }
+    //    @Override
+    //    public void onResume() {
+    //        super.onResume();
+    //        mViewModel.loadConversation();
+    //    }
 
     private void updatePinButtonUI(SwipeButton pinButton, boolean isPinned) {
         pinButton.setActivated(isPinned);
@@ -340,31 +343,8 @@ public class ZIMKitConversationFragment extends BaseFragment<ZimkitFragmentConve
     @Override
     protected void initData() {
 
-        List<String> permissions = new ArrayList<>();
-        boolean hasPermission = true;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            hasPermission = ContextCompat.checkSelfPermission(getContext(), permission.POST_NOTIFICATIONS)
-                == PackageManager.PERMISSION_GRANTED;
-        }
-        if (!hasPermission) {
-            permissions.add(PermissionX.permission.POST_NOTIFICATIONS);
-        }
-        if (!permissions.isEmpty()) {
-            PermissionX.init(this).permissions(permissions).onExplainRequestReason(new ExplainReasonCallback() {
-                @Override
-                public void onExplainReason(@NonNull ExplainScope scope, @NonNull List<String> deniedList) {
-                    String message = getString(R.string.zimkit_notification_request_text);
-                    scope.showRequestReasonDialog(deniedList, message, getString(R.string.zimkit_allow),
-                        getString(R.string.zimkit_refuse));
-                }
-            }).request(new RequestCallback() {
-                @Override
-                public void onResult(boolean allGranted, @NonNull List<String> grantedList,
-                    @NonNull List<String> deniedList) {
-                    if (deniedList.contains(PermissionX.permission.POST_NOTIFICATIONS)) {
-                    }
-                }
-            });
+        if (VERSION.SDK_INT >= VERSION_CODES.TIRAMISU) {
+            permissionRequest.launch(permission.POST_NOTIFICATIONS);
         }
 
         mViewModel.setOnLoadConversationListener(new ZIMKitConversationVM.OnLoadConversationListener() {

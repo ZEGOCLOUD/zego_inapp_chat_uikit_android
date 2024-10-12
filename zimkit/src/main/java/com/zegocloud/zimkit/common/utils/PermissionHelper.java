@@ -42,9 +42,14 @@ public class PermissionHelper {
     public static void requestReadSDCardPermissionIfNeed(FragmentActivity activity, RequestCallback callback) {
         List<String> permissions = new ArrayList<>();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            permissions.add(Manifest.permission.READ_MEDIA_IMAGES);
-            permissions.add(Manifest.permission.READ_MEDIA_AUDIO);
-            permissions.add(Manifest.permission.READ_MEDIA_VIDEO);
+            int targetSdkVersion = activity.getApplicationInfo().targetSdkVersion;
+            if (targetSdkVersion >= Build.VERSION_CODES.TIRAMISU) {
+                permissions.add(Manifest.permission.READ_MEDIA_IMAGES);
+                permissions.add(Manifest.permission.READ_MEDIA_AUDIO);
+                permissions.add(Manifest.permission.READ_MEDIA_VIDEO);
+            } else {
+                permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE);
+            }
         } else {
             permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE);
         }
