@@ -40,6 +40,7 @@ import com.zegocloud.zimkit.databinding.ZimkitLayoutSeletectChatTypeBinding;
 import com.zegocloud.zimkit.services.ZIMKit;
 import com.zegocloud.zimkit.services.ZIMKitConfig;
 import com.zegocloud.zimkit.services.ZIMKitDelegate;
+import com.zegocloud.zimkit.services.callback.DeleteConversationCallback;
 import com.zegocloud.zimkit.services.internal.ZIMKitCore;
 import com.zegocloud.zimkit.services.model.ZIMKitConversation;
 import im.zego.zim.entity.ZIMConversation;
@@ -137,7 +138,15 @@ public class ZIMKitConversationFragment extends BaseFragment<ZimkitFragmentConve
                     @Override
                     public void onSingleTapConfirmed(int position, SwipeButton button,
                         SlideButtonDecor slideButtonDecor) {
-                        ZIMKit.deleteConversation(conversation.conversationID, conversation.type, null);
+                        ZIMKit.deleteConversation(conversation.conversationID, conversation.type,
+                            new DeleteConversationCallback() {
+                                @Override
+                                public void onDeleteConversation(ZIMError error) {
+                                    if (ZIMKitCore.getInstance().getConversationListListener() != null) {
+                                        ZIMKitCore.getInstance().getConversationListListener().onConversationDeleted(conversation, position);
+                                    }
+                                }
+                            });
                     }
                 });
                 swipeButtons.add(deleteButton);
@@ -194,8 +203,8 @@ public class ZIMKitConversationFragment extends BaseFragment<ZimkitFragmentConve
             Application application = requireActivity().getApplication();
             String userID = ZIMKit.getLocalUser().getId();
             String userName = ZIMKit.getLocalUser().getName();
-            callkitPlugin.init(application, ZIMKitCore.getInstance().appID, ZIMKitCore.getInstance().appSign,
-                userID, userName, zimKitConfig.callPluginConfig);
+            callkitPlugin.init(application, ZIMKitCore.getInstance().appID, ZIMKitCore.getInstance().appSign, userID,
+                userName, zimKitConfig.callPluginConfig);
             ZIMKitCore.getInstance().appID = 0;
             ZIMKitCore.getInstance().appSign = null;
         }
