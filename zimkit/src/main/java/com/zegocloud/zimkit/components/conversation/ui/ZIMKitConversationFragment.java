@@ -128,49 +128,61 @@ public class ZIMKitConversationFragment extends BaseFragment<ZimkitFragmentConve
                 if (position == RecyclerView.NO_POSITION) {
                     return new ArrayList<>();
                 }
+
                 ZIMKitConversationModel model = mListAdapter.getModel(position);
                 ZIMConversation conversation = model.getConversation();
-
                 swipeButtons.clear();
-                String delete = getString(R.string.zimkit_delete);
-                SwipeButton deleteButton = new SwipeButton(delete, Color.WHITE, spToPx(15),
-                    ContextCompat.getColor(getContext(), R.color.color_ff3c48), dpToPx(80), new ClickListener() {
-                    @Override
-                    public void onSingleTapConfirmed(int position, SwipeButton button,
-                        SlideButtonDecor slideButtonDecor) {
-                        ZIMKit.deleteConversation(conversation.conversationID, conversation.type,
-                            new DeleteConversationCallback() {
-                                @Override
-                                public void onDeleteConversation(ZIMError error) {
-                                    if (ZIMKitCore.getInstance().getConversationListListener() != null) {
-                                        ZIMKitCore.getInstance().getConversationListListener().onConversationDeleted(conversation, position);
-                                    }
-                                }
-                            });
-                    }
-                });
-                swipeButtons.add(deleteButton);
 
-                String pin = getString(R.string.zimkit_pin_conversation);
-                SwipeButton pinButton = new SwipeButton(pin, Color.WHITE, spToPx(15),
-                    ContextCompat.getColor(getContext(), R.color.conversation_item_make_top), dpToPx(80),
-                    new ClickListener() {
+                boolean addDeleteButton = true;
+                boolean addPinButton = true;
+                ZIMKitConversationListListener listener = ZIMKitCore.getInstance().getConversationListListener();
+                if (listener != null) {
+                    addDeleteButton = listener.shouldHideSwipeDeleteItem(conversation, position);
+                    addPinButton = listener.shouldHideSwipePinnedItem(conversation, position);
+                }
+                if (addDeleteButton) {
+                    String delete = getString(R.string.zimkit_delete);
+                    SwipeButton deleteButton = new SwipeButton(delete, Color.WHITE, spToPx(15),
+                        ContextCompat.getColor(getContext(), R.color.color_ff3c48), dpToPx(80), new ClickListener() {
                         @Override
                         public void onSingleTapConfirmed(int position, SwipeButton button,
                             SlideButtonDecor slideButtonDecor) {
-                            boolean activated = button.isActivated();
-                            ZIMKitCore.getInstance()
-                                .setConversationPinnedState(!activated, conversation.conversationID, conversation.type,
-                                    null);
+                            ZIMKit.deleteConversation(conversation.conversationID, conversation.type,
+                                new DeleteConversationCallback() {
+                                    @Override
+                                    public void onDeleteConversation(ZIMError error) {
+                                        if (ZIMKitCore.getInstance().getConversationListListener() != null) {
+                                            ZIMKitCore.getInstance().getConversationListListener()
+                                                .onConversationDeleted(conversation, position);
+                                        }
+                                    }
+                                });
                         }
                     });
-                boolean isPinned = false;
-                if (conversation != null) {
-                    isPinned = conversation.isPinned;
+                    swipeButtons.add(deleteButton);
                 }
+                if (addPinButton) {
+                    String pin = getString(R.string.zimkit_pin_conversation);
+                    SwipeButton pinButton = new SwipeButton(pin, Color.WHITE, spToPx(15),
+                        ContextCompat.getColor(getContext(), R.color.conversation_item_make_top), dpToPx(80),
+                        new ClickListener() {
+                            @Override
+                            public void onSingleTapConfirmed(int position, SwipeButton button,
+                                SlideButtonDecor slideButtonDecor) {
+                                boolean activated = button.isActivated();
+                                ZIMKitCore.getInstance()
+                                    .setConversationPinnedState(!activated, conversation.conversationID,
+                                        conversation.type, null);
+                            }
+                        });
+                    boolean isPinned = false;
+                    if (conversation != null) {
+                        isPinned = conversation.isPinned;
+                    }
 
-                updatePinButtonUI(pinButton, isPinned);
-                swipeButtons.add(pinButton);
+                    updatePinButtonUI(pinButton, isPinned);
+                    swipeButtons.add(pinButton);
+                }
                 return swipeButtons;
             }
         });
