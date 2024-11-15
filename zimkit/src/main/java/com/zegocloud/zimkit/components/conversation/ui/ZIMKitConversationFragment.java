@@ -137,16 +137,15 @@ public class ZIMKitConversationFragment extends BaseFragment<ZimkitFragmentConve
                 boolean addPinButton = true;
                 ZIMKitConversationListListener listener = ZIMKitCore.getInstance().getConversationListListener();
                 if (listener != null) {
-                    addDeleteButton = listener.shouldHideSwipeDeleteItem(conversation, position);
-                    addPinButton = listener.shouldHideSwipePinnedItem(conversation, position);
+                    addDeleteButton = !listener.shouldHideSwipeDeleteItem(conversation, position);
+                    addPinButton = !listener.shouldHideSwipePinnedItem(conversation, position);
                 }
                 if (addDeleteButton) {
                     String delete = getString(R.string.zimkit_delete);
                     SwipeButton deleteButton = new SwipeButton(delete, Color.WHITE, spToPx(15),
                         ContextCompat.getColor(getContext(), R.color.color_ff3c48), dpToPx(80), new ClickListener() {
                         @Override
-                        public void onSingleTapConfirmed(int position, SwipeButton button,
-                            SlideButtonDecor slideButtonDecor) {
+                        public void onSingleTapConfirmed(int position, SwipeButton button, SlideButtonDecor slideButtonDecor) {
                             ZIMKit.deleteConversation(conversation.conversationID, conversation.type,
                                 new DeleteConversationCallback() {
                                     @Override

@@ -16,10 +16,10 @@ public interface ZIMKitConversationListListener {
     }
 
     default boolean shouldHideSwipePinnedItem(ZIMConversation conversation, int position) {
-        return true;
+        return false;
     }
 
     default boolean shouldHideSwipeDeleteItem(ZIMConversation conversation, int position) {
-        return true;
+        return false;
     }
 }
