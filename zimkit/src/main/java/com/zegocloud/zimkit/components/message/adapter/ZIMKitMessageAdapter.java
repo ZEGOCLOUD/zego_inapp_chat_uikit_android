@@ -3,7 +3,6 @@ package com.zegocloud.zimkit.components.message.adapter;
 import android.content.Context;
 import android.media.AudioManager;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -192,13 +191,13 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
     public MessageViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         ViewDataBinding binding;
         MessageViewHolder viewHolder;
-        if (viewType == 99) { // temp error message type
+        if (viewType == 999) { // temp error message type
             binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
                 R.layout.zimkit_item_message_system, parent, false);
             viewHolder = new MessageSystemHolder(binding);
         } else {
-            boolean isSend = (viewType / 100) == 0; // because send =0,RECEIVE = 1
-            int type = (viewType % 100);
+            boolean isSend = (viewType / 1000) == 0; // because send =0,RECEIVE = 1
+            int type = (viewType % 1000);
             if (type == ZIMMessageType.TIPS.value()) {
                 binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
                     R.layout.zimkit_item_message_tips, parent, false);
@@ -270,8 +269,6 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
     public void onBindViewHolder(@NonNull MessageViewHolder holder, int position) {
         ZIMKitMessageModel model = mList.get(holder.getAdapterPosition());
         model.setShowMultiSelectCheckBox(isShowMultiSelectCheckBox);
-        Timber.d("onBindViewHolder() called with: isShowMultiSelectCheckBox = [" + isShowMultiSelectCheckBox
-            + "], position = [" + position + "],model.isCheck():" + model.isCheck());
         if (!isShowMultiSelectCheckBox && model.isCheck()) {
             model.setCheck(false);
         }
@@ -292,11 +289,11 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
     @Override
     public int getItemViewType(int position) {
         int type = mList.get(position).getType();
-        if (type == 99) { // temp error message type
+        if (type == 999) { // temp error message type
             return type;
         } else {
             int direction = mList.get(position).getDirection().value();
-            return (direction * 100) + type;
+            return (direction * 1000) + type;
         }
     }
 
