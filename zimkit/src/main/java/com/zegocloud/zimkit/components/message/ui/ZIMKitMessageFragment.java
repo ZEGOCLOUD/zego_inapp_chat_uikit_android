@@ -79,6 +79,7 @@ import im.zego.zim.entity.ZIMError;
 import im.zego.zim.entity.ZIMImageMessage;
 import im.zego.zim.entity.ZIMMessage;
 import im.zego.zim.entity.ZIMTextMessage;
+import im.zego.zim.entity.ZIMUserFullInfo;
 import im.zego.zim.entity.ZIMVideoMessage;
 import im.zego.zim.enums.ZIMConversationType;
 import im.zego.zim.enums.ZIMErrorCode;
@@ -382,14 +383,24 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
                     @Override
                     public void onMessageSent(ZIMError error) {
                         if (error.code == ZIMErrorCode.SUCCESS) {
-                            ZIMMessage message = new ZIMTextMessage("loading");
+                            ZIMMessage message = new ZIMTextMessage("[...]");
                             message.localExtendedData = "loading";
-                            mAdapter.addLocalMessageToBottom(ChatMessageParser.parseMessage(message));
+
+                            String type = getArguments().getString(ZIMKitConstant.MessagePageConstant.KEY_TYPE);
+                            String id = getArguments().getString(ZIMKitConstant.MessagePageConstant.KEY_ID);
+                            conversationType = type.equals(ZIMKitConstant.MessagePageConstant.TYPE_SINGLE_MESSAGE)
+                                ? ZIMConversationType.PEER : ZIMConversationType.GROUP;
+
+                            ZIMKitMessageModel messageModel = ChatMessageParser.parseMessage(message);
+                            ZIMUserFullInfo memoryUserInfo = ZIMKitCore.getInstance().getMemoryUserInfo(id);
+                            if (memoryUserInfo != null) {
+                                messageModel.setNickName(memoryUserInfo.baseInfo.userName);
+                                messageModel.setAvatar(memoryUserInfo.baseInfo.userAvatarUrl);
+                            } else {
+                                messageModel.setNickName(conversationName);
+                            }
+                            mAdapter.addLocalMessageToBottom(messageModel);
                             scrollToMessageEnd();
-                            //                            String type = getArguments().getString(ZIMKitConstant.MessagePageConstant.KEY_TYPE);
-                            //                            String id = getArguments().getString(ZIMKitConstant.MessagePageConstant.KEY_ID);
-                            //                            conversationType = type.equals(ZIMKitConstant.MessagePageConstant.TYPE_SINGLE_MESSAGE)
-                            //                                ? ZIMConversationType.PEER : ZIMConversationType.GROUP;
                             //                            ZIM.getInstance().insertMessageToLocalDB(message, id, conversationType, id,
                             //                                new ZIMMessageInsertedCallback() {
                             //                                    @Override

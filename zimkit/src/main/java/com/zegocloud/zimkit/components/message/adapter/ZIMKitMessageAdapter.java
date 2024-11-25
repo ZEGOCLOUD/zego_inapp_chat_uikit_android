@@ -99,6 +99,8 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
         if (model == null) {
             return;
         }
+        deleteLoadingMessage();
+
         int oldCount = mList.size();
         mList.add(model);
         this.notifyItemRangeInserted(oldCount, 1);
@@ -209,9 +211,11 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
 //            .collect(Collectors.toList());
 //        if (!messageList.isEmpty()) {
 //            ZIMMessage zimMessage = messageList.get(0);
-//            ZIM.getInstance()
-//                .deleteMessages(messageList, zimMessage.getConversationID(), zimMessage.getConversationType(),
-//                    new ZIMMessageDeleteConfig(), null);
+//            if (zimMessage.getConversationID() != null) {
+//                ZIM.getInstance()
+//                    .deleteMessages(messageList, zimMessage.getConversationID(), zimMessage.getConversationType(),
+//                        new ZIMMessageDeleteConfig(), null);
+//            }
 //        }
 
     }
