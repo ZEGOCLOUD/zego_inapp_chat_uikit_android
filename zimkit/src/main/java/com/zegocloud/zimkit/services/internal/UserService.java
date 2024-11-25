@@ -7,6 +7,7 @@ import com.zegocloud.uikit.plugin.signaling.ZegoSignalingPlugin;
 import com.zegocloud.zimkit.common.utils.ZLog;
 import com.zegocloud.zimkit.services.callback.ConnectUserCallback;
 import com.zegocloud.zimkit.services.callback.UserAvatarUrlUpdateCallback;
+import com.zegocloud.zimkit.services.model.ZIMKitConversation;
 import com.zegocloud.zimkit.services.model.ZIMKitUser;
 import java.util.ArrayList;
 
@@ -19,6 +20,9 @@ import im.zego.zim.entity.ZIMUsersInfoQueryConfig;
 import im.zego.zim.enums.ZIMErrorCode;
 import com.zegocloud.zimkit.R;
 import com.zegocloud.zimkit.services.callback.QueryUserCallback;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.TreeSet;
 
 public class UserService {
 
@@ -114,16 +118,22 @@ public class UserService {
             public void onUsersInfoQueried(ArrayList<ZIMUserFullInfo> userList,
                 ArrayList<ZIMErrorUserInfo> errorUserList, ZIMError errorInfo) {
 
-                if (callback != null) {
+                if (!userList.isEmpty()) {
+                    ZIMUserFullInfo userFullInfo = userList.get(0);
                     ZIMKitUser userInfo = new ZIMKitUser();
-                    if (!userList.isEmpty()) {
-                        userInfo.setId(userList.get(0).baseInfo.userID);
-                        userInfo.setName(userList.get(0).baseInfo.userName);
-                        userInfo.setAvatarUrl(userList.get(0).userAvatarUrl);
+                    userInfo.setId(userFullInfo.baseInfo.userID);
+                    userInfo.setName(userFullInfo.baseInfo.userName);
+                    userInfo.setAvatarUrl(userFullInfo.baseInfo.userAvatarUrl);
+                    if (callback != null) {
+                        callback.onQueryUser(userInfo, errorInfo);
                     }
-                    callback.onQueryUser(userInfo, errorInfo);
-                }
 
+                    ZIMKitConversation kitConversation = ZIMKitCore.getInstance().getZIMKitConversation(userFullInfo.baseInfo.userID);
+                    kitConversation.setAvatarUrl(userFullInfo.baseInfo.userAvatarUrl);
+                    ZIMKitCore.getInstance().getZimkitNotifyList().notifyAllListener(zimKitDelegate -> {
+                        zimKitDelegate.onConversationListChanged(new ArrayList<>(ZIMKitCore.getInstance().getConversations()));
+                    });
+                }
             }
         });
     }

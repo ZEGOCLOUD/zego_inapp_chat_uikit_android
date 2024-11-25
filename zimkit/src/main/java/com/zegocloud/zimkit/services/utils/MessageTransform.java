@@ -9,6 +9,7 @@ import com.zegocloud.zimkit.services.internal.ZIMKitCore;
 import com.zegocloud.zimkit.services.model.MediaTransferProgress;
 import com.zegocloud.zimkit.services.model.ZIMKitMessage;
 import im.zego.zim.entity.ZIMAudioMessage;
+import im.zego.zim.entity.ZIMCustomMessage;
 import im.zego.zim.entity.ZIMFileMessage;
 import im.zego.zim.entity.ZIMImageMessage;
 import im.zego.zim.entity.ZIMMessage;
@@ -144,6 +145,10 @@ public class MessageTransform {
             case TIPS:
                 ZIMTipsMessage tipsMessage = (ZIMTipsMessage) zimMessage;
                 zimKitMessage.tipsMessageContent.tipsMessage = tipsMessage;
+                break;
+            case CUSTOM:
+                ZIMCustomMessage customMessage = (ZIMCustomMessage) zimMessage;
+                zimKitMessage.customMessageContent.customMessage = customMessage;
                 break;
             default:
                 zimKitMessage.textContent.content = ZIMKitCore.getInstance().getApplication()

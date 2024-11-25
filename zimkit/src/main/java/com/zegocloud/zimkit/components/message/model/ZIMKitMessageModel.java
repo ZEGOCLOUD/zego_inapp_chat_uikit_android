@@ -82,7 +82,7 @@ public abstract class ZIMKitMessageModel extends BaseObservable {
 
     public int getType() {
         if (mMessage == null) {
-            return 99;
+            return 999;
         } else {
             return mMessage.getType().value();
         }

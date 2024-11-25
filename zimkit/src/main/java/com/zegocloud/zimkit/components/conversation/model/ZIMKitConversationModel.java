@@ -7,6 +7,7 @@ import com.zegocloud.zimkit.BR;
 import com.zegocloud.zimkit.R;
 import com.zegocloud.zimkit.common.utils.ZIMKitDateUtils;
 import com.zegocloud.zimkit.components.group.bean.ZIMKitGroupMemberInfo;
+import com.zegocloud.zimkit.components.message.model.CustomMessageModel;
 import com.zegocloud.zimkit.components.message.model.TipsMessageModel;
 import com.zegocloud.zimkit.components.message.utils.ChatMessageParser;
 import com.zegocloud.zimkit.services.ZIMKit;
@@ -103,7 +104,7 @@ public class ZIMKitConversationModel extends BaseObservable {
                     || lastMessage.getType() == ZIMMessageType.FILE) {
                     prefix = prefix + ":";
                 } else if (lastMessage.getType() == ZIMMessageType.REVOKE
-                    || lastMessage.getType() == ZIMMessageType.TIPS) {
+                    || lastMessage.getType() == ZIMMessageType.TIPS || lastMessage.getType() == ZIMMessageType.CUSTOM) {
                     prefix = prefix + " ";
                 }
                 updateLastMessage(lastMessage, prefix);
@@ -129,7 +130,8 @@ public class ZIMKitConversationModel extends BaseObservable {
                                         || lastMessage.getType() == ZIMMessageType.FILE) {
                                         prefix = prefix + ":";
                                     } else if (lastMessage.getType() == ZIMMessageType.REVOKE
-                                        || lastMessage.getType() == ZIMMessageType.TIPS) {
+                                        || lastMessage.getType() == ZIMMessageType.TIPS
+                                        || lastMessage.getType() == ZIMMessageType.CUSTOM) {
                                         prefix = prefix + " ";
                                     }
                                     updateLastMessage(lastMessage, prefix);
@@ -153,7 +155,8 @@ public class ZIMKitConversationModel extends BaseObservable {
                         || lastMessage.getType() == ZIMMessageType.FILE) {
                         prefix = prefix + ":";
                     } else if (lastMessage.getType() == ZIMMessageType.REVOKE
-                        || lastMessage.getType() == ZIMMessageType.TIPS) {
+                        || lastMessage.getType() == ZIMMessageType.TIPS
+                        || lastMessage.getType() == ZIMMessageType.CUSTOM) {
                         prefix = prefix + " ";
                     }
                     updateLastMessage(lastMessage, prefix);
@@ -186,6 +189,9 @@ public class ZIMKitConversationModel extends BaseObservable {
         } else if (message.getType() == ZIMMessageType.TIPS) {
             TipsMessageModel tipsMessageModel = (TipsMessageModel) ChatMessageParser.parseMessage(message);
             mLastMsgContent = tipsMessageModel.getContent();
+        } else if (message.getType() == ZIMMessageType.CUSTOM) {
+            CustomMessageModel customMessageModel = (CustomMessageModel) ChatMessageParser.parseMessage(message);
+            mLastMsgContent = customMessageModel.getContent();
         } else {
             mLastMsgContent = ZIMKitCore.getInstance().getApplication().getString(R.string.zimkit_message_unknown);
         }

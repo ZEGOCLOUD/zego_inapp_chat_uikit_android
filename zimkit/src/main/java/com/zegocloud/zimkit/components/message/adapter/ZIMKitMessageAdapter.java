@@ -21,6 +21,7 @@ import com.zegocloud.zimkit.components.message.ui.ZIMKitVideoViewActivity;
 import com.zegocloud.zimkit.components.message.widget.ZIMKitAudioPlayer;
 import com.zegocloud.zimkit.components.message.widget.interfaces.OnItemClickListener;
 import com.zegocloud.zimkit.components.message.widget.viewholder.AudioMessageHolder;
+import com.zegocloud.zimkit.components.message.widget.viewholder.CustomMessageHolder;
 import com.zegocloud.zimkit.components.message.widget.viewholder.FileMessageHolder;
 import com.zegocloud.zimkit.components.message.widget.viewholder.ImageMessageHolder;
 import com.zegocloud.zimkit.components.message.widget.viewholder.MessageSystemHolder;
@@ -38,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import timber.log.Timber;
 
 public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder> {
@@ -77,11 +79,14 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
     }
 
     public void addListToTop(List<ZIMKitMessageModel> list) {
+        deleteLoadingMessage();
         mList.addAll(0, list);
         this.notifyItemRangeInserted(0, list.size());
     }
 
     public void addListToBottom(List<ZIMKitMessageModel> list) {
+        deleteLoadingMessage();
+
         int oldCount = mList.size();
         mList.addAll(list);
         this.notifyItemRangeInserted(oldCount, list.size());
@@ -168,6 +173,9 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
             mList.addAll(list);
             notifyDataSetChanged();
         } else {
+
+            deleteLoadingMessage();
+
             for (int j = 0; j < list.size(); j++) {
                 ZIMKitMessageModel model = list.get(j);
                 for (int i = 0; i < mList.size(); i++) {
@@ -183,6 +191,16 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
                     }
                 }
             }
+        }
+    }
+
+    private void deleteLoadingMessage() {
+        List<ZIMKitMessageModel> collect = mList.stream()
+            .filter(messageModel -> Objects.equals(messageModel.getMessage().localExtendedData, "loading"))
+            .collect(Collectors.toList());
+        if (!collect.isEmpty()) {
+            mList.removeAll(collect);
+            notifyDataSetChanged();
         }
     }
 
@@ -206,6 +224,10 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
                 binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
                     R.layout.zimkit_item_message_revoke, parent, false);
                 viewHolder = new RevokeMessageHolder(binding);
+            } else if (type == ZIMMessageType.CUSTOM.value()) {
+                binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
+                    R.layout.zimkit_item_message_custom, parent, false);
+                viewHolder = new CustomMessageHolder(binding);
             } else {
                 if (isSend) {
                     if (type == ZIMMessageType.TEXT.value()) {

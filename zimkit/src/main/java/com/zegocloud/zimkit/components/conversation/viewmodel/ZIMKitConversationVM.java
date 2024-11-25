@@ -113,7 +113,8 @@ public class ZIMKitConversationVM extends ViewModel {
         }
         ArrayList<ZIMKitConversationModel> newViewModels = new ArrayList<>();
         for (ZIMKitConversation zimConversation : newConversationList) {
-            ZIMKitConversationModel conversationModel = new ZIMKitConversationModel(zimConversation.getZimConversation(),
+            ZIMKitConversationModel conversationModel = new ZIMKitConversationModel(
+                zimConversation.getZimConversation(),
                 ZIMConversationEvent.ADDED);
             newViewModels.add(conversationModel);
             mItemModelCacheTreeSet.remove(conversationModel);

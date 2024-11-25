@@ -36,6 +36,6 @@ public class SystemMessageModel extends ZIMKitMessageModel {
 
     @Override
     public int getType() {
-        return 99;
+        return 999;
     }
 }

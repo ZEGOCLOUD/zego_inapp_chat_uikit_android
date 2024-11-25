@@ -221,11 +221,11 @@ public class ZIMKitConversationFragment extends BaseFragment<ZimkitFragmentConve
         }
     }
 
-    //    @Override
-    //    public void onResume() {
-    //        super.onResume();
-    //        mViewModel.loadConversation();
-    //    }
+        @Override
+        public void onResume() {
+            super.onResume();
+            mViewModel.loadConversation();
+        }
 
     private void updatePinButtonUI(SwipeButton pinButton, boolean isPinned) {
         pinButton.setActivated(isPinned);

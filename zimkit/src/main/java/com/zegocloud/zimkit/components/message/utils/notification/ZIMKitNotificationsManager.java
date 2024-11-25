@@ -2,6 +2,7 @@ package com.zegocloud.zimkit.components.message.utils.notification;
 
 import com.zegocloud.zimkit.R;
 import com.zegocloud.zimkit.common.utils.ZIMKitActivityUtils;
+import com.zegocloud.zimkit.components.message.model.CustomMessageModel;
 import com.zegocloud.zimkit.components.message.model.TipsMessageModel;
 import com.zegocloud.zimkit.components.message.utils.ChatMessageParser;
 import com.zegocloud.zimkit.components.message.utils.SortMessageComparator;
@@ -106,6 +107,9 @@ public class ZIMKitNotificationsManager {
         } else if (zimMessage.getType() == ZIMMessageType.TIPS) {
             TipsMessageModel tipsMessageModel = (TipsMessageModel) ChatMessageParser.parseMessage(zimMessage);
             message = tipsMessageModel.getContent();
+        } else if (zimMessage.getType() == ZIMMessageType.CUSTOM) {
+            CustomMessageModel customMessageModel = (CustomMessageModel) ChatMessageParser.parseMessage(zimMessage);
+            message = customMessageModel.getContent();
         } else {
             message = ZIMKitCore.getInstance().getApplication().getString(R.string.zimkit_message_unknown);
         }

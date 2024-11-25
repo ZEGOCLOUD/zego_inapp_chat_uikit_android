@@ -1,5 +1,6 @@
 package com.zegocloud.zimkit.components.message.utils;
 
+import com.zegocloud.zimkit.components.message.model.CustomMessageModel;
 import com.zegocloud.zimkit.components.message.model.SystemMessageModel;
 import com.zegocloud.zimkit.components.message.model.RevokeMessageModel;
 import com.zegocloud.zimkit.components.message.model.TipsMessageModel;
@@ -55,6 +56,9 @@ public class ChatMessageParser {
                 break;
             case TIPS:
                 message = new TipsMessageModel();
+                break;
+            case CUSTOM:
+                message = new CustomMessageModel();
                 break;
             default:
                 message = new TextMessageModel();
