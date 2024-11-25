@@ -33,7 +33,10 @@ import com.zegocloud.zimkit.components.message.widget.viewholder.VideoMessageHol
 import com.zegocloud.zimkit.services.ZIMKit;
 import com.zegocloud.zimkit.services.ZIMKitDelegate;
 import com.zegocloud.zimkit.services.model.ZIMKitMessage;
+import im.zego.zim.ZIM;
 import im.zego.zim.entity.ZIMMessage;
+import im.zego.zim.entity.ZIMMessageDeleteConfig;
+import im.zego.zim.enums.ZIMMessageDirection;
 import im.zego.zim.enums.ZIMMessageType;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -202,6 +205,15 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
             mList.removeAll(collect);
             notifyDataSetChanged();
         }
+//        List<ZIMMessage> messageList = collect.stream().map(zimKitMessageModel -> zimKitMessageModel.getMessage())
+//            .collect(Collectors.toList());
+//        if (!messageList.isEmpty()) {
+//            ZIMMessage zimMessage = messageList.get(0);
+//            ZIM.getInstance()
+//                .deleteMessages(messageList, zimMessage.getConversationID(), zimMessage.getConversationType(),
+//                    new ZIMMessageDeleteConfig(), null);
+//        }
+
     }
 
     @NonNull
@@ -310,11 +322,16 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
 
     @Override
     public int getItemViewType(int position) {
-        int type = mList.get(position).getType();
+        ZIMKitMessageModel messageModel = mList.get(position);
+        int type = messageModel.getType();
         if (type == 999) { // temp error message type
             return type;
         } else {
-            int direction = mList.get(position).getDirection().value();
+            int direction = messageModel.getDirection().value();
+            boolean loading = Objects.equals(messageModel.getMessage().localExtendedData, "loading");
+            if (loading) {
+                direction = ZIMMessageDirection.RECEIVE.value();
+            }
             return (direction * 1000) + type;
         }
     }

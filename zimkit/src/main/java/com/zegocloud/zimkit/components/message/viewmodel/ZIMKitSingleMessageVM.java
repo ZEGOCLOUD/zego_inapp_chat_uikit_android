@@ -10,7 +10,9 @@ import com.zegocloud.zimkit.components.message.model.VideoMessageModel;
 import com.zegocloud.zimkit.components.message.model.ZIMKitMessageModel;
 import com.zegocloud.zimkit.components.message.utils.ChatMessageParser;
 import com.zegocloud.zimkit.services.ZIMKit;
+import com.zegocloud.zimkit.services.callback.MessageSentCallback;
 import com.zegocloud.zimkit.services.model.ZIMKitMessage;
+import im.zego.zim.entity.ZIMError;
 import im.zego.zim.entity.ZIMMessage;
 import im.zego.zim.enums.ZIMConversationType;
 import im.zego.zim.enums.ZIMMessageDirection;
@@ -100,10 +102,18 @@ public class ZIMKitSingleMessageVM extends ZIMKitMessageVM {
     }
 
     @Override
-    public void sendTextMessage(ZIMKitMessageModel model) {
+    public void sendTextMessage(ZIMKitMessageModel model, MessageSentCallback callback) {
         if (model instanceof TextMessageModel) {
             TextMessageModel textMessageModel = (TextMessageModel) model;
-            ZIMKit.sendTextMessage(textMessageModel.getContent(), mtoId, ZIMConversationType.PEER, error -> targetDoesNotExist(error));
+            ZIMKit.sendTextMessage(textMessageModel.getContent(), mtoId, ZIMConversationType.PEER, new MessageSentCallback() {
+                @Override
+                public void onMessageSent(ZIMError error) {
+                    targetDoesNotExist(error);
+                    if (callback != null) {
+                        callback.onMessageSent(error);
+                    }
+                }
+            });
         }
     }
 

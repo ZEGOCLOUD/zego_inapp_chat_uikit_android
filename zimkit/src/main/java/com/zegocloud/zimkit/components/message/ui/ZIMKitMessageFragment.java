@@ -65,10 +65,12 @@ import com.zegocloud.zimkit.components.message.widget.interfaces.OnPopActionClic
 import com.zegocloud.zimkit.databinding.ZimkitFragmentMessageBinding;
 import com.zegocloud.zimkit.services.ZIMKit;
 import com.zegocloud.zimkit.services.ZIMKitConfig;
+import com.zegocloud.zimkit.services.callback.MessageSentCallback;
 import com.zegocloud.zimkit.services.callback.QueryGroupInfoCallback;
 import com.zegocloud.zimkit.services.callback.QueryUserCallback;
 import com.zegocloud.zimkit.services.config.ZIMKitInputButtonName;
 import com.zegocloud.zimkit.services.internal.ZIMKitCore;
+import com.zegocloud.zimkit.services.internal.interfaces.ZIMKitAdvancedKey;
 import com.zegocloud.zimkit.services.model.ZIMKitGroupInfo;
 import com.zegocloud.zimkit.services.model.ZIMKitMessage;
 import com.zegocloud.zimkit.services.model.ZIMKitUser;
@@ -76,6 +78,7 @@ import im.zego.zim.callback.ZIMMessageDeletedCallback;
 import im.zego.zim.entity.ZIMError;
 import im.zego.zim.entity.ZIMImageMessage;
 import im.zego.zim.entity.ZIMMessage;
+import im.zego.zim.entity.ZIMTextMessage;
 import im.zego.zim.entity.ZIMVideoMessage;
 import im.zego.zim.enums.ZIMConversationType;
 import im.zego.zim.enums.ZIMErrorCode;
@@ -320,7 +323,8 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
         mBinding.inputViewLayout.setCallback(new InputCallback() {
             @Override
             public void onSendTextMessage(ZIMKitMessageModel model) {
-                mViewModel.sendTextMessage(model);
+                MessageSentCallback messageSentCallback = getMessageSentCallback(model);
+                mViewModel.sendTextMessage(model, messageSentCallback);
                 scrollToMessageEnd();
             }
 
@@ -359,6 +363,55 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
             }
 
         });
+    }
+
+    private @Nullable MessageSentCallback getMessageSentCallback(ZIMKitMessageModel model) {
+        boolean showLoadingWhenSend = false;
+        ZIMKitConfig zimKitConfig = ZIMKitCore.getInstance().getZimKitConfig();
+        if (zimKitConfig != null && zimKitConfig.advancedConfig != null) {
+            if (zimKitConfig.advancedConfig.containsKey(ZIMKitAdvancedKey.showLoadingWhenSend)) {
+                String content = zimKitConfig.advancedConfig.get(ZIMKitAdvancedKey.showLoadingWhenSend);
+                if ("true".equalsIgnoreCase(content)) {
+                    showLoadingWhenSend = true;
+                }
+            }
+        }
+        if (showLoadingWhenSend) {
+            if (getArguments() != null) {
+                MessageSentCallback messageSentCallback = new MessageSentCallback() {
+                    @Override
+                    public void onMessageSent(ZIMError error) {
+                        if (error.code == ZIMErrorCode.SUCCESS) {
+                            ZIMMessage message = new ZIMTextMessage("loading");
+                            message.localExtendedData = "loading";
+                            mAdapter.addLocalMessageToBottom(ChatMessageParser.parseMessage(message));
+                            scrollToMessageEnd();
+                            //                            String type = getArguments().getString(ZIMKitConstant.MessagePageConstant.KEY_TYPE);
+                            //                            String id = getArguments().getString(ZIMKitConstant.MessagePageConstant.KEY_ID);
+                            //                            conversationType = type.equals(ZIMKitConstant.MessagePageConstant.TYPE_SINGLE_MESSAGE)
+                            //                                ? ZIMConversationType.PEER : ZIMConversationType.GROUP;
+                            //                            ZIM.getInstance().insertMessageToLocalDB(message, id, conversationType, id,
+                            //                                new ZIMMessageInsertedCallback() {
+                            //                                    @Override
+                            //                                    public void onMessageInserted(ZIMMessage message, ZIMError errorInfo) {
+                            //                                        Log.d(TAG, "onMessageInserted() called with: message = [" + message
+                            //                                            + "], errorInfo = [" + errorInfo + "]");
+                            //                                        mAdapter.addLocalMessageToBottom(ChatMessageParser.parseMessage(message));
+                            //                                        mAdapter.notifyDataSetChanged();
+                            //                                        scrollToMessageEnd();
+                            //                                    }
+                            //                                });
+                        }
+                    }
+                };
+                return messageSentCallback;
+            } else {
+                return null;
+            }
+
+        } else {
+            return null;
+        }
     }
 
     private void showBottomCallDialog(boolean fromExpand) {

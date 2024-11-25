@@ -20,6 +20,7 @@ import com.zegocloud.zimkit.services.ZIMKitDelegate;
 import com.zegocloud.zimkit.services.callback.DeleteMessageCallback;
 import com.zegocloud.zimkit.services.callback.GetMessageListCallback;
 import com.zegocloud.zimkit.services.callback.LoadMoreMessageCallback;
+import com.zegocloud.zimkit.services.callback.MessageSentCallback;
 import com.zegocloud.zimkit.services.internal.ZIMKitCore;
 import com.zegocloud.zimkit.services.model.ZIMKitMessage;
 import com.zegocloud.zimkit.services.utils.MessageTransform;
@@ -196,7 +197,7 @@ public abstract class ZIMKitMessageVM extends AndroidViewModel {
 
     abstract protected void loadNextPage(ZIMMessage message);
 
-    abstract public void sendTextMessage(ZIMKitMessageModel model);
+    abstract public void sendTextMessage(ZIMKitMessageModel model, MessageSentCallback callback);
 
     abstract public void sendMediaMessage(List<ZIMKitMessageModel> messageModelList);
 

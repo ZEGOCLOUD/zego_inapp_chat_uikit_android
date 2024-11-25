@@ -98,10 +98,8 @@ public class ZIMKitCore implements IZIMKitCore {
     private Map<String, String> mGroupUserInfoAvatarMap = new HashMap<>();
     private int totalUnreadMessageCount;
     private Map<String, List<ZIMKitGroupMemberInfo>> groupList = new HashMap<>();
-
     private ZIMKitConversationListListener conversationListListener;
     private ZIMKitMessagesListListener messagesListListener;
-
     private boolean isLoadConversationList = false;
 
     private InputConfig inputConfig;

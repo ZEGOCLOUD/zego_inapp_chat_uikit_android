@@ -15,6 +15,7 @@ import com.zegocloud.zimkit.components.message.model.VideoMessageModel;
 import com.zegocloud.zimkit.components.message.model.ZIMKitMessageModel;
 import com.zegocloud.zimkit.components.message.utils.ChatMessageParser;
 import com.zegocloud.zimkit.services.ZIMKit;
+import com.zegocloud.zimkit.services.callback.MessageSentCallback;
 import com.zegocloud.zimkit.services.callback.QueryGroupMemberInfoCallback;
 import com.zegocloud.zimkit.services.internal.ZIMKitCore;
 import com.zegocloud.zimkit.services.model.ZIMKitMessage;
@@ -173,11 +174,19 @@ public class ZIMKitGroupMessageVM extends ZIMKitMessageVM {
     }
 
     @Override
-    public void sendTextMessage(ZIMKitMessageModel model) {
+    public void sendTextMessage(ZIMKitMessageModel model, MessageSentCallback callback) {
         if (model instanceof TextMessageModel) {
             TextMessageModel textMessageModel = (TextMessageModel) model;
             ZIMKit.sendGroupTextMessage(textMessageModel.getContent(), mtoId, title, ZIMConversationType.GROUP,
-                error -> targetDoesNotExist(error));
+                new MessageSentCallback() {
+                    @Override
+                    public void onMessageSent(ZIMError error) {
+                        targetDoesNotExist(error);
+                        if (callback != null) {
+                            callback.onMessageSent(error);
+                        }
+                    }
+                });
         }
     }
 
