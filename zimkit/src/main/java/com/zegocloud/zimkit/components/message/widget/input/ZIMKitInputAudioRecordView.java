@@ -5,9 +5,6 @@ import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
-import android.util.DisplayMetrics;
-import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -21,7 +18,7 @@ import com.zegocloud.zimkit.components.message.widget.ZIMKitAudioPlayer;
 import com.zegocloud.zimkit.components.message.widget.ZIMKitAudioPlayer.MediaRecordCallback;
 import com.zegocloud.zimkit.databinding.ZimkitLayoutAudioRecordBinding;
 
-public class ZIMKitAudioRecordView extends FrameLayout {
+public class ZIMKitInputAudioRecordView extends FrameLayout {
 
     /**
      * start record after RECORD_START_MIN_TIME,not right now. so quick down and up will not change UI.
@@ -34,17 +31,17 @@ public class ZIMKitAudioRecordView extends FrameLayout {
     private Runnable startRecordRunable;
     private MediaRecordCallback audioRecordCallback;
 
-    public ZIMKitAudioRecordView(@NonNull Context context) {
+    public ZIMKitInputAudioRecordView(@NonNull Context context) {
         super(context);
         initView();
     }
 
-    public ZIMKitAudioRecordView(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public ZIMKitInputAudioRecordView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         initView();
     }
 
-    public ZIMKitAudioRecordView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public ZIMKitInputAudioRecordView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         initView();
     }
@@ -242,5 +239,15 @@ public class ZIMKitAudioRecordView extends FrameLayout {
             return true;
         }
         return false;
+    }
+
+    public void updateReplyMargin(boolean reply) {
+        if (binding != null) {
+            if (reply) {
+                binding.audioReplyMargin.setVisibility(View.VISIBLE);
+            } else {
+                binding.audioReplyMargin.setVisibility(View.GONE);
+            }
+        }
     }
 }

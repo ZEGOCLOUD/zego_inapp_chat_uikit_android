@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto">
+
+  <data>
+
+  </data>
+
+  <androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+      android:layout_width="270dp"
+      android:layout_height="wrap_content"
+      android:background="@drawable/zimkit_shape_12dp_white"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent">
+
+      <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:text="@string/zimkit_sendto"
+        android:textColor="@color/color_2a2a2a"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+      <ImageView
+        android:id="@+id/forward_icon"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/title" />
+
+      <TextView
+        android:id="@+id/forward_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:ellipsize="end"
+        android:gravity="start|center_vertical"
+        android:maxLines="1"
+        android:paddingEnd="16dp"
+        android:textColor="@color/color_2a2a2a"
+        android:textSize="15sp"
+        app:layout_constraintBottom_toBottomOf="@+id/forward_icon"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/forward_icon"
+        app:layout_constraintTop_toTopOf="@+id/forward_icon" />
+
+      <TextView
+        android:id="@+id/forward_content"
+        android:layout_width="match_parent"
+        android:layout_height="29dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:background="@drawable/zimkit_shape_4dp_f2f3f5"
+        android:ellipsize="end"
+        android:gravity="center_vertical"
+        android:maxLines="1"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:textColor="@color/color_646A73"
+        android:textSize="13sp"
+        app:layout_constraintTop_toBottomOf="@+id/forward_icon" />
+
+      <View
+        android:id="@+id/forward_hor_line"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="17dp"
+        android:background="@color/color_F1F4F8"
+        app:layout_constraintTop_toBottomOf="@+id/forward_content" />
+
+      <TextView
+        android:id="@+id/cancel"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="16dp"
+        android:gravity="center"
+        android:text="@string/zimkit_cancel"
+        android:textColor="@color/color_2a2a2a"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toStartOf="@id/center"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/forward_hor_line" />
+
+      <View
+        android:id="@+id/center"
+        android:layout_width="1dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="16dp"
+        android:background="@color/color_F1F4F8"
+        app:layout_constraintEnd_toStartOf="@id/confirm"
+        app:layout_constraintStart_toEndOf="@id/cancel"
+        app:layout_constraintTop_toBottomOf="@+id/forward_hor_line" />
+
+      <TextView
+        android:id="@+id/confirm"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="16dp"
+        android:gravity="center"
+        android:text="@string/zimkit_confirm"
+        android:textColor="@color/album_3478fc"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/center"
+        app:layout_constraintTop_toBottomOf="@+id/forward_hor_line" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+  </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

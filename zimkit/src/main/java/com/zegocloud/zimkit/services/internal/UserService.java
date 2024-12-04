@@ -1,16 +1,12 @@
 package com.zegocloud.zimkit.services.internal;
 
-import android.app.Application;
 import android.text.TextUtils;
-
 import com.zegocloud.uikit.plugin.signaling.ZegoSignalingPlugin;
-import com.zegocloud.zimkit.common.utils.ZLog;
 import com.zegocloud.zimkit.services.callback.ConnectUserCallback;
+import com.zegocloud.zimkit.services.callback.QueryUserCallback;
 import com.zegocloud.zimkit.services.callback.UserAvatarUrlUpdateCallback;
 import com.zegocloud.zimkit.services.model.ZIMKitConversation;
 import com.zegocloud.zimkit.services.model.ZIMKitUser;
-import java.util.ArrayList;
-
 import im.zego.zim.callback.ZIMUsersInfoQueriedCallback;
 import im.zego.zim.entity.ZIMError;
 import im.zego.zim.entity.ZIMErrorUserInfo;
@@ -18,11 +14,7 @@ import im.zego.zim.entity.ZIMUserFullInfo;
 import im.zego.zim.entity.ZIMUserInfo;
 import im.zego.zim.entity.ZIMUsersInfoQueryConfig;
 import im.zego.zim.enums.ZIMErrorCode;
-import com.zegocloud.zimkit.R;
-import com.zegocloud.zimkit.services.callback.QueryUserCallback;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.TreeSet;
+import java.util.ArrayList;
 
 public class UserService {
 
@@ -39,11 +31,6 @@ public class UserService {
      */
     public synchronized void connectUser(String userID, String userName, String avatarUrl, String token,
         ConnectUserCallback callback) {
-        Application application = ZIMKitCore.getInstance().getApplication();
-        if (ZIMKitCore.getInstance().zim() == null && application != null) {
-            ZLog.e(TAG, application.getString(R.string.zimkit_login_room_fail_zim_not_create_log));
-            return;
-        }
 
         userInfo.setId(userID);
         userInfo.setName(userName);
@@ -67,12 +54,11 @@ public class UserService {
                         callback.onConnectUser(zimError);
                     }
                     if ((errorCode == ZIMErrorCode.SUCCESS.value()
-                        || errorCode == ZIMErrorCode.USER_HAS_ALREADY_LOGGED.value())
-                        && !TextUtils.isEmpty(avatarUrl)) {
+                        || errorCode == ZIMErrorCode.USER_HAS_ALREADY_LOGGED.value()) && !TextUtils.isEmpty(
+                        avatarUrl)) {
                         updateUserAvatarUrl(avatarUrl, (userAvatarUrl, errorInfo1) -> {
                             if (ZegoSignalingPlugin.getInstance().isOtherPushEnabled()
-                                || ZegoSignalingPlugin.getInstance()
-                                .isFCMPushEnabled()) {
+                                || ZegoSignalingPlugin.getInstance().isFCMPushEnabled()) {
                                 ZegoSignalingPlugin.getInstance().registerPush();
                             }
                         });
@@ -91,7 +77,7 @@ public class UserService {
         if (TextUtils.isEmpty(avatarUrl)) {
             return;
         }
-        ZIMKitCore.getInstance().zim().updateUserAvatarUrl(avatarUrl, (userAvatarUrl, errorInfo) -> {
+        ZegoSignalingPlugin.getInstance().updateUserAvatarUrl(avatarUrl, (userAvatarUrl, errorInfo) -> {
             if (errorInfo.code == ZIMErrorCode.SUCCESS) {
                 updateUserAvatar(userAvatarUrl);
                 if (callback != null) {
@@ -128,10 +114,14 @@ public class UserService {
                         callback.onQueryUser(userInfo, errorInfo);
                     }
 
-                    ZIMKitConversation kitConversation = ZIMKitCore.getInstance().getZIMKitConversation(userFullInfo.baseInfo.userID);
-                    kitConversation.setAvatarUrl(userFullInfo.baseInfo.userAvatarUrl);
+                    ZIMKitConversation kitConversation = ZIMKitCore.getInstance()
+                        .getZIMKitConversation(userFullInfo.baseInfo.userID);
+                    if (kitConversation != null) {
+                        kitConversation.setAvatarUrl(userFullInfo.baseInfo.userAvatarUrl);
+                    }
                     ZIMKitCore.getInstance().getZimkitNotifyList().notifyAllListener(zimKitDelegate -> {
-                        zimKitDelegate.onConversationListChanged(new ArrayList<>(ZIMKitCore.getInstance().getConversations()));
+                        zimKitDelegate.onConversationListChanged(
+                            new ArrayList<>(ZIMKitCore.getInstance().getConversations()));
                     });
                 }
             }

@@ -3,6 +3,8 @@ package com.zegocloud.zimkit.common.components.widget;
 import android.app.Activity;
 import android.content.Context;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,6 +20,9 @@ import com.zegocloud.zimkit.common.utils.ZIMKitScreenUtils;
 import com.zegocloud.zimkit.components.message.model.ZIMKitHeaderBar;
 import com.zegocloud.zimkit.R;
 import com.zegocloud.zimkit.databinding.ZimkitLayoutTitleBarBinding;
+import com.zegocloud.zimkit.services.ZIMKitConfig;
+import com.zegocloud.zimkit.services.internal.ZIMKitAdvancedKey;
+import com.zegocloud.zimkit.services.internal.ZIMKitCore;
 
 public class TitleBar extends LinearLayout {
 
@@ -52,6 +57,20 @@ public class TitleBar extends LinearLayout {
                 }
             }
         });
+
+        ZIMKitConfig zimKitConfig = ZIMKitCore.getInstance().getZimKitConfig();
+        if (zimKitConfig != null && zimKitConfig.advancedConfig != null) {
+            if (zimKitConfig.advancedConfig.containsKey(ZIMKitAdvancedKey.max_title_width)) {
+                String content = zimKitConfig.advancedConfig.get(ZIMKitAdvancedKey.max_title_width);
+                try {
+                    int maxTitleWidth = Integer.parseInt(content);
+                    mBinding.tvTitle.setMaxWidth(maxTitleWidth);
+                } catch (Exception e) {
+
+                }
+
+            }
+        }
     }
 
     private void cusLayoutTitleBar() {
@@ -64,29 +83,29 @@ public class TitleBar extends LinearLayout {
             hideLeftButton();
             hideLeftTxtButton();
             FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT);
+                ViewGroup.LayoutParams.WRAP_CONTENT);
             layoutParams.gravity = Gravity.CENTER_VERTICAL | Gravity.START;
             int marginStart = ZIMKitScreenUtils.dip2px(4f);
             layoutParams.setMarginStart(marginStart);
-            mBinding.clTitleBar.addView(headerBar.getLeftView(), layoutParams);
+            mBinding.titleStartLayout.addView(headerBar.getLeftView(), layoutParams);
         }
 
         if (headerBar.getTitleView() != null) {
             mBinding.tvTitle.setVisibility(GONE);
             FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT);
+                ViewGroup.LayoutParams.WRAP_CONTENT);
             layoutParams.gravity = Gravity.CENTER_VERTICAL | Gravity.CENTER;
-            mBinding.clTitleBar.addView(headerBar.getTitleView(), layoutParams);
+            mBinding.titleCenterLayout.addView(headerBar.getTitleView(), layoutParams);
         }
 
         if (headerBar.getRightView() != null) {
             hideRightButton();
             FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT);
+                ViewGroup.LayoutParams.WRAP_CONTENT);
             layoutParams.gravity = Gravity.CENTER_VERTICAL | Gravity.END;
             int marginEnd = ZIMKitScreenUtils.dip2px(4f);
             layoutParams.setMarginEnd(marginEnd);
-            mBinding.clTitleBar.addView(headerBar.getRightView(), layoutParams);
+            mBinding.titleEndLayout.addView(headerBar.getRightView(), layoutParams);
         }
 
     }
@@ -148,4 +167,13 @@ public class TitleBar extends LinearLayout {
         mBinding.imRight.setVisibility(View.VISIBLE);
     }
 
+    public void setMaxTitleWidth(int maxTitleWidth) {
+        if (mBinding != null) {
+            mBinding.tvTitle.setMaxWidth(dp2px(maxTitleWidth, getResources().getDisplayMetrics()));
+        }
+    }
+
+    private int dp2px(float v, DisplayMetrics displayMetrics) {
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v, displayMetrics);
+    }
 }

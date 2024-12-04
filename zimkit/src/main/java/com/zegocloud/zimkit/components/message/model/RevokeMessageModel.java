@@ -25,8 +25,7 @@ public class RevokeMessageModel extends ZIMKitMessageModel {
             ZIMRevokeMessage revokeMessage = (ZIMRevokeMessage) message;
             if (Objects.equals(revokeMessage.getSenderUserID(), ZIMKit.getLocalUser().getId())) {
                 String you = ZIMKitCore.getInstance().getApplication().getString(R.string.zimkit_you);
-                mContent =
-                    you + " " + ZIMKitCore.getInstance().getApplication().getString(R.string.zimkit_message_revoke);
+                mContent = you + " " + ZIMKitCore.getInstance().getApplication().getString(R.string.zimkit_message_revoke);
             } else {
                 ArrayList<String> stringList = new ArrayList<>(
                     Collections.singletonList(revokeMessage.getSenderUserID()));

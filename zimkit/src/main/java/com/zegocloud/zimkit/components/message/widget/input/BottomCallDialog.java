@@ -1,4 +1,4 @@
-package com.zegocloud.zimkit.components.message.widget;
+package com.zegocloud.zimkit.components.message.widget.input;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -29,7 +29,6 @@ import com.zegocloud.zimkit.databinding.ZimkitLayoutSeletectCallTypeBinding;
 import com.zegocloud.zimkit.services.ZIMKitConfig;
 import com.zegocloud.zimkit.services.config.ZIMKitInputButtonName;
 import com.zegocloud.zimkit.services.internal.ZIMKitCore;
-import com.zegocloud.zimkit.services.model.ZIMKitConversation;
 import im.zego.zim.callback.ZIMUsersInfoQueriedCallback;
 import im.zego.zim.entity.ZIMError;
 import im.zego.zim.entity.ZIMErrorUserInfo;

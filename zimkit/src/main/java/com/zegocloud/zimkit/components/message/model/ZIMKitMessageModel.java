@@ -4,8 +4,10 @@ import androidx.databinding.BaseObservable;
 import androidx.databinding.Bindable;
 import com.zegocloud.zimkit.BR;
 import im.zego.zim.entity.ZIMMessage;
+import im.zego.zim.entity.ZIMMessageReaction;
 import im.zego.zim.enums.ZIMMessageDirection;
 import im.zego.zim.enums.ZIMMessageSentStatus;
+import java.util.ArrayList;
 
 public abstract class ZIMKitMessageModel extends BaseObservable {
 
@@ -16,8 +18,8 @@ public abstract class ZIMKitMessageModel extends BaseObservable {
     //Whether messages are sent or received
     private ZIMMessageDirection direction = ZIMMessageDirection.SEND;
     private String extra;
-    private boolean isShowMultiSelectCheckBox;
     private boolean isCheck = false;
+    private ArrayList<ZIMMessageReaction> reactions;
 
     public void setCommonAttribute(ZIMMessage message) {
         if (message == null) {
@@ -26,6 +28,7 @@ public abstract class ZIMKitMessageModel extends BaseObservable {
         this.mMessage = message;
         this.direction = message.getDirection() == null ? ZIMMessageDirection.SEND : message.getDirection();
         this.sentStatus = message.getSentStatus() == null ? ZIMMessageSentStatus.SENDING : message.getSentStatus();
+        setReactions(message.getReactions());
     }
 
     /**
@@ -80,6 +83,10 @@ public abstract class ZIMKitMessageModel extends BaseObservable {
         return direction;
     }
 
+    public void setDirection(ZIMMessageDirection direction) {
+        this.direction = direction;
+    }
+
     public int getType() {
         if (mMessage == null) {
             return 999;
@@ -89,23 +96,22 @@ public abstract class ZIMKitMessageModel extends BaseObservable {
     }
 
     @Bindable
-    public boolean isShowMultiSelectCheckBox() {
-        return isShowMultiSelectCheckBox;
-    }
-
-    public void setShowMultiSelectCheckBox(boolean showMultiSelectCheckBox) {
-        this.isShowMultiSelectCheckBox = showMultiSelectCheckBox;
-    }
-
-    @Bindable
     public boolean isCheck() {
         return isCheck;
     }
 
-    private static final String TAG = "ZIMKitMessageModel";
     public void setCheck(boolean check) {
         this.isCheck = check;
         notifyPropertyChanged(BR.check);
     }
 
+    @Bindable
+    public ArrayList<ZIMMessageReaction> getReactions() {
+        return reactions;
+    }
+
+    public void setReactions(ArrayList<ZIMMessageReaction> reactions) {
+        this.reactions = reactions;
+        notifyPropertyChanged(BR.reactions);
+    }
 }

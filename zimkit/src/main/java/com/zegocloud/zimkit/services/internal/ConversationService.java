@@ -1,5 +1,6 @@
 package com.zegocloud.zimkit.services.internal;
 
+import com.zegocloud.uikit.plugin.signaling.ZegoSignalingPlugin;
 import com.zegocloud.zimkit.services.callback.ClearUnreadCountCallback;
 import com.zegocloud.zimkit.services.callback.DeleteConversationCallback;
 import com.zegocloud.zimkit.services.callback.GetConversationListCallback;
@@ -44,7 +45,7 @@ public class ConversationService {
 
     public void deleteConversation(String conversationID, ZIMConversationType type,
         DeleteConversationCallback callback) {
-        ZIMKitCore.getInstance().zim().deleteConversation(conversationID, type, new ZIMConversationDeleteConfig(),
+        ZegoSignalingPlugin.getInstance().deleteConversation(conversationID, type, new ZIMConversationDeleteConfig(),
             (conversationID1, conversationType, errorInfo) -> {
                 if (errorInfo.code == ZIMErrorCode.SUCCESS) {
                     Iterator<ZIMKitConversation> iterator = ZIMKitCore.getInstance().getConversations().iterator();
@@ -69,7 +70,7 @@ public class ConversationService {
     }
 
     public void clearUnreadCount(String conversationID, ZIMConversationType type, ClearUnreadCountCallback callback) {
-        ZIMKitCore.getInstance().zim().clearConversationUnreadMessageCount(conversationID, type,
+        ZegoSignalingPlugin.getInstance().clearConversationUnreadMessageCount(conversationID, type,
             new ZIMConversationUnreadMessageCountClearedCallback() {
                 @Override
                 public void onConversationUnreadMessageCountCleared(String conversationID,
@@ -89,7 +90,7 @@ public class ConversationService {
         config.nextConversation = conversation;
         Timber.d("queryConversationList() called with: isCallbackListChanged = [" + isCallbackListChanged
             + "], conversation = [" + conversation + "], callback = [" + callback + "]");
-        ZIMKitCore.getInstance().zim().queryConversationList(config, (conversationList, errorInfo) -> {
+        ZegoSignalingPlugin.getInstance().queryConversationList(config, (conversationList, errorInfo) -> {
 
             if (errorInfo.code == ZIMErrorCode.SUCCESS) {
                 handleConversationListLoad(conversationList);
@@ -123,13 +124,12 @@ public class ConversationService {
 
     public void updateConversationPinnedState(boolean isPinned, String conversationID,
         ZIMConversationType conversationType, ZIMConversationPinnedStateUpdatedCallback callback) {
-        ZIMKitCore.getInstance().zim()
+        ZegoSignalingPlugin.getInstance()
             .updateConversationPinnedState(isPinned, conversationID, conversationType, callback);
     }
 
     public void setConversationNotificationStatus(ZIMConversationNotificationStatus status, String conversationID,
         ZIMConversationType conversationType, ZIMConversationNotificationStatusSetCallback callback) {
-        ZIMKitCore.getInstance().zim()
-            .setConversationNotificationStatus(status, conversationID, conversationType, callback);
+        ZegoSignalingPlugin.getInstance().setConversationNotificationStatus(status, conversationID, conversationType, callback);
     }
 }

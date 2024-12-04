@@ -15,7 +15,7 @@
 
     <variable
       name="model"
-      type="com.zegocloud.zimkit.components.message.model.TextMessageModel" />
+      type="com.zegocloud.zimkit.components.message.model.ZIMKitMessageModel" />
   </data>
 
   <androidx.constraintlayout.widget.ConstraintLayout
@@ -31,7 +31,7 @@
       android:layout_marginLeft="8dp"
       android:button="@drawable/zimkit_selector_checkbox"
       android:checked="@{model.isCheck}"
-      android:visibility="@{model.isShowMultiSelectCheckBox ? view.VISIBLE : view.GONE}"
+      android:clickable="false"
       app:layout_constraintBottom_toBottomOf="@id/iv_avatar"
       app:layout_constraintLeft_toLeftOf="parent"
       app:layout_constraintTop_toTopOf="@id/iv_avatar" />
@@ -43,14 +43,15 @@
       android:layout_marginStart="12dp"
       android:layout_marginEnd="8dp"
       app:avatarMessageUrl="@{model.avatar}"
-      app:layout_constraintEnd_toStartOf="@id/ll_content"
+      app:layout_constraintEnd_toStartOf="@id/item_status_message_layout"
       app:layout_constraintStart_toEndOf="@+id/select_checkbox"
       app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout
-      android:id="@+id/ll_content"
+      android:id="@+id/item_status_message_layout"
       android:layout_width="0dp"
       android:layout_height="wrap_content"
+      android:layout_marginEnd="63dp"
       android:orientation="vertical"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintStart_toEndOf="@id/iv_avatar"
@@ -69,33 +70,92 @@
         tools:text="aaa"
         tools:visibility="visible" />
 
-      <FrameLayout
+      <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/item_message_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="63dp"
-        android:background="@drawable/zimkit_shape_8dp_white"
+        android:background="@drawable/zimkit_shape_12dp_white"
+        android:clickable="true"
         android:paddingLeft="12dp"
-        android:paddingTop="11dp"
+        android:paddingTop="10dp"
         android:paddingRight="12dp"
-        android:paddingBottom="11dp">
+        android:paddingBottom="10dp">
 
-        <com.github.ybq.android.spinkit.SpinKitView
-          android:id="@+id/content_loading"
-          style="@style/SpinKitView.ThreeBounce"
-          android:layout_width="wrap_content"
-          android:layout_height="36dp"
-          android:layout_gravity="center"
-          android:visibility="gone"
-          app:SpinKit_Color="@color/color_a4a4a4" />
+        <LinearLayout
+          android:id="@+id/item_message_reply_layout"
+          android:layout_width="match_parent"
+          android:layout_height="22dp"
+          android:orientation="horizontal"
+          android:visibility="@{model.message.repliedInfo != null ? view.VISIBLE:view.GONE}"
+          app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
-          android:id="@+id/tv_message"
+          <View
+            android:id="@+id/item_message_reply_line"
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
+            android:background="@color/color_646A73"
+            app:layout_constraintBottom_toBottomOf="@+id/item_message_reply_content"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/item_message_reply_content" />
+
+          <TextView
+            android:id="@+id/item_message_reply_content"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="3dp"
+            android:ellipsize="end"
+            android:gravity="start|center_vertical"
+            android:maxLines="1"
+            android:singleLine="true"
+            android:textColor="@color/color_646A73"
+            android:textSize="13sp"
+            app:layout_constraintStart_toEndOf="@+id/item_message_reply_line"
+            app:layout_constraintTop_toTopOf="parent"
+            app:replyMessageContent="@{model.message}" />
+
+        </LinearLayout>
+
+        <FrameLayout
+          android:id="@+id/msg_content_layout"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:text="@{model.content}"
-          android:textColor="@color/color_2a2a2a"
-          android:textSize="15sp" />
-      </FrameLayout>
+          android:layout_marginTop="4dp"
+          android:background="@drawable/zimkit_shape_8dp_white"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintTop_toBottomOf="@+id/item_message_reply_layout"
+          app:layout_goneMarginTop="0dp">
+
+          <com.github.ybq.android.spinkit.SpinKitView
+            android:id="@+id/item_content_loading"
+            style="@style/SpinKitView.ThreeBounce"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            app:SpinKit_Color="@color/color_a4a4a4" />
+
+          <TextView
+            android:id="@+id/item_content_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/color_2a2a2a"
+            android:textSize="15sp"
+            app:applyTextMessage="@{model.message}" />
+        </FrameLayout>
+
+        <com.google.android.flexbox.FlexboxLayout
+          android:id="@+id/msg_reaction_layout"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="8dp"
+          app:applyReactions="@{model}"
+          app:flexDirection="row"
+          app:flexWrap="wrap"
+          app:justifyContent="flex_start"
+          app:layout_constraintTop_toBottomOf="@+id/msg_content_layout" />
+      </androidx.constraintlayout.widget.ConstraintLayout>
 
     </LinearLayout>
   </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="wrap_content"
+  android:clickable="true"
+  android:layout_height="wrap_content">
+
+  <!-- You need to wrap a FrameLayout in the outer layer, otherwise the size setting will not take effect.  -->
+
+  <TextView
+    android:id="@+id/chat_pop_emoji"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:gravity="start|center_vertical"
+    android:paddingTop="8dp"
+    android:textColor="@color/black"
+    android:textSize="20sp" />
+
+</FrameLayout>

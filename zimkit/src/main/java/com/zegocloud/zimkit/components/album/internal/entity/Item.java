@@ -7,6 +7,8 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.provider.MediaStore;
 
+import android.provider.MediaStore.Files.FileColumns;
+import android.provider.MediaStore.MediaColumns;
 import androidx.annotation.Nullable;
 
 import com.zegocloud.zimkit.components.album.MimeType;
@@ -58,10 +60,18 @@ public class Item implements Parcelable {
     }
 
     public static Item valueOf(Cursor cursor) {
-        return new Item(cursor.getLong(cursor.getColumnIndex(MediaStore.Files.FileColumns._ID)),
-                cursor.getString(cursor.getColumnIndex(MediaStore.MediaColumns.MIME_TYPE)),
-                cursor.getLong(cursor.getColumnIndex(MediaStore.MediaColumns.SIZE)),
-                cursor.getLong(cursor.getColumnIndex("duration")));
+        int columnIndex = cursor.getColumnIndex(FileColumns._ID);
+        int columnIndex1 = cursor.getColumnIndex(MediaColumns.MIME_TYPE);
+        int columnIndex2 = cursor.getColumnIndex(MediaColumns.SIZE);
+        int columnIndex3 = cursor.getColumnIndex("duration");
+        if (columnIndex >= 0 && columnIndex1 >= 0 && columnIndex2 >= 0 && columnIndex3 >= 0) {
+            return new Item(cursor.getLong(columnIndex),
+                cursor.getString(columnIndex1),
+                cursor.getLong(columnIndex2),
+                cursor.getLong(columnIndex3));
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -106,12 +116,12 @@ public class Item implements Parcelable {
 
         Item other = (Item) obj;
         return id == other.id
-                && (mimeType != null && mimeType.equals(other.mimeType)
-                || (mimeType == null && other.mimeType == null))
-                && (uri != null && uri.equals(other.uri)
-                || (uri == null && other.uri == null))
-                && size == other.size
-                && duration == other.duration;
+            && (mimeType != null && mimeType.equals(other.mimeType)
+            || (mimeType == null && other.mimeType == null))
+            && (uri != null && uri.equals(other.uri)
+            || (uri == null && other.uri == null))
+            && size == other.size
+            && duration == other.duration;
     }
 
     @Override

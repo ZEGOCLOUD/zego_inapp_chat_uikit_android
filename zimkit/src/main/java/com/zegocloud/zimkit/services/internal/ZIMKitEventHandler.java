@@ -1,8 +1,5 @@
 package com.zegocloud.zimkit.services.internal;
 
-import android.util.Log;
-import com.zegocloud.uikit.plugin.adapter.ZegoPluginAdapter;
-import com.zegocloud.uikit.plugin.adapter.plugins.call.ZegoCallPluginProtocol;
 import com.zegocloud.zimkit.services.model.ZIMKitConversation;
 import com.zegocloud.zimkit.services.model.ZIMKitMessage;
 import com.zegocloud.zimkit.services.utils.MessageTransform;
@@ -12,6 +9,7 @@ import im.zego.zim.entity.ZIMConversationChangeInfo;
 import im.zego.zim.entity.ZIMGroupMemberInfo;
 import im.zego.zim.entity.ZIMGroupOperatedInfo;
 import im.zego.zim.entity.ZIMMessage;
+import im.zego.zim.entity.ZIMMessageReaction;
 import im.zego.zim.entity.ZIMRevokeMessage;
 import im.zego.zim.enums.ZIMConnectionEvent;
 import im.zego.zim.enums.ZIMConnectionState;
@@ -109,6 +107,32 @@ public class ZIMKitEventHandler extends ZIMEventHandler {
 
         ZIMKitCore.getInstance().getZimkitNotifyList().notifyAllListener(zimKitDelegate -> {
             zimKitDelegate.onMessageRevokeReceived(conversationID, type, kitMessages);
+        });
+    }
+
+    @Override
+    public void onMessageReactionsChanged(ZIM zim, ArrayList<ZIMMessageReaction> reactions) {
+        super.onMessageReactionsChanged(zim, reactions);
+
+        ZIMKitCore.getInstance().getZimkitNotifyList().notifyAllListener(zimKitDelegate -> {
+            zimKitDelegate.onMessageReactionsChanged(reactions);
+        });
+    }
+
+    @Override
+    public void onMessageRepliedInfoChanged(ZIM zim, ArrayList<ZIMMessage> messageList) {
+        super.onMessageRepliedInfoChanged(zim, messageList);
+
+        if (messageList.isEmpty()) {
+            return;
+        }
+
+        String conversationID = messageList.get(0).getConversationID();
+        ZIMConversationType type = messageList.get(0).getConversationType();
+        ArrayList<ZIMKitMessage> kitMessages = MessageTransform.parseMessageList(messageList);
+
+        ZIMKitCore.getInstance().getZimkitNotifyList().notifyAllListener(zimKitDelegate -> {
+            zimKitDelegate.onMessageRepliedInfoChanged(conversationID, type, kitMessages);
         });
     }
 

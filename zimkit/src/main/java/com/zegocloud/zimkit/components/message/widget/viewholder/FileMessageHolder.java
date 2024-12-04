@@ -1,25 +1,27 @@
 package com.zegocloud.zimkit.components.message.widget.viewholder;
 
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
 import android.view.View;
-
+import android.view.ViewGroup;
 import androidx.databinding.ViewDataBinding;
-
+import com.zegocloud.uikit.plugin.signaling.ZegoSignalingPlugin;
+import com.zegocloud.zimkit.R;
 import com.zegocloud.zimkit.common.utils.ZIMKitBackgroundTasks;
 import com.zegocloud.zimkit.common.utils.ZIMKitFileUtils;
-import com.zegocloud.zimkit.services.ZIMKit;
-import com.zegocloud.zimkit.services.callback.DownloadMediaFileCallback;
-import com.zegocloud.zimkit.services.utils.MessageTransform;
-import im.zego.zim.entity.ZIMError;
-import im.zego.zim.enums.ZIMErrorCode;
-import im.zego.zim.enums.ZIMMessageDirection;
-import im.zego.zim.enums.ZIMMessageSentStatus;
 import com.zegocloud.zimkit.components.message.ZIMKitMessageManager;
 import com.zegocloud.zimkit.components.message.interfaces.NetworkConnectionListener;
 import com.zegocloud.zimkit.components.message.model.FileMessageModel;
 import com.zegocloud.zimkit.components.message.model.ZIMKitMessageModel;
 import com.zegocloud.zimkit.databinding.ZimkitItemMessageReceiveFileBinding;
 import com.zegocloud.zimkit.databinding.ZimkitItemMessageSendFileBinding;
+import im.zego.zim.callback.ZIMMediaDownloadedCallback;
+import im.zego.zim.entity.ZIMError;
+import im.zego.zim.entity.ZIMMediaMessage;
+import im.zego.zim.enums.ZIMErrorCode;
+import im.zego.zim.enums.ZIMMediaFileType;
+import im.zego.zim.enums.ZIMMessageDirection;
+import im.zego.zim.enums.ZIMMessageSentStatus;
 
 public class FileMessageHolder extends MessageViewHolder {
 
@@ -39,45 +41,27 @@ public class FileMessageHolder extends MessageViewHolder {
     @Override
     public void bind(int id, int position, ZIMKitMessageModel model) {
         super.bind(id, position, model);
+
         if (model instanceof FileMessageModel) {
+
             FileMessageModel fileMessageModel = (FileMessageModel) model;
-            boolean isSend = model.getDirection() == ZIMMessageDirection.SEND;
-            mMutiSelectCheckBox = isSend ? sendFileBinding.selectCheckbox : receiveFileBinding.selectCheckbox;
-            msgContent = isSend ? sendFileBinding.fileContentCl : receiveFileBinding.fileContentCl;
-            if (isSend) {
-                sendFileBinding.fileContentCl.setOnClickListener(v -> {
-                    if (TextUtils.isEmpty(fileMessageModel.getFileLocalPath())) {
-                        if (fileMessageModel.getSentStatus() == ZIMMessageSentStatus.SUCCESS) {
-                            addLimitFile(fileMessageModel);
-                        }
-                        sendFileBinding.viewDownload.setVisibility(View.VISIBLE);
-                        sendFileBinding.fileDownloadPb.setVisibility(View.VISIBLE);
-                        ZIMKitMessageManager.share().registerNetworkListener(networkConnectionListener);
-                        downloadMediaFile(fileMessageModel);
-                    } else {
-                        toOpenFile(fileMessageModel);
-                    }
-                });
-                sendFileBinding.fileContentCl.setOnLongClickListener(v -> {
-                    initLongClickListener(v, position, model);
-                    return true;
-                });
+            boolean isSend = isSendMessage(model);
+
+            ViewGroup itemMessageLayout = itemView.findViewById(R.id.item_message_layout);
+            if (model.getReactions().isEmpty() && model.getMessage().getRepliedInfo() == null) {
+                itemMessageLayout.setPadding(0, 0, 0, 0);
             } else {
-                receiveFileBinding.fileContentCl.setOnClickListener(v -> {
-                    if (TextUtils.isEmpty(fileMessageModel.getFileLocalPath())) {
-                        addLimitFile(fileMessageModel);
-                        receiveFileBinding.viewDownload.setVisibility(View.VISIBLE);
-                        receiveFileBinding.fileDownloadPb.setVisibility(View.VISIBLE);
-                        ZIMKitMessageManager.share().registerNetworkListener(networkConnectionListener);
-                        downloadMediaFile(fileMessageModel);
-                    } else {
-                        toOpenFile(fileMessageModel);
-                    }
-                });
-                receiveFileBinding.fileContentCl.setOnLongClickListener(v -> {
-                    initLongClickListener(v, position, model);
-                    return true;
-                });
+                DisplayMetrics displayMetrics = itemMessageLayout.getContext().getResources().getDisplayMetrics();
+                itemMessageLayout.setPadding(dp2px(12, displayMetrics), dp2px(10, displayMetrics),
+                    dp2px(12, displayMetrics), dp2px(10, displayMetrics));
+            }
+            if (!isSend) {
+                if (model.getReactions().isEmpty()&& model.getMessage().getRepliedInfo() == null) {
+                    receiveFileBinding.msgContentLayout.setBackgroundResource(R.drawable.zimkit_shape_12dp_white);
+                } else {
+                    receiveFileBinding.msgContentLayout.setBackgroundResource(
+                        R.drawable.zimkit_shape_12dp_white_eff0f2);
+                }
             }
             networkConnectionListener = new NetworkConnectionListener() {
                 @Override
@@ -88,8 +72,8 @@ public class FileMessageHolder extends MessageViewHolder {
             };
 
             //Automatic download of files less than 10M
-            if (TextUtils.isEmpty(fileMessageModel.getFileLocalPath()) && !TextUtils.isEmpty(fileMessageModel.getFileDownloadUrl()) &&
-                    !fileMessageModel.isSizeLimit()) {
+            if (TextUtils.isEmpty(fileMessageModel.getFileLocalPath()) && !TextUtils.isEmpty(
+                fileMessageModel.getFileDownloadUrl()) && !fileMessageModel.isSizeLimit()) {
                 downloadMediaFile(fileMessageModel);
                 ZIMKitMessageManager.share().registerNetworkListener(networkConnectionListener);
             }
@@ -120,6 +104,36 @@ public class FileMessageHolder extends MessageViewHolder {
         }
     }
 
+    private boolean isSendMessage(ZIMKitMessageModel model) {
+        boolean isSend;
+        if (mAdapter.isOneSideForwardMode()) {
+            isSend = false;
+        } else {
+            isSend = model.getDirection() == ZIMMessageDirection.SEND;
+        }
+        return isSend;
+    }
+
+    public void onMessageLayoutClicked(FileMessageModel fileMessageModel) {
+        if (TextUtils.isEmpty(fileMessageModel.getFileLocalPath())) {
+            if (isSendMessage(model)) {
+                if (fileMessageModel.getSentStatus() == ZIMMessageSentStatus.SUCCESS) {
+                    addLimitFile(fileMessageModel);
+                }
+                sendFileBinding.viewDownload.setVisibility(View.VISIBLE);
+                sendFileBinding.fileDownloadPb.setVisibility(View.VISIBLE);
+            } else {
+                addLimitFile(fileMessageModel);
+                receiveFileBinding.viewDownload.setVisibility(View.VISIBLE);
+                receiveFileBinding.fileDownloadPb.setVisibility(View.VISIBLE);
+            }
+            ZIMKitMessageManager.share().registerNetworkListener(networkConnectionListener);
+            downloadMediaFile(fileMessageModel);
+        } else {
+            toOpenFile(fileMessageModel);
+        }
+    }
+
     /**
      * Open file
      *
@@ -141,20 +155,28 @@ public class FileMessageHolder extends MessageViewHolder {
      * @param fileMessageModel
      */
     private void downloadMediaFile(FileMessageModel fileMessageModel) {
-        ZIMKit.downloadMediaFile(
-            MessageTransform.parseMessage(fileMessageModel.getMessage()), new DownloadMediaFileCallback() {
+        ZIMMediaMessage mediaMessage = (ZIMMediaMessage) fileMessageModel.getMessage();
+        ZIMMediaFileType mediaType = ZIMMediaFileType.ORIGINAL_FILE;
+        ZegoSignalingPlugin.getInstance().downloadMediaFile(mediaMessage, mediaType, new ZIMMediaDownloadedCallback() {
             @Override
-            public void onDownloadMediaFile(ZIMError error) {
-                if (error.code == ZIMErrorCode.SUCCESS) {
+            public void onMediaDownloaded(ZIMMediaMessage message, ZIMError errorInfo) {
+                if (errorInfo.code == ZIMErrorCode.SUCCESS) {
+                    fileMessageModel.setFileLocalPath(message.getFileLocalPath());
+                    fileMessageModel.setFileSize(message.getFileSize());
+                    fileMessageModel.setFileName(message.getFileName());
                     ZIMKitMessageManager.share().unRegisterNetworkListener(networkConnectionListener);
                 }
+            }
+
+            @Override
+            public void onMediaDownloadingProgress(ZIMMediaMessage message, long currentFileSize, long totalFileSize) {
+
             }
         });
     }
 
     /**
-     * Record file download
-     * Exit and come back in to know what files are being downloaded
+     * Record file download Exit and come back in to know what files are being downloaded
      *
      * @param fileMessageModel
      */

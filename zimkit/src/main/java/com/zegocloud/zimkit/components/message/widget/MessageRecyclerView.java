@@ -8,13 +8,21 @@ import android.content.Context;
 import android.os.Environment;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AlertDialog.Builder;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SimpleItemAnimator;
 import com.zegocloud.zimkit.R;
+import com.zegocloud.zimkit.common.adapter.ZIMKitBindingAdapter;
 import com.zegocloud.zimkit.common.base.BaseDialog;
 import com.zegocloud.zimkit.common.components.CustomLinearLayoutManager;
 import com.zegocloud.zimkit.common.utils.ZIMKitCustomToastUtil;
@@ -23,23 +31,33 @@ import com.zegocloud.zimkit.common.utils.ZIMKitSPUtils;
 import com.zegocloud.zimkit.common.utils.ZIMKitToastUtils;
 import com.zegocloud.zimkit.common.utils.ZLog;
 import com.zegocloud.zimkit.components.message.adapter.ZIMKitMessageAdapter;
-import com.zegocloud.zimkit.components.message.model.AudioMessageModel;
 import com.zegocloud.zimkit.components.message.model.FileMessageModel;
 import com.zegocloud.zimkit.components.message.model.TextMessageModel;
 import com.zegocloud.zimkit.components.message.model.ZIMKitMessageModel;
-import com.zegocloud.zimkit.components.message.utils.ChatMessageParser;
 import com.zegocloud.zimkit.components.message.viewmodel.ZIMKitMessageVM;
+import com.zegocloud.zimkit.components.message.widget.chatpop.ChatPopAction;
+import com.zegocloud.zimkit.components.message.widget.chatpop.MessagePopMenu;
+import com.zegocloud.zimkit.components.message.widget.chatpop.MessagePopMenu.CallBack;
 import com.zegocloud.zimkit.components.message.widget.interfaces.IMessageLayout;
 import com.zegocloud.zimkit.components.message.widget.interfaces.OnItemClickListener;
 import com.zegocloud.zimkit.components.message.widget.interfaces.OnPopActionClickListener;
 import com.zegocloud.zimkit.services.ZIMKit;
+import com.zegocloud.zimkit.services.ZIMKitConfig;
+import com.zegocloud.zimkit.services.config.ZIMKitMessageConfig;
+import com.zegocloud.zimkit.services.config.message.ZIMKitMessageOperationName;
 import com.zegocloud.zimkit.services.internal.ZIMKitCore;
+import com.zegocloud.zimkit.services.model.ZIMKitUser;
+import com.zegocloud.zimkit.services.utils.ZIMMessageUtil;
 import im.zego.zim.callback.ZIMMessageDeletedCallback;
+import im.zego.zim.callback.ZIMMessageReactionAddedCallback;
+import im.zego.zim.callback.ZIMMessageReactionDeletedCallback;
 import im.zego.zim.callback.ZIMMessageRevokedCallback;
 import im.zego.zim.entity.ZIMError;
 import im.zego.zim.entity.ZIMMessage;
+import im.zego.zim.entity.ZIMMessageReaction;
 import im.zego.zim.enums.ZIMConversationType;
 import im.zego.zim.enums.ZIMErrorCode;
+import im.zego.zim.enums.ZIMMessageType;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -48,6 +66,9 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 public class MessageRecyclerView extends RecyclerView implements IMessageLayout {
@@ -63,15 +84,14 @@ public class MessageRecyclerView extends RecyclerView implements IMessageLayout 
 
     private ZIMKitMessageAdapter mAdapter;
 
-    protected List<MessagePopMenu.ChatPopMenuAction> mPopActions = new ArrayList<>();
-    protected List<MessagePopMenu.ChatPopMenuAction> mMorePopActions = new ArrayList<>();
+    protected List<ChatPopAction> mPopActions = new ArrayList<>();
+    protected List<ChatPopAction> mMorePopActions = new ArrayList<>();
     private MessagePopMenu mMessagePopMenu;
     protected OnItemClickListener mOnItemClickListener;
     private ZIMConversationType conversationType;
     private ZIMKitMessageVM mViewModel;
     //    private boolean isSpeaker = true;
     protected OnPopActionClickListener mOnPopActionClickListener;
-    protected OnEmptySpaceClickListener mEmptySpaceClickListener;
 
     public MessageRecyclerView(Context context) {
         super(context);
@@ -89,9 +109,9 @@ public class MessageRecyclerView extends RecyclerView implements IMessageLayout 
     }
 
     private void init() {
-        setLayoutFrozen(false);
+        //        setLayoutFrozen(false);
         setItemViewCacheSize(0);
-        setHasFixedSize(true);
+        //        setHasFixedSize(true);
         setFocusableInTouchMode(false);
         setFocusable(true);
         setClickable(true);
@@ -112,10 +132,10 @@ public class MessageRecyclerView extends RecyclerView implements IMessageLayout 
                             return false;
                         }
                         if (position == 0) {
-                            return mAdapter.getData().get(position).getMessage() != null;
+                            return mAdapter.getItemDataList().get(position).getMessage() != null;
                         }
-                        ZIMMessage nowMessage = mAdapter.getData().get(position).getMessage();
-                        ZIMMessage lastMessage = mAdapter.getData().get(position - 1).getMessage();
+                        ZIMMessage nowMessage = mAdapter.getItemDataList().get(position).getMessage();
+                        ZIMMessage lastMessage = mAdapter.getItemDataList().get(position - 1).getMessage();
                         if (nowMessage == null || lastMessage == null) {
                             return false;
                         } else {
@@ -129,7 +149,7 @@ public class MessageRecyclerView extends RecyclerView implements IMessageLayout 
                             return "";
                         }
                         return ZIMKitDateUtils.getMessageDate(
-                            mAdapter.getData().get(position).getMessage().getTimestamp(), true);
+                            mAdapter.getItemDataList().get(position).getMessage().getTimestamp(), true);
                     }
                 }));
         }
@@ -138,7 +158,7 @@ public class MessageRecyclerView extends RecyclerView implements IMessageLayout 
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
                 if (mMessagePopMenu != null) {
-                    mMessagePopMenu.hide();
+                    mMessagePopMenu.dismissPopWindow();
                     mMessagePopMenu = null;
                 }
                 super.onScrollStateChanged(recyclerView, newState);
@@ -152,107 +172,301 @@ public class MessageRecyclerView extends RecyclerView implements IMessageLayout 
     }
 
     public void showItemPopMenu(final ZIMKitMessageModel messageInfo, View view) {
-        initPopActions(messageInfo);
+        List<ChatPopAction> chatPopActions = initPopActions(view.getContext(), messageInfo);
+        mPopActions.clear();
+        mPopActions.addAll(chatPopActions);
+        mPopActions.addAll(mMorePopActions);
+
         if (mPopActions.isEmpty()) {
             return;
         }
 
         if (mMessagePopMenu != null) {
-            mMessagePopMenu.hide();
+            mMessagePopMenu.dismissPopWindow();
             mMessagePopMenu = null;
         }
-        mMessagePopMenu = new MessagePopMenu(getContext(), mPopActions.size());
-        mMessagePopMenu.setChatPopMenuActionList(mPopActions);
+
+        boolean showChatPopReactionView = shouldShowChatPopReactionView(messageInfo);
+        mMessagePopMenu = new MessagePopMenu(getContext(), messageInfo, mPopActions, showChatPopReactionView);
         int[] location = new int[2];
         getLocationOnScreen(location);
         mMessagePopMenu.show(view, location[1]);
-        //        mMessagePopMenu.setEmptySpaceClickListener(new MessageRecyclerView.OnEmptySpaceClickListener() {
-        //            @Override
-        //            public void onClick() {
-        //                if (mEmptySpaceClickListener != null) {
-        //                    mEmptySpaceClickListener.onClick();
-        //                }
-        //            }
-        //        });
+
+        mMessagePopMenu.setCallBack(new CallBack() {
+            @Override
+            public void onRecentEmojiClick(String emoji, ZIMKitMessageModel messageModel) {
+                onEmojiIconClicked(emoji, messageModel);
+            }
+
+            @Override
+            public void onPagerEmojiClick(String emoji, ZIMKitMessageModel messageModel) {
+                onEmojiIconClicked(emoji, messageModel);
+            }
+
+            @Override
+            public void onPopActionClick(int position, ZIMKitMessageModel messageModel) {
+                ChatPopAction chatPopAction = mPopActions.get(position);
+                chatPopAction.getActionClickListener().onClick();
+            }
+        });
+    }
+
+    private void onEmojiIconClicked(String emoji, ZIMKitMessageModel messageModel) {
+        Optional<ZIMMessageReaction> any = messageModel.getReactions().stream()
+            .filter(messageReaction -> Objects.equals(messageReaction.reactionType, emoji)).findAny();
+        if (any.isPresent()) {
+            ZIMMessageReaction reaction = any.get();
+            List<String> collect = reaction.userList.stream()
+                .map(zimMessageReactionUserInfo -> zimMessageReactionUserInfo.userID).collect(Collectors.toList());
+            ZIMKitUser localUser = ZIMKitCore.getInstance().getLocalUser();
+            if (collect.contains(localUser.getId())) {
+                // if the emoji existed in the message,and contains me,then remove
+                removeMessageEmojiReaction(emoji, messageModel);
+                return;
+            }
+        }
+
+        addMessageEmojiReaction(emoji, messageModel);
+    }
+
+    private void addMessageEmojiReaction(String emoji, ZIMKitMessageModel messageModel) {
+        ZIMKitCore.getInstance()
+            .addMessageReaction(emoji, messageModel.getMessage(), new ZIMMessageReactionAddedCallback() {
+                @Override
+                public void onMessageReactionAdded(ZIMMessageReaction reaction, ZIMError error) {
+                    if (error.code == ZIMErrorCode.SUCCESS) {
+                        ArrayList<ZIMMessageReaction> zimReactions = messageModel.getMessage().getReactions();
+                        Optional<ZIMMessageReaction> any = zimReactions.stream().filter(
+                                messageReaction -> Objects.equals(messageReaction.reactionType, reaction.reactionType))
+                            .findAny();
+                        if (any.isPresent()) {
+                            any.get().userList = reaction.userList;
+                        } else {
+                            zimReactions.add(reaction);
+                        }
+                        messageModel.setReactions(zimReactions);
+                        mAdapter.updateMessageInfo(Collections.singletonList(messageModel));
+                    }
+                }
+            });
+    }
+
+    public void onMessageReactionClicked(String emoji, ZIMKitMessageModel messageModel) {
+        Optional<ZIMMessageReaction> any = messageModel.getReactions().stream()
+            .filter(messageReaction -> Objects.equals(messageReaction.reactionType, emoji)).findAny();
+        if (any.isPresent()) {
+            ZIMMessageReaction reaction = any.get();
+            List<String> collect = reaction.userList.stream()
+                .map(zimMessageReactionUserInfo -> zimMessageReactionUserInfo.userID).collect(Collectors.toList());
+            ZIMKitUser localUser = ZIMKitCore.getInstance().getLocalUser();
+            // if the emoji existed in the message,and contains me,then remove
+            if (collect.contains(localUser.getId())) {
+                removeMessageEmojiReaction(emoji, messageModel);
+                return;
+            }
+        }
+
+        // else add
+        addMessageEmojiReaction(emoji, messageModel);
+    }
+
+    private void removeMessageEmojiReaction(String emoji, ZIMKitMessageModel messageModel) {
+        ZIMKitCore.getInstance()
+            .deleteMessageReaction(emoji, messageModel.getMessage(), new ZIMMessageReactionDeletedCallback() {
+                @Override
+                public void onMessageReactionDeleted(ZIMMessageReaction reaction, ZIMError error) {
+                    if (error.code == ZIMErrorCode.SUCCESS) {
+                        ArrayList<ZIMMessageReaction> zimReactions = messageModel.getMessage().getReactions();
+                        Optional<ZIMMessageReaction> any = zimReactions.stream().filter(
+                                messageReaction -> Objects.equals(messageReaction.reactionType, reaction.reactionType))
+                            .findAny();
+                        if (any.isPresent()) {
+                            any.get().userList = reaction.userList;
+                            if (reaction.userList.isEmpty()) {
+                                zimReactions.remove(any.get());
+                            }
+                        }
+                        messageModel.setReactions(zimReactions);
+                        mAdapter.updateMessageInfo(Collections.singletonList(messageModel));
+                    }
+                }
+            });
     }
 
     /**
      * Long press to multi-select
      *
-     * @param model
+     * @param context
+     * @param messageModel
      */
-    private void initPopActions(final ZIMKitMessageModel model) {
-        if (model == null) {
-            return;
+    private List<ChatPopAction> initPopActions(Context context, final ZIMKitMessageModel messageModel) {
+        List<ChatPopAction> collect = getChatPopOperationNames(messageModel).stream()
+            .map(zimKitMessageOperationName -> getChatPopAction(context, zimKitMessageOperationName, messageModel))
+            .filter(Objects::nonNull).collect(Collectors.toList());
+        if (messageModel.getMessage().getType() == ZIMMessageType.FILE) {
+            ChatPopAction chatPopSaveAction = getChatPopSaveAction((FileMessageModel) messageModel);
+            collect.add(chatPopSaveAction);
         }
+        return collect;
+    }
 
-        List<MessagePopMenu.ChatPopMenuAction> actions = new ArrayList<>();
-        actions.clear();
-        MessagePopMenu.ChatPopMenuAction action = null;
+    private @NonNull List<ZIMKitMessageOperationName> getChatPopOperationNames(ZIMKitMessageModel messageModel) {
+        if (messageModel == null) {
+            return new ArrayList<>();
+        }
+        ZIMKitConfig zimKitConfig = ZIMKitCore.getInstance().getZimKitConfig();
+        if (zimKitConfig == null || zimKitConfig.messageConfig == null) {
+            return new ArrayList<>();
+        }
+        ZIMKitMessageConfig messageConfig = zimKitConfig.messageConfig;
 
-        //Earpiece
-        if (model instanceof AudioMessageModel) {
-            boolean isSpeaker = ZIMKitSPUtils.getBoolean(ZIMKitSPUtils.KEY_AUDIO_PLAY_MODE, true);
-            action = new MessagePopMenu.ChatPopMenuAction();
-            action.setActionName(getContext().getString(
-                isSpeaker ? R.string.zimkit_option_speaker_off : R.string.zimkit_option_speaker_on));
-            action.setActionIcon(
-                isSpeaker ? R.drawable.zimkit_icon_reaction_earpiece : R.drawable.zimkit_icon_reaction_speaker);
+        List<ZIMKitMessageOperationName> operationNameList = new ArrayList<>();
+        if (messageModel.getMessage().getType() == ZIMMessageType.TEXT) {
+            if (messageConfig.textMessageConfig != null && messageConfig.textMessageConfig.operations != null) {
+                operationNameList = new ArrayList<>(messageConfig.textMessageConfig.operations);
+            }
+        } else if (messageModel.getMessage().getType() == ZIMMessageType.AUDIO) {
+            if (messageConfig.audioMessageConfig != null && messageConfig.audioMessageConfig.operations != null) {
+                operationNameList = new ArrayList<>(messageConfig.audioMessageConfig.operations);
+            }
+        } else if (messageModel.getMessage().getType() == ZIMMessageType.IMAGE) {
+            if (messageConfig.imageMessageConfig != null && messageConfig.imageMessageConfig.operations != null) {
+                operationNameList = new ArrayList<>(messageConfig.imageMessageConfig.operations);
+            }
+        } else if (messageModel.getMessage().getType() == ZIMMessageType.VIDEO) {
+            if (messageConfig.videoMessageConfig != null && messageConfig.videoMessageConfig.operations != null) {
+                operationNameList = new ArrayList<>(messageConfig.videoMessageConfig.operations);
+            }
+        } else if (messageModel.getMessage().getType() == ZIMMessageType.FILE) {
+            if (messageConfig.fileMessageConfig != null && messageConfig.fileMessageConfig.operations != null) {
+                operationNameList = new ArrayList<>(messageConfig.fileMessageConfig.operations);
+            }
+        } else if (messageModel.getMessage().getType() == ZIMMessageType.COMBINE) {
+            if (messageConfig.combineMessageConfig != null && messageConfig.combineMessageConfig.operations != null) {
+                operationNameList = new ArrayList<>(messageConfig.combineMessageConfig.operations);
+            }
+        }
+        return operationNameList;
+    }
+
+    private boolean shouldShowChatPopReactionView(ZIMKitMessageModel messageModel) {
+        ZIMKitConfig zimKitConfig = ZIMKitCore.getInstance().getZimKitConfig();
+        if (zimKitConfig == null || zimKitConfig.messageConfig == null) {
+            return false;
+        }
+        ZIMKitMessageConfig messageConfig = zimKitConfig.messageConfig;
+        if (messageModel.getMessage().getType() == ZIMMessageType.TEXT) {
+            if (messageConfig.textMessageConfig != null && messageConfig.textMessageConfig.operations != null) {
+                return messageConfig.textMessageConfig.operations.contains(ZIMKitMessageOperationName.REACTION);
+            }
+        } else if (messageModel.getMessage().getType() == ZIMMessageType.AUDIO) {
+            if (messageConfig.audioMessageConfig != null && messageConfig.audioMessageConfig.operations != null) {
+                return messageConfig.audioMessageConfig.operations.contains(ZIMKitMessageOperationName.REACTION);
+            }
+        } else if (messageModel.getMessage().getType() == ZIMMessageType.IMAGE) {
+            if (messageConfig.imageMessageConfig != null && messageConfig.imageMessageConfig.operations != null) {
+                return messageConfig.imageMessageConfig.operations.contains(ZIMKitMessageOperationName.REACTION);
+            }
+        } else if (messageModel.getMessage().getType() == ZIMMessageType.VIDEO) {
+            if (messageConfig.videoMessageConfig != null && messageConfig.videoMessageConfig.operations != null) {
+                return messageConfig.videoMessageConfig.operations.contains(ZIMKitMessageOperationName.REACTION);
+            }
+        } else if (messageModel.getMessage().getType() == ZIMMessageType.FILE) {
+            if (messageConfig.fileMessageConfig != null && messageConfig.fileMessageConfig.operations != null) {
+                return messageConfig.fileMessageConfig.operations.contains(ZIMKitMessageOperationName.REACTION);
+            }
+        } else if (messageModel.getMessage().getType() == ZIMMessageType.COMBINE) {
+            if (messageConfig.combineMessageConfig != null && messageConfig.combineMessageConfig.operations != null) {
+                return messageConfig.combineMessageConfig.operations.contains(ZIMKitMessageOperationName.REACTION);
+            }
+        }
+        return false;
+    }
+
+    private ChatPopAction getChatPopAction(Context context, ZIMKitMessageOperationName operationName,
+        ZIMKitMessageModel messageModel) {
+        ChatPopAction chatPopAction = null;
+        switch (operationName) {
+            case COPY:
+                chatPopAction = getChatPopCopyAction(messageModel);
+                break;
+            case SPEAKER:
+                chatPopAction = getChatPopSpeakerAction(context, messageModel);
+                break;
+            case REPLY:
+                chatPopAction = getChatPopReplyAction(messageModel);
+                break;
+            case FORWARD:
+                chatPopAction = getChatPopForwardAction(messageModel);
+                break;
+            case MULTIPLE_CHOICE:
+                chatPopAction = getChatPopMultipleAction(messageModel);
+                break;
+            case DELETE:
+                chatPopAction = getChatPopDeleteAction(messageModel);
+                break;
+            case REVOKE:
+                chatPopAction = getChatPopRevokeAction(messageModel);
+                break;
+            case REACTION:
+                break;
+            default:
+                break;
+        }
+        return chatPopAction;
+    }
+
+    private ChatPopAction getChatPopRevokeAction(ZIMKitMessageModel messageModel) {
+        if (messageModel.getMessage().getSenderUserID().equals(ZIMKit.getLocalUser().getId())) {
+            long duration = System.currentTimeMillis() - messageModel.getMessage().getTimestamp();
+            //TODO should be server time.
+            if (duration > 2 * 60 * 1000) {
+                return null;
+            }
+            ChatPopAction action = new ChatPopAction();
+            action.setActionName(getContext().getString(R.string.zimkit_message_withdraw));
+            action.setActionIcon(R.drawable.zimkit_icon_reaction_withdraw);
             action.setActionClickListener(() -> {
-                mAdapter.setAudioPlayByEarPhone(!isSpeaker);
-                ZIMKitSPUtils.putBoolean(ZIMKitSPUtils.KEY_AUDIO_PLAY_MODE, !isSpeaker);
-                if (isSpeaker) {
-                    ZIMKitCustomToastUtil.showToast(getContext(),
-                        getContext().getString(R.string.zimkit_speaker_off_tip),
-                        R.drawable.zimkit_icon_reaction_earpiece);
-                } else {
-                    ZIMKitCustomToastUtil.showToast(getContext(),
-                        getContext().getString(R.string.zimkit_speaker_on_tip),
-                        R.drawable.zimkit_icon_reaction_speaker);
-                }
+                Builder builder = new Builder(getContext());
+                ViewGroup viewGroup = (ViewGroup) View.inflate(getContext(), R.layout.zimkit_dialog_confirm_content,
+                    null);
+                TextView title = viewGroup.findViewById(R.id.title);
+                title.setText(R.string.zimkit_chat_message_revoke);
+                viewGroup.findViewById(R.id.content_edit_text).setVisibility(View.GONE);
+                TextView textView = viewGroup.findViewById(R.id.content_text_view);
+                textView.setText(R.string.zimkit_chat_retract_confirm);
+                builder.setView(viewGroup);
+                AlertDialog dialog = builder.create();
+                viewGroup.findViewById(R.id.confirm).setOnClickListener(v -> {
+                    withDrawMessage(messageModel);
+                    dialog.dismiss();
+                });
+                viewGroup.findViewById(R.id.cancel).setOnClickListener(v -> {
+                    dialog.dismiss();
+                });
+                dialog.show();
+                Window window = dialog.getWindow();
+                window.setBackgroundDrawableResource(R.drawable.zimkit_shape_12dp_white);
+                WindowManager.LayoutParams lp = window.getAttributes();
+                DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
+                lp.width = ZIMKitBindingAdapter.dp2px(270, displayMetrics);
+                lp.height = ZIMKitBindingAdapter.dp2px(165, displayMetrics);
+                window.setAttributes(lp);
 
             });
-            actions.add(action);
+            return action;
+        } else {
+            return null;
         }
+    }
 
-        //Text Copy
-        if (model instanceof TextMessageModel) {
-            action = new MessagePopMenu.ChatPopMenuAction();
-            action.setActionName(getContext().getString(R.string.zimkit_option_copy));
-            action.setActionIcon(R.drawable.zimkit_icon_reaction_copy);
-            action.setActionClickListener(() -> copy(((TextMessageModel) model).getContent()));
-            actions.add(action);
-        }
-
-        //        //File Saving
-        if (model instanceof FileMessageModel) {
-            if (!TextUtils.isEmpty(((FileMessageModel) model).getFileLocalPath())) {
-                action = new MessagePopMenu.ChatPopMenuAction();
-                action.setActionName(getContext().getString(R.string.zimkit_option_save));
-                action.setActionIcon(R.drawable.zimkit_icon_reaction_save);
-                action.setActionClickListener(() -> downloadFile(((FileMessageModel) model).getFileLocalPath()));
-                actions.add(action);
-            }
-        }
-
-        //Multiple Choice
-        action = new MessagePopMenu.ChatPopMenuAction();
-        action.setActionName(getContext().getString(R.string.zimkit_multi_select));
-        action.setActionIcon(R.drawable.zimkit_icon_reaction_multi_select);
-        action.setActionClickListener(() -> {
-            if (mOnPopActionClickListener != null) {
-                mOnPopActionClickListener.onMultiSelectMessageClick(model);
-            }
-        });
-        actions.add(action);
-
-        //Delete
-        action = new MessagePopMenu.ChatPopMenuAction();
+    private @NonNull ChatPopAction getChatPopDeleteAction(ZIMKitMessageModel model) {
+        ChatPopAction action = new ChatPopAction();
         action.setActionName(getContext().getString(R.string.zimkit_option_delete));
         action.setActionIcon(R.drawable.zimkit_icon_reaction_delete);
         action.setActionClickListener(() -> {
             if (mMessagePopMenu != null) {
-                mMessagePopMenu.hide();
+                mMessagePopMenu.dismissPopWindow();
                 mMessagePopMenu = null;
             }
             BaseDialog baseDialog = new BaseDialog(getContext());
@@ -268,26 +482,90 @@ public class MessageRecyclerView extends RecyclerView implements IMessageLayout 
                 baseDialog.dismiss();
             });
         });
-        actions.add(action);
+        return action;
+    }
 
-        long duration = System.currentTimeMillis() - model.getMessage().getTimestamp();
+    private @NonNull ChatPopAction getChatPopMultipleAction(ZIMKitMessageModel model) {
+        ChatPopAction action = new ChatPopAction();
+        action.setActionName(getContext().getString(R.string.zimkit_multi_select));
+        action.setActionIcon(R.drawable.zimkit_icon_reaction_multi_select);
+        action.setActionClickListener(() -> {
+            if (mOnPopActionClickListener != null) {
+                mOnPopActionClickListener.onActionMultiSelectClick(model);
+            }
+        });
+        return action;
+    }
 
-//        if (model.getMessage().getSenderUserID().equals(ZIMKit.getLocalUser().getId())) {
-//            //TODO should be server time.
-//            if (duration < 2 * 60 * 1000) {
-//                action = new MessagePopMenu.ChatPopMenuAction();
-//                action.setActionName(getContext().getString(R.string.zimkit_message_withdraw));
-//                action.setActionIcon(R.drawable.zimkit_icon_reaction_withdraw);
-//                action.setActionClickListener(() -> {
-//                    withDrawMessage(model);
-//                });
-//                actions.add(action);
-//            }
-//        }
+    private @NonNull ChatPopAction getChatPopSaveAction(FileMessageModel model) {
+        ChatPopAction action = new ChatPopAction();
+        action.setActionName(getContext().getString(R.string.zimkit_option_save));
+        action.setActionIcon(R.drawable.zimkit_icon_reaction_save);
+        action.setActionClickListener(() -> downloadFile(model.getFileLocalPath()));
+        return action;
+    }
 
-        mPopActions.clear();
-        mPopActions.addAll(actions);
-        mPopActions.addAll(mMorePopActions);
+    private ChatPopAction getChatPopForwardAction(ZIMKitMessageModel model) {
+        if (model.getMessage().getType() == ZIMMessageType.AUDIO) {
+            return null;
+        }
+        ChatPopAction action = new ChatPopAction();
+        action.setActionName(getContext().getString(R.string.zimkit_option_forward));
+        action.setActionIcon(R.drawable.zimkit_icon_reaction_forward);
+        action.setActionClickListener(() -> {
+            if (mOnPopActionClickListener != null) {
+                mOnPopActionClickListener.onActionForwardMessageClick(model);
+            }
+        });
+        return action;
+    }
+
+    private ChatPopAction getChatPopReplyAction(ZIMKitMessageModel model) {
+        ChatPopAction action = new ChatPopAction();
+        action.setActionName(getContext().getString(R.string.zimkit_option_reply));
+        action.setActionIcon(R.drawable.zimkit_icon_reaction_reply);
+        action.setActionClickListener(() -> {
+            if (mOnPopActionClickListener != null) {
+                mOnPopActionClickListener.onActionReplyMessageClick(model);
+            }
+        });
+        return action;
+    }
+
+    private ChatPopAction getChatPopCopyAction(ZIMKitMessageModel model) {
+        if (model.getMessage().getType() != ZIMMessageType.TEXT) {
+            return null;
+        }
+        ChatPopAction action = new ChatPopAction();
+        action.setActionName(getContext().getString(R.string.zimkit_option_copy));
+        action.setActionIcon(R.drawable.zimkit_icon_reaction_copy);
+        action.setActionClickListener(() -> copy(((TextMessageModel) model).getContent()));
+        return action;
+    }
+
+    private ChatPopAction getChatPopSpeakerAction(Context context, ZIMKitMessageModel model) {
+        if (model.getMessage().getType() != ZIMMessageType.AUDIO) {
+            return null;
+        }
+        boolean isSpeaker = ZIMKitSPUtils.getBoolean(ZIMKitSPUtils.KEY_AUDIO_PLAY_MODE, true);
+        ChatPopAction action = new ChatPopAction();
+        action.setActionName(
+            getContext().getString(isSpeaker ? R.string.zimkit_option_speaker_off : R.string.zimkit_option_speaker_on));
+        action.setActionIcon(
+            isSpeaker ? R.drawable.zimkit_icon_reaction_earpiece : R.drawable.zimkit_icon_reaction_speaker);
+        action.setActionClickListener(() -> {
+            mAdapter.setAudioPlayByEarPhone(context, !isSpeaker);
+            ZIMKitSPUtils.putBoolean(ZIMKitSPUtils.KEY_AUDIO_PLAY_MODE, !isSpeaker);
+            if (isSpeaker) {
+                ZIMKitCustomToastUtil.showToast(getContext(), getContext().getString(R.string.zimkit_speaker_off_tip),
+                    R.drawable.zimkit_icon_reaction_earpiece);
+            } else {
+                ZIMKitCustomToastUtil.showToast(getContext(), getContext().getString(R.string.zimkit_speaker_on_tip),
+                    R.drawable.zimkit_icon_reaction_speaker);
+            }
+
+        });
+        return action;
     }
 
     private static final String TAG = "MessageRecyclerView";
@@ -297,18 +575,9 @@ public class MessageRecyclerView extends RecyclerView implements IMessageLayout 
             @Override
             public void onMessageRevoked(ZIMMessage message, ZIMError errorInfo) {
                 if (errorInfo.code == ZIMErrorCode.SUCCESS) {
-                    ZIMKitMessageModel messageModel = ChatMessageParser.parseMessage(message);
+                    ZIMKitMessageModel messageModel = ZIMMessageUtil.parseZIMMessageToModel(message);
                     mAdapter.updateMessageInfo(Collections.singletonList(messageModel));
                 }
-            }
-        });
-    }
-
-    public void setAdapterListener() {
-        mAdapter.setOnItemClickListener(new OnItemClickListener() {
-            @Override
-            public void onMessageLongClick(View view, int position, ZIMKitMessageModel messageInfo) {
-                showItemPopMenu(messageInfo, view);
             }
         });
     }
@@ -317,35 +586,15 @@ public class MessageRecyclerView extends RecyclerView implements IMessageLayout 
     public void setAdapter(ZIMKitMessageAdapter adapter) {
         super.setAdapter(adapter);
         this.mAdapter = adapter;
-        setAdapterListener();
-    }
-
-    @Override
-    public OnItemClickListener getOnItemClickListener() {
-        return mAdapter.getOnItemClickListener();
-    }
-
-    @Override
-    public void setOnItemClickListener(OnItemClickListener listener) {
-        mOnItemClickListener = listener;
     }
 
     public void setPopActionClickListener(OnPopActionClickListener listener) {
         mOnPopActionClickListener = listener;
     }
 
-    public void setEmptySpaceClickListener(OnEmptySpaceClickListener mEmptySpaceClickListener) {
-        this.mEmptySpaceClickListener = mEmptySpaceClickListener;
-    }
-
-    public interface OnEmptySpaceClickListener {
-
-        void onClick();
-    }
-
     public void deleteMessage(ZIMKitMessageModel model) {
-        ArrayList<ZIMMessage> messageList = new ArrayList<>();
-        messageList.add(model.getMessage());
+        ArrayList<ZIMKitMessageModel> messageList = new ArrayList<>();
+        messageList.add(model);
         mViewModel.deleteMessage(messageList, conversationType, new ZIMMessageDeletedCallback() {
             @Override
             public void onMessageDeleted(String conversationID, ZIMConversationType conversationType,

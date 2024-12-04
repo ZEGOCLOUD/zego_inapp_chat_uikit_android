@@ -6,6 +6,7 @@ import androidx.databinding.Bindable;
 
 import com.zegocloud.zimkit.components.message.utils.image.ImageSizeUtils;
 import com.zegocloud.zimkit.components.message.utils.image.ImageSizeUtils.ImageSize;
+import com.zegocloud.zimkit.services.model.MediaTransferProgress;
 import im.zego.zim.entity.ZIMMessage;
 import im.zego.zim.entity.ZIMVideoMessage;
 import im.zego.zim.enums.ZIMMessageSentStatus;
@@ -24,6 +25,9 @@ public class VideoMessageModel extends ZIMKitMessageModel {
     private int imgWidth;
     //The container height of the video display is obtained by calculating
     private int imgHeight;
+
+    private MediaTransferProgress uploadProgress;
+    private MediaTransferProgress downloadProgress;
 
     @Override
     public void onProcessMessage(ZIMMessage message) {
@@ -108,4 +112,21 @@ public class VideoMessageModel extends ZIMKitMessageModel {
         this.fileName = fileName;
     }
 
+    @Bindable
+    public MediaTransferProgress getUploadProgress() {
+        return uploadProgress;
+    }
+
+    public void setUploadProgress(MediaTransferProgress uploadProgress) {
+        this.uploadProgress = uploadProgress;
+    }
+
+    @Bindable
+    public MediaTransferProgress getDownloadProgress() {
+        return downloadProgress;
+    }
+
+    public void setDownloadProgress(MediaTransferProgress downloadProgress) {
+        this.downloadProgress = downloadProgress;
+    }
 }

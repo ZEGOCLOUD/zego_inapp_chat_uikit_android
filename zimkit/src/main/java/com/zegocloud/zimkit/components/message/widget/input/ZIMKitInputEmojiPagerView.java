@@ -14,24 +14,24 @@ import com.zegocloud.zimkit.components.message.adapter.ZIMKitEmojiAdapter;
 import com.zegocloud.zimkit.components.message.model.ZIMKitEmojiItemModel;
 import com.zegocloud.zimkit.databinding.ZimkitLayoutInputEmojiBinding;
 
-public class ZIMKitEmojiView extends FrameLayout {
+public class ZIMKitInputEmojiPagerView extends FrameLayout {
 
     private ZimkitLayoutInputEmojiBinding binding;
     private ZIMKitEmojiAdapter mEmojiAdapter;
     private OnEmojiClickListener mEmojiClickListener;
 
 
-    public ZIMKitEmojiView(@NonNull Context context) {
+    public ZIMKitInputEmojiPagerView(@NonNull Context context) {
         super(context);
         initView();
     }
 
-    public ZIMKitEmojiView(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public ZIMKitInputEmojiPagerView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         initView();
     }
 
-    public ZIMKitEmojiView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public ZIMKitInputEmojiPagerView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         initView();
     }

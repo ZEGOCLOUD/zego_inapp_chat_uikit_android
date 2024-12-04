@@ -14,6 +14,8 @@ import com.zegocloud.zimkit.common.utils.ZIMKitActivityUtils;
 import com.zegocloud.zimkit.components.message.interfaces.ZIMKitMessagesListListener;
 import com.zegocloud.zimkit.components.message.model.ZIMKitHeaderBar;
 import com.zegocloud.zimkit.databinding.ZimkitActivityMessageBinding;
+import com.zegocloud.zimkit.services.ZIMKitConfig;
+import com.zegocloud.zimkit.services.internal.ZIMKitAdvancedKey;
 import com.zegocloud.zimkit.services.internal.ZIMKitCore;
 
 public class ZIMKitMessageActivity extends BaseActivity<ZimkitActivityMessageBinding, ViewModel> {
@@ -93,6 +95,15 @@ public class ZIMKitMessageActivity extends BaseActivity<ZimkitActivityMessageBin
             ZIMKitActivityUtils.finishActivityForMessage(getComponentName().getClassName());
         }
 
+        ZIMKitConfig zimKitConfig = ZIMKitCore.getInstance().getZimKitConfig();
+        if (zimKitConfig != null && zimKitConfig.advancedConfig != null) {
+            if (zimKitConfig.advancedConfig.containsKey(ZIMKitAdvancedKey.max_title_width)) {
+                String content = zimKitConfig.advancedConfig.get(ZIMKitAdvancedKey.max_title_width);
+                int maxTitleWidth = Integer.parseInt(content);
+                mBinding.titleBar.setMaxTitleWidth(maxTitleWidth);
+            }
+        }
+
         if (fragment != null) {
             fragment.setOnOnTitleClickListener(new ZIMKitMessageFragment.OnTitleClickListener() {
                 @Override
@@ -106,6 +117,7 @@ public class ZIMKitMessageActivity extends BaseActivity<ZimkitActivityMessageBin
                         if (fragment.isMultiSelect()) {
                             fragment.hideMultiSelectMessage();
                             mBinding.titleBar.hideLeftTxtButton();
+                            mBinding.titleBar.showLeftButton();
                         } else {
                             mBinding.titleBar.showLeftButton();
                             mBinding.titleBar.hideLeftTxtButton();

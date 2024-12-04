@@ -9,6 +9,7 @@ import com.zegocloud.zimkit.common.utils.ZIMKitActivityUtils;
 import com.zegocloud.zimkit.common.utils.ZIMKitDateUtils;
 import com.zegocloud.zimkit.common.utils.ZIMKitThreadHelper;
 import com.zegocloud.zimkit.components.conversation.interfaces.ZIMKitConversationListListener;
+import com.zegocloud.zimkit.components.forward.ZIMKitForwardType;
 import com.zegocloud.zimkit.components.group.bean.ZIMKitGroupMemberInfo;
 import com.zegocloud.zimkit.components.message.interfaces.ZIMKitMessagesListListener;
 import com.zegocloud.zimkit.components.message.model.ZIMKitInputButtonModel;
@@ -42,17 +43,27 @@ import com.zegocloud.zimkit.services.model.ZIMKitConversation;
 import com.zegocloud.zimkit.services.model.ZIMKitMessage;
 import com.zegocloud.zimkit.services.model.ZIMKitUser;
 import com.zegocloud.zimkit.services.utils.ZIMKitNotifyList;
+import com.zegocloud.zimkit.services.utils.ZIMMessageUtil;
 import im.zego.zim.ZIM;
+import im.zego.zim.callback.ZIMCombineMessageDetailQueriedCallback;
 import im.zego.zim.callback.ZIMConversationNotificationStatusSetCallback;
 import im.zego.zim.callback.ZIMConversationPinnedStateUpdatedCallback;
+import im.zego.zim.callback.ZIMMediaMessageSentCallback;
+import im.zego.zim.callback.ZIMMessageReactionAddedCallback;
+import im.zego.zim.callback.ZIMMessageReactionDeletedCallback;
 import im.zego.zim.callback.ZIMMessageRevokedCallback;
+import im.zego.zim.callback.ZIMMessageSentCallback;
+import im.zego.zim.callback.ZIMMessageSentFullCallback;
 import im.zego.zim.callback.ZIMUsersInfoQueriedCallback;
+import im.zego.zim.entity.ZIMCombineMessage;
 import im.zego.zim.entity.ZIMConversation;
 import im.zego.zim.entity.ZIMError;
 import im.zego.zim.entity.ZIMGroupMemberInfo;
 import im.zego.zim.entity.ZIMGroupMemberQueryConfig;
 import im.zego.zim.entity.ZIMGroupOperatedInfo;
+import im.zego.zim.entity.ZIMMediaMessage;
 import im.zego.zim.entity.ZIMMessage;
+import im.zego.zim.entity.ZIMMessageSendConfig;
 import im.zego.zim.entity.ZIMUserFullInfo;
 import im.zego.zim.entity.ZIMUsersInfoQueryConfig;
 import im.zego.zim.enums.ZIMConnectionState;
@@ -104,6 +115,8 @@ public class ZIMKitCore implements IZIMKitCore {
 
     private InputConfig inputConfig;
     private ZIMKitConfig zimKitConfig;
+    private List<ZIMKitMessageModel> forwardMessages = new ArrayList<>();
+    private ZIMKitForwardType forwardType;
 
     public InputConfig getInputConfig() {
         return inputConfig;
@@ -397,15 +410,9 @@ public class ZIMKitCore implements IZIMKitCore {
     }
 
     @Override
-    public void sendTextMessage(String text, String conversationID, ZIMConversationType type,
+    public void sendTextMessage(String text, String targetID, String targetName, ZIMConversationType targetType,
         MessageSentCallback callback) {
-        messageService.sendTextMessage(text, conversationID, "", type, callback);
-    }
-
-    @Override
-    public void sendGroupTextMessage(String text, String conversationID, String title, ZIMConversationType type,
-        MessageSentCallback callback) {
-        messageService.sendTextMessage(text, conversationID, title, type, callback);
+        messageService.sendTextMessage(text, targetID, targetName, targetType, callback);
     }
 
     @Override
@@ -626,5 +633,89 @@ public class ZIMKitCore implements IZIMKitCore {
 
     public ZIMUserFullInfo getMemoryUserInfo(String userID) {
         return ZegoSignalingPlugin.getInstance().getMemoryUserInfo(userID);
+    }
+
+    public void replyMessage(ZIMMessage message, ZIMMessage repliedMessage, ZIMMessageSendConfig config,
+        ZIMMessageSentFullCallback callback) {
+        ZegoSignalingPlugin.getInstance().replyMessage(message, repliedMessage, config, callback);
+    }
+
+    public void addMessageReaction(String reactionType, ZIMMessage message, ZIMMessageReactionAddedCallback callback) {
+        ZegoSignalingPlugin.getInstance().addMessageReaction(reactionType, message, callback);
+    }
+
+    public void deleteMessageReaction(String reactionType, ZIMMessage message,
+        ZIMMessageReactionDeletedCallback callback) {
+        ZegoSignalingPlugin.getInstance().deleteMessageReaction(reactionType, message, callback);
+    }
+
+
+    public void setForwardMessages(ZIMKitForwardType forwardType, List<ZIMKitMessageModel> zimKitMessageModels) {
+        forwardMessages.clear();
+        this.forwardType = forwardType;
+        forwardMessages.addAll(zimKitMessageModels);
+    }
+
+    public void clearForwardMessages() {
+        if (forwardMessages != null) {
+            forwardMessages.clear();
+        }
+        forwardType = null;
+    }
+
+    public List<ZIMKitMessageModel> getForwardMessages() {
+        return forwardMessages;
+    }
+
+    public ZIMKitForwardType getForwardType() {
+        return forwardType;
+    }
+
+    public void sendMessage(ZIMMessage message, String toConversationID, ZIMConversationType conversationType,
+        ZIMMessageSendConfig config, ZIMMessageSentCallback callback) {
+        ZegoSignalingPlugin.getInstance().sendMessage(message, toConversationID, conversationType, config,
+            new ZIMMessageSentCallback() {
+                @Override
+                public void onMessageAttached(ZIMMessage message) {
+                    ZIMKitMessage zimKitMessage = ZIMMessageUtil.parseZIMMessageToKitMessage(message);
+                    ZIMKitCore.getInstance().getMessageList().add(zimKitMessage);
+                    ZIMKitCore.getInstance().getZimkitNotifyList().notifyAllListener(zimKitDelegate -> {
+                        zimKitDelegate.onMessageSentStatusChanged(zimKitMessage);
+                    });
+                    if (callback != null) {
+                        callback.onMessageAttached(message);
+                    }
+                }
+
+                @Override
+                public void onMessageSent(ZIMMessage message, ZIMError errorInfo) {
+                    ZIMKitMessage zimKitMessage = ZIMMessageUtil.parseZIMMessageToKitMessage(message);
+                    ArrayList<ZIMKitMessage> mMessageList = ZIMKitCore.getInstance().getMessageList();
+                    for (int i = 0; i < mMessageList.size(); i++) {
+                        if (message.getMessageID() == mMessageList.get(i).zim.getMessageID()) {
+                            mMessageList.set(i, zimKitMessage);
+                            break;
+                        }
+                    }
+
+                    ZIMKitCore.getInstance().getZimkitNotifyList().notifyAllListener(zimKitDelegate -> {
+                        zimKitDelegate.onMessageSentStatusChanged(zimKitMessage);
+                    });
+
+                    if (callback != null) {
+                        callback.onMessageSent(message, errorInfo);
+                    }
+                }
+            });
+    }
+
+    public void sendMediaMessage(ZIMMediaMessage message, String toConversationID, ZIMConversationType conversationType,
+        ZIMMessageSendConfig config, ZIMMediaMessageSentCallback callback) {
+        ZegoSignalingPlugin.getInstance()
+            .sendMediaMessage(message, toConversationID, conversationType, config, callback);
+    }
+
+    public void queryCombineMessageDetail(ZIMCombineMessage message, ZIMCombineMessageDetailQueriedCallback callback) {
+        ZegoSignalingPlugin.getInstance().queryCombineMessageDetail(message, callback);
     }
 }

@@ -29,7 +29,6 @@ import com.zegocloud.zimkit.services.internal.interfaces.IZIMKitCore;
 import com.zegocloud.zimkit.services.model.ZIMKitMessage;
 import com.zegocloud.zimkit.services.model.ZIMKitUser;
 import im.zego.zim.enums.ZIMConversationType;
-import im.zego.zpns.entity.ZPNsMessage;
 import java.util.List;
 
 public class ZIMKit {
@@ -140,14 +139,9 @@ public class ZIMKit {
         zimKitCore.loadMoreMessage(conversationID, type, callback);
     }
 
-    public static void sendTextMessage(String text, String conversationID, ZIMConversationType type,
+    public static void sendTextMessage(String text, String targetID, String targetName, ZIMConversationType targetType,
         MessageSentCallback callback) {
-        zimKitCore.sendTextMessage(text, conversationID, type, callback);
-    }
-
-    public static void sendGroupTextMessage(String text, String conversationID, String title, ZIMConversationType type,
-        MessageSentCallback callback) {
-        zimKitCore.sendGroupTextMessage(text, conversationID, title, type, callback);
+        zimKitCore.sendTextMessage(text, targetID, targetName, targetType, callback);
     }
 
     public static void sendImageMessage(String imagePath, String conversationID, ZIMConversationType type,

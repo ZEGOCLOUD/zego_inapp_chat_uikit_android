@@ -48,7 +48,7 @@ dependencies {
     implementation 'com.davemorrissey.labs:subsampling-scale-image-view-androidx:3.10.0'
     implementation 'com.github.chrisbanes:PhotoView:2.0.0'
 
-    api 'com.github.ZEGOCLOUD:zego_uikit_signaling_plugin_android:[2.9.2,)'
+    api 'com.github.ZEGOCLOUD:zego_uikit_signaling_plugin_android:[2.9.4,)'
     implementation 'com.github.ybq:Android-SpinKit:1.4.0'
 
 }

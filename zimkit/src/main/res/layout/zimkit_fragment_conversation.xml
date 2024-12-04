@@ -38,7 +38,7 @@
       android:layout_marginLeft="37dp"
       android:layout_marginRight="37dp"
       android:layout_marginBottom="105dp"
-      android:background="@drawable/zimkit_shape_8dp_ff3478fc"
+      android:background="@drawable/zimkit_shape_12dp_ff3478fc"
       android:gravity="center"
       android:paddingTop="14dp"
       android:paddingBottom="14dp"

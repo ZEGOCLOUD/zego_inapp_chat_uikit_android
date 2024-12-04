@@ -2,7 +2,7 @@ package com.zegocloud.zimkit.services.model;
 
 import android.text.TextUtils;
 
-import com.zegocloud.zimkit.services.utils.MessageTransform;
+import com.zegocloud.zimkit.services.utils.ZIMMessageUtil;
 import im.zego.zim.entity.ZIMConversation;
 import im.zego.zim.enums.ZIMConversationNotificationStatus;
 import im.zego.zim.enums.ZIMConversationType;
@@ -30,7 +30,7 @@ public class ZIMKitConversation {
         this.setType(conversation.type);
         this.setNotificationStatus(conversation.notificationStatus);
         this.setUnreadMessageCount(conversation.unreadMessageCount);
-        this.setLastMessage(MessageTransform.parseMessage(conversation.lastMessage));
+        this.setLastMessage(ZIMMessageUtil.parseZIMMessageToKitMessage(conversation.lastMessage));
         this.setOrderKey(conversation.orderKey);
     }
 

@@ -14,16 +14,23 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.Settings;
 import android.text.TextUtils;
+import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.TextView;
 import androidx.activity.OnBackPressedCallback;
+import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult;
 import androidx.activity.result.contract.ActivityResultContracts.TakePicture;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentActivity;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 import com.permissionx.guolindev.callback.RequestCallback;
 import com.zegocloud.uikit.plugin.adapter.ZegoPluginAdapter;
 import com.zegocloud.uikit.plugin.adapter.plugins.call.ZegoCallPluginProtocol;
@@ -42,26 +49,38 @@ import com.zegocloud.zimkit.components.album.MimeType;
 import com.zegocloud.zimkit.components.album.engine.impl.GlideEngine;
 import com.zegocloud.zimkit.components.album.internal.entity.Item;
 import com.zegocloud.zimkit.components.album.internal.utils.PathUtils;
+import com.zegocloud.zimkit.components.album.internal.utils.ToastUtil;
+import com.zegocloud.zimkit.components.album.internal.utils.ToastUtil.ToastMessageType;
+import com.zegocloud.zimkit.components.forward.ForwardSelectActivity;
+import com.zegocloud.zimkit.components.forward.ZIMKitForwardType;
 import com.zegocloud.zimkit.components.message.ZIMKitMessageManager;
 import com.zegocloud.zimkit.components.message.adapter.ZIMKitMessageAdapter;
 import com.zegocloud.zimkit.components.message.interfaces.NetworkConnectionListener;
 import com.zegocloud.zimkit.components.message.interfaces.ZIMKitMessagesListListener;
+import com.zegocloud.zimkit.components.message.model.AudioMessageModel;
+import com.zegocloud.zimkit.components.message.model.CombineMessageModel;
+import com.zegocloud.zimkit.components.message.model.FileMessageModel;
 import com.zegocloud.zimkit.components.message.model.ImageMessageModel;
 import com.zegocloud.zimkit.components.message.model.VideoMessageModel;
 import com.zegocloud.zimkit.components.message.model.ZIMKitInputButtonModel;
 import com.zegocloud.zimkit.components.message.model.ZIMKitMessageModel;
 import com.zegocloud.zimkit.components.message.utils.AudioSensorBinder;
 import com.zegocloud.zimkit.components.message.utils.ChatMessageBuilder;
-import com.zegocloud.zimkit.components.message.utils.ChatMessageParser;
+import com.zegocloud.zimkit.components.message.utils.OnRecyclerViewItemTouchListener;
 import com.zegocloud.zimkit.components.message.utils.image.HEIFImageHelper;
 import com.zegocloud.zimkit.components.message.viewmodel.ZIMKitGroupMessageVM;
 import com.zegocloud.zimkit.components.message.viewmodel.ZIMKitMessageVM;
-import com.zegocloud.zimkit.components.message.viewmodel.ZIMKitMessageVM.MessageRevokeListener;
 import com.zegocloud.zimkit.components.message.viewmodel.ZIMKitSingleMessageVM;
-import com.zegocloud.zimkit.components.message.widget.BottomCallDialog;
 import com.zegocloud.zimkit.components.message.widget.ZIMKitAudioPlayer;
+import com.zegocloud.zimkit.components.message.widget.input.BottomCallDialog;
 import com.zegocloud.zimkit.components.message.widget.input.InputCallback;
+import com.zegocloud.zimkit.components.message.widget.input.ZegoInputExpandDialog;
 import com.zegocloud.zimkit.components.message.widget.interfaces.OnPopActionClickListener;
+import com.zegocloud.zimkit.components.message.widget.viewholder.AudioMessageHolder;
+import com.zegocloud.zimkit.components.message.widget.viewholder.CombineMessageHolder;
+import com.zegocloud.zimkit.components.message.widget.viewholder.FileMessageHolder;
+import com.zegocloud.zimkit.components.message.widget.viewholder.ImageMessageHolder;
+import com.zegocloud.zimkit.components.message.widget.viewholder.VideoMessageHolder;
 import com.zegocloud.zimkit.databinding.ZimkitFragmentMessageBinding;
 import com.zegocloud.zimkit.services.ZIMKit;
 import com.zegocloud.zimkit.services.ZIMKitConfig;
@@ -69,12 +88,16 @@ import com.zegocloud.zimkit.services.callback.MessageSentCallback;
 import com.zegocloud.zimkit.services.callback.QueryGroupInfoCallback;
 import com.zegocloud.zimkit.services.callback.QueryUserCallback;
 import com.zegocloud.zimkit.services.config.ZIMKitInputButtonName;
+import com.zegocloud.zimkit.services.internal.ZIMKitAdvancedKey;
 import com.zegocloud.zimkit.services.internal.ZIMKitCore;
-import com.zegocloud.zimkit.services.internal.interfaces.ZIMKitAdvancedKey;
+import com.zegocloud.zimkit.services.model.MediaTransferProgress;
 import com.zegocloud.zimkit.services.model.ZIMKitGroupInfo;
-import com.zegocloud.zimkit.services.model.ZIMKitMessage;
 import com.zegocloud.zimkit.services.model.ZIMKitUser;
+import com.zegocloud.zimkit.services.utils.MessageTransform;
+import com.zegocloud.zimkit.services.utils.ZIMMessageUtil;
 import im.zego.zim.callback.ZIMMessageDeletedCallback;
+import im.zego.zim.callback.ZIMMessageSentFullCallback;
+import im.zego.zim.entity.ZIMAudioMessage;
 import im.zego.zim.entity.ZIMError;
 import im.zego.zim.entity.ZIMImageMessage;
 import im.zego.zim.entity.ZIMMessage;
@@ -83,9 +106,13 @@ import im.zego.zim.entity.ZIMUserFullInfo;
 import im.zego.zim.entity.ZIMVideoMessage;
 import im.zego.zim.enums.ZIMConversationType;
 import im.zego.zim.enums.ZIMErrorCode;
+import im.zego.zim.enums.ZIMMessageSentStatus;
+import im.zego.zim.enums.ZIMMessageType;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBinding, ZIMKitMessageVM> {
@@ -97,10 +124,22 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
     private OnTitleClickListener mOnTitleClickListener;
 
     private ZIMKitMessagesListListener messagesListListener;
-    private static final int REQUEST_CODE_FILE = 1011;
     private static final int REQUEST_CODE_PHOTO = 1012;
+    private ActivityResultLauncher<Intent> forwardActivityLauncher = registerForActivityResult(
+        new StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+            @Override
+            public void onActivityResult(ActivityResult result) {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    hideMultiSelectMessage();
+                    if (mOnTitleClickListener != null) {
+                        mOnTitleClickListener.titleNormal();
+                    }
+                }
+            }
+        });
+
     private Uri takePicUri;
-    private List<SendPicRunnable> runnableList = new ArrayList<>();
+    private List<SendMediaRunnable> runnableList = new ArrayList<>();
     private ActivityResultLauncher<Uri> takePicLauncher = registerForActivityResult(new TakePicture(),
         new ActivityResultCallback<Boolean>() {
 
@@ -115,17 +154,22 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
                         messageModel.onProcessMessage(message);
                         messageModel.setFileLocalPath(filePath);
 
-                        mBinding.getRoot().post(() -> {
-                            SendPicRunnable sendPicRunnable = new SendPicRunnable();
-                            sendPicRunnable.setMessageModel(messageModel);
-                            if (ZIMKitCore.getInstance().isPluginConnected()) {
-                                sendPicRunnable.run();
-                            } else {
-                                runnableList.add(sendPicRunnable);
-                            }
-                        });
+                        sendMediaMessageSafe(messageModel);
                     }
                     takePicUri = null;
+                }
+            }
+        });
+    private ActivityResultLauncher<Intent> pickFileLauncher = registerForActivityResult(new StartActivityForResult(),
+        new ActivityResultCallback<ActivityResult>() {
+            @Override
+            public void onActivityResult(ActivityResult result) {
+                //Get uri, followed by the process of converting uri to file.
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    Uri uri = result.getData().getData();
+                    ZIMKitMessageModel messageModel = ChatMessageBuilder.buildFileMessage(uri);
+
+                    sendMediaMessageSafe(messageModel);
                 }
             }
         });
@@ -133,7 +177,7 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
         @Override
         public void onConnected() {
             if (!runnableList.isEmpty()) {
-                runnableList.forEach(SendPicRunnable::run);
+                runnableList.forEach(SendMediaRunnable::run);
             }
             runnableList.clear();
         }
@@ -141,6 +185,7 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
 
     private BottomCallDialog bottomCallDialog;
     private OnBackPressedCallback onBackPressedCallback;
+    private ZegoInputExpandDialog inputExpandDialog;
 
     @Override
     protected void initView() {
@@ -148,7 +193,7 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
     }
 
     private void initRv() {
-        mAdapter = new ZIMKitMessageAdapter(getActivity());
+        mAdapter = new ZIMKitMessageAdapter();
         mBinding.rvMessage.setAdapter(mAdapter);
 
         onBackPressedCallback = new OnBackPressedCallback(true) {
@@ -159,7 +204,7 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
                     if (mOnTitleClickListener != null) {
                         mOnTitleClickListener.titleNormal();
                     }
-                    setEnabled(false);
+                    setEnabled(true);
                 } else {
                     setEnabled(false);
                     requireActivity().finish();
@@ -213,17 +258,89 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
             mViewModel.clearUnreadCount(conversationType);
 
             mBinding.rvMessage.setContent(conversationType, mViewModel);
-        }
 
-        mViewModel.setMessageRevokeListener(new MessageRevokeListener() {
-            @Override
-            public void onMessageRevokeReceived(ArrayList<ZIMKitMessage> messageList) {
-                List<ZIMKitMessageModel> collect = messageList.stream()
-                    .map(zimKitMessage -> ChatMessageParser.parseMessage(zimKitMessage.zim))
-                    .collect(Collectors.toList());
-                mAdapter.updateMessageInfo(collect);
-            }
-        });
+            mBinding.rvMessage.addOnItemTouchListener(new OnRecyclerViewItemTouchListener(mBinding.rvMessage) {
+                @Override
+                public void onItemClick(ViewHolder vh) {
+                    super.onItemClick(vh);
+                    int position = vh.getAdapterPosition();
+                    if (position == RecyclerView.NO_POSITION) {
+                        return;
+                    }
+                    if (mAdapter.isMultiSelectMode()) {
+                        ZIMKitMessageModel itemData = mAdapter.getItemData(position);
+                        itemData.setCheck(!itemData.isCheck());
+                    } else {
+                        // no child responed.
+                        mBinding.inputViewLayout.resetAndHideInput();
+                    }
+                }
+
+                @Override
+                public boolean onItemChildClick(ViewHolder vh, View itemChild) {
+                    Log.d(TAG, "onItemChildClick() called with: vh = [" + vh + "], itemChild = [" + itemChild + "]");
+                    int position = vh.getAdapterPosition();
+                    if (position == RecyclerView.NO_POSITION) {
+                        return false;
+                    }
+
+                    if (mAdapter.isMultiSelectMode()) {
+                        // multiselect mode,no consume,throw to itemClick to process
+                        return false;
+                    }
+
+                    ZIMKitMessageModel itemData = mAdapter.getItemData(position);
+                    if (itemChild.getId() == R.id.msg_content_layout) {
+                        if (itemData.getMessage().getType() == ZIMMessageType.COMBINE) {
+                            (((CombineMessageHolder) vh)).onMessageLayoutClicked(vh.itemView.getContext(),
+                                (CombineMessageModel) itemData);
+                        } else if (itemData.getMessage().getType() == ZIMMessageType.AUDIO) {
+                            (((AudioMessageHolder) vh)).onMessageLayoutClicked((AudioMessageModel) itemData);
+                        } else if (itemData.getMessage().getType() == ZIMMessageType.IMAGE) {
+                            (((ImageMessageHolder) vh)).onMessageLayoutClicked((ImageMessageModel) itemData);
+                        } else if (itemData.getMessage().getType() == ZIMMessageType.FILE) {
+                            (((FileMessageHolder) vh)).onMessageLayoutClicked((FileMessageModel) itemData);
+                        } else if (itemData.getMessage().getType() == ZIMMessageType.VIDEO) {
+                            (((VideoMessageHolder) vh)).onMessageLayoutClicked((VideoMessageModel) itemData);
+                        }
+                        return true;
+                    } else if (itemChild.getId() == R.id.emoji_view_layout) {
+                        TextView emojiView = itemChild.findViewById(R.id.emoji_textview);
+                        String emoji = emojiView.getText().toString();
+                        mBinding.rvMessage.onMessageReactionClicked(emoji, itemData);
+                        return true;
+                    }
+                    return false;
+                }
+
+                @Override
+                protected boolean onItemChildLongPress(ViewHolder holder, View itemChild) {
+                    int position = holder.getAdapterPosition();
+                    if (position == RecyclerView.NO_POSITION) {
+                        return false;
+                    }
+
+                    if (itemChild.getId() == R.id.item_message_layout) {
+                        ZIMKitMessageModel itemData = mAdapter.getItemData(position);
+                        View view = holder.itemView.findViewById(R.id.item_message_layout);
+                        mBinding.rvMessage.showItemPopMenu(itemData, view);
+                        return true;
+                    }
+                    return super.onItemChildLongPress(holder, itemChild);
+                }
+
+                @Override
+                public void onRecyclerViewScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+                    mBinding.inputViewLayout.resetAndHideInput();
+                }
+
+                @Override
+                protected void onNoItemDown() {
+                    super.onNoItemDown();
+                    mBinding.inputViewLayout.resetAndHideInput();
+                }
+            });
+        }
 
         mViewModel.setReceiveMessageListener(new ZIMKitMessageVM.OnReceiveMessageListener() {
             @Override
@@ -277,7 +394,7 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
 
         mBinding.multiSelectDelete.setOnClickListener(view -> {
             //Multiple choice deletion
-            ArrayList<ZIMMessage> messageList = mAdapter.getSelectedItem();
+            ArrayList<ZIMKitMessageModel> messageList = mAdapter.getSelectedItem();
             if (messageList == null || messageList.size() == 0) {
                 return;
             }
@@ -298,8 +415,20 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
         //        //Multi-select after long press
         mBinding.rvMessage.setPopActionClickListener(new OnPopActionClickListener() {
             @Override
-            public void onMultiSelectMessageClick(ZIMKitMessageModel messageModel) {
+            public void onActionMultiSelectClick(ZIMKitMessageModel messageModel) {
                 showMultiSelectMessage(messageModel);
+            }
+
+            @Override
+            public void onActionReplyMessageClick(ZIMKitMessageModel repliedMessage) {
+                mBinding.inputViewLayout.setReplyMessage(repliedMessage);
+            }
+
+            @Override
+            public void onActionForwardMessageClick(ZIMKitMessageModel model) {
+                ZIMKitCore.getInstance().setForwardMessages(ZIMKitForwardType.SINGLE, Collections.singletonList(model));
+                Intent intent = new Intent(getContext(), ForwardSelectActivity.class);
+                startActivity(intent);
             }
         });
         //
@@ -315,58 +444,166 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
                 mAdapter.updateMessageInfo(data);
             }
         });
+
+        mBinding.multiSelectForwardOnebyone.setOnClickListener(v -> {
+            ArrayList<ZIMKitMessageModel> selectedItem = mAdapter.getSelectedItem();
+
+            List<ZIMKitMessageModel> collect = selectedItem.stream()
+                .filter(messageModel -> messageModel.getSentStatus() != ZIMMessageSentStatus.FAILED)
+                .collect(Collectors.toList());
+            if (collect.isEmpty()) {
+                ZIMKitToastUtils.showToast(getString(R.string.forward_select_none_tips));
+                return;
+            }
+            Optional<ZIMKitMessageModel> findAudio = selectedItem.stream()
+                .filter(messageModel -> messageModel.getMessage().getType() == ZIMMessageType.AUDIO).findAny();
+            if (findAudio.isPresent()) {
+                ToastUtil.showColorToast(getContext(), ToastMessageType.NORMAL,
+                    getString(R.string.zimkit_forward_audio_tips));
+            }
+            ZIMKitCore.getInstance().setForwardMessages(ZIMKitForwardType.INDIVIDUAL, collect);
+            Intent intent = new Intent(getContext(), ForwardSelectActivity.class);
+            forwardActivityLauncher.launch(intent);
+        });
+
+        mBinding.multiSelectForwardMerge.setOnClickListener(v -> {
+            ArrayList<ZIMKitMessageModel> selectedItem = mAdapter.getSelectedItem();
+            List<ZIMKitMessageModel> collect = selectedItem.stream()
+                .filter(messageModel -> messageModel.getSentStatus() != ZIMMessageSentStatus.FAILED)
+                .collect(Collectors.toList());
+            if (collect.isEmpty()) {
+                ZIMKitToastUtils.showToast(getString(R.string.forward_select_none_tips));
+                return;
+            }
+            //            Optional<ZIMKitMessageModel> any = selectedItem.stream()
+            //                .filter(kitMessageModel -> kitMessageModel.getMessage().getType() == ZIMMessageType.AUDIO).findAny();
+            //            if (any.isPresent()) {
+            //                ToastUtil.showColorToast(getContext(), ToastMessageType.NORMAL,
+            //                    getString(R.string.zimkit_forward_audio_tips));
+            //            }
+            ZIMKitCore.getInstance().setForwardMessages(ZIMKitForwardType.MERGE, collect);
+            Intent intent = new Intent(getContext(), ForwardSelectActivity.class);
+            forwardActivityLauncher.launch(intent);
+        });
     }
 
     private void initInputView() {
         bottomCallDialog = new BottomCallDialog(conversationID);
         mBinding.inputViewLayout.setInputMoreItems(generateInputMoreItems());
-        mBinding.inputViewLayout.attach(mBinding.rvMessage, mBinding.clContain);
         mBinding.inputViewLayout.setCallback(new InputCallback() {
             @Override
-            public void onSendTextMessage(ZIMKitMessageModel model) {
-                MessageSentCallback messageSentCallback = getMessageSentCallback(model);
-                mViewModel.sendTextMessage(model, messageSentCallback);
-                scrollToMessageEnd();
+            public void onSendTextMessage(String text, ZIMKitMessageModel repliedMessage) {
+                if (repliedMessage == null) {
+                    MessageSentCallback messageSentCallback = getMessageSentCallback();
+                    mViewModel.sendTextMessage(text, conversationID, conversationName, conversationType,
+                        messageSentCallback);
+                } else {
+                    ZIMTextMessage zimMessage = new ZIMTextMessage(text);
+                    mViewModel.replyToMessage(zimMessage, repliedMessage, new ZIMMessageSentFullCallback() {
+                        @Override
+                        public void onMessageAttached(ZIMMessage message) {
+                            ZIMKitMessageModel messageModel = ZIMMessageUtil.parseZIMMessageToModel(message);
+                            mAdapter.addMessageToBottom(messageModel);
+                            scrollToMessageEnd();
+                        }
+
+                        @Override
+                        public void onMessageSent(ZIMMessage message, ZIMError errorInfo) {
+                            ZIMKitMessageModel messageModel = ZIMMessageUtil.parseZIMMessageToModel(message);
+                            mAdapter.updateMessageInfo(Collections.singletonList(messageModel));
+                        }
+
+                        @Override
+                        public void onMediaUploadingProgress(ZIMMessage message, long currentFileSize,
+                            long totalFileSize) {
+
+                        }
+                    });
+                }
             }
 
             @Override
-            public void onSendAudioMessage(ZIMKitMessageModel model) {
-                mViewModel.sendMediaMessage(model);
-                scrollToMessageEnd();
+            public void onSendAudioMessage(String path, int duration, ZIMKitMessageModel repliedMessage) {
+                ZIMKitMessageModel messageModel = ChatMessageBuilder.buildAudioMessage(path, duration);
+                sendMediaMessageSafe(messageModel);
             }
 
             @Override
-            public void onClickSmallItem(int position, ZIMKitInputButtonModel itemModel) {
+            public void onClickSmallItem(int position, ZIMKitInputButtonModel itemModel,
+                ZIMKitMessageModel repliedMessage) {
                 if (itemModel.getButtonName() == ZIMKitInputButtonName.PICTURE) {
-                    requestPermission(REQUEST_CODE_PHOTO);
+                    pickPhotoToSend(REQUEST_CODE_PHOTO);
                 } else if (itemModel.getButtonName() == ZIMKitInputButtonName.TAKE_PHOTO) {
-                    takePhoto();
+                    useCameraTakePhotoToSend();
                 } else if (itemModel.getButtonName() == ZIMKitInputButtonName.VIDEO_CALL
                     || itemModel.getButtonName() == ZIMKitInputButtonName.VOICE_CALL) {
                     showBottomCallDialog(false);
                 } else if (itemModel.getButtonName() == ZIMKitInputButtonName.FILE) {
-                    requestPermission(REQUEST_CODE_FILE);
+                    pickFileToSend();
                 }
             }
 
             @Override
-            public void onClickExpandItem(int position, ZIMKitInputButtonModel itemModel) {
+            public void onClickExtraItem(int position, ZIMKitInputButtonModel itemModel,
+                ZIMKitMessageModel repliedMessage) {
                 if (itemModel.getButtonName() == ZIMKitInputButtonName.PICTURE) {
-                    requestPermission(REQUEST_CODE_PHOTO);
+                    pickPhotoToSend(REQUEST_CODE_PHOTO);
                 } else if (itemModel.getButtonName() == ZIMKitInputButtonName.TAKE_PHOTO) {
-                    takePhoto();
+                    useCameraTakePhotoToSend();
                 } else if (itemModel.getButtonName() == ZIMKitInputButtonName.VIDEO_CALL
                     || itemModel.getButtonName() == ZIMKitInputButtonName.VOICE_CALL) {
                     showBottomCallDialog(true);
                 } else if (itemModel.getButtonName() == ZIMKitInputButtonName.FILE) {
-                    requestPermission(REQUEST_CODE_FILE);
+                    pickFileToSend();
                 }
+            }
+
+            @Override
+            public void onClickExpandButton(CharSequence inputMsg, int selectionStart, int selectionEnd,
+                ZIMKitMessageModel repliedMessage) {
+                showInputExpandDialog(inputMsg, selectionStart, selectionEnd);
+            }
+
+            @Override
+            public void onRequestScrollToBottom() {
+                mBinding.rvMessage.scrollToEnd();
             }
 
         });
     }
 
-    private @Nullable MessageSentCallback getMessageSentCallback(ZIMKitMessageModel model) {
+    private void pickFileToSend() {
+        PermissionHelper.requestReadSDCardPermissionIfNeed((FragmentActivity) getActivity(), new RequestCallback() {
+            @Override
+            public void onResult(boolean allGranted, @NonNull List<String> grantedList,
+                @NonNull List<String> deniedList) {
+                if (allGranted) {
+                    Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                    intent.setType("*/*");
+                    intent.addCategory(Intent.CATEGORY_OPENABLE);
+                    pickFileLauncher.launch(intent);
+                } else {
+                    BaseDialog baseDialog = new BaseDialog(getActivity());
+                    baseDialog.setMsgTitle(getActivity().getString(R.string.zimkit_storage_permissions_tip));
+                    baseDialog.setMsgContent(getActivity().getString(R.string.zimkit_storage_permissions_description));
+                    baseDialog.setLeftButtonContent(getActivity().getString(R.string.zimkit_access_later));
+                    baseDialog.setRightButtonContent(getActivity().getString(R.string.zimkit_go_setting));
+                    baseDialog.setSureListener(v -> {
+                        baseDialog.dismiss();
+                        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).setData(
+                            Uri.fromParts("package", getActivity().getPackageName(), null));
+                        ((Activity) getActivity()).startActivityForResult(intent, 666);
+                    });
+                    baseDialog.setCancelListener(v -> {
+                        baseDialog.dismiss();
+                    });
+                }
+            }
+        });
+
+    }
+
+    private @Nullable MessageSentCallback getMessageSentCallback() {
         boolean showLoadingWhenSend = false;
         ZIMKitConfig zimKitConfig = ZIMKitCore.getInstance().getZimKitConfig();
         if (zimKitConfig != null && zimKitConfig.advancedConfig != null) {
@@ -391,7 +628,7 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
                             conversationType = type.equals(ZIMKitConstant.MessagePageConstant.TYPE_SINGLE_MESSAGE)
                                 ? ZIMConversationType.PEER : ZIMConversationType.GROUP;
 
-                            ZIMKitMessageModel messageModel = ChatMessageParser.parseMessage(message);
+                            ZIMKitMessageModel messageModel = ZIMMessageUtil.parseZIMMessageToModel(message);
                             ZIMUserFullInfo memoryUserInfo = ZIMKitCore.getInstance().getMemoryUserInfo(id);
                             if (memoryUserInfo != null) {
                                 messageModel.setNickName(memoryUserInfo.baseInfo.userName);
@@ -399,7 +636,7 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
                             } else {
                                 messageModel.setNickName(conversationName);
                             }
-                            mAdapter.addLocalMessageToBottom(messageModel);
+                            mAdapter.addMessageToBottom(messageModel);
                             scrollToMessageEnd();
                             //                            ZIM.getInstance().insertMessageToLocalDB(message, id, conversationType, id,
                             //                                new ZIMMessageInsertedCallback() {
@@ -441,7 +678,97 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
         }
     }
 
-    private void takePhoto() {
+    public void showInputExpandDialog(CharSequence inputMsg, int selectionStart, int selectionEnd) {
+        if (inputExpandDialog != null && inputExpandDialog.isShowing()) {
+            inputExpandDialog.dismiss();
+        }
+
+        if (inputExpandDialog == null) {
+            inputExpandDialog = new ZegoInputExpandDialog(getContext());
+            inputExpandDialog.setCallback(new InputCallback() {
+
+                @Override
+                public void onSendTextMessage(String text, ZIMKitMessageModel replyMessage) {
+                    if (replyMessage == null) {
+                        MessageSentCallback messageSentCallback = getMessageSentCallback();
+                        mViewModel.sendTextMessage(text, conversationID, conversationName, conversationType,
+                            messageSentCallback);
+                        scrollToMessageEnd();
+                    } else {
+                        ZIMTextMessage zimMessage = new ZIMTextMessage(text);
+                        mViewModel.replyToMessage(zimMessage, replyMessage, new ZIMMessageSentFullCallback() {
+                            @Override
+                            public void onMessageAttached(ZIMMessage message) {
+                                ZIMKitMessageModel messageModel = ZIMMessageUtil.parseZIMMessageToModel(message);
+                                mAdapter.addMessageToBottom(messageModel);
+                                scrollToMessageEnd();
+                            }
+
+                            @Override
+                            public void onMessageSent(ZIMMessage message, ZIMError errorInfo) {
+                                ZIMKitMessageModel messageModel = ZIMMessageUtil.parseZIMMessageToModel(message);
+                                mAdapter.updateMessageInfo(Collections.singletonList(messageModel));
+                            }
+
+                            @Override
+                            public void onMediaUploadingProgress(ZIMMessage message, long currentFileSize,
+                                long totalFileSize) {
+
+                            }
+                        });
+                    }
+                }
+
+                @Override
+                public void onSendAudioMessage(String path, int duration, ZIMKitMessageModel repliedMessage) {
+
+                }
+
+                @Override
+                public void onClickSmallItem(int position, ZIMKitInputButtonModel itemModel,
+                    ZIMKitMessageModel repliedMessage) {
+                    if (itemModel.getButtonName() == ZIMKitInputButtonName.PICTURE) {
+                        pickPhotoToSend(REQUEST_CODE_PHOTO);
+                    } else if (itemModel.getButtonName() == ZIMKitInputButtonName.TAKE_PHOTO) {
+                        useCameraTakePhotoToSend();
+                    } else if (itemModel.getButtonName() == ZIMKitInputButtonName.VIDEO_CALL
+                        || itemModel.getButtonName() == ZIMKitInputButtonName.VOICE_CALL) {
+                        showBottomCallDialog(false);
+                    } else if (itemModel.getButtonName() == ZIMKitInputButtonName.FILE) {
+                        pickFileToSend();
+                    }
+                }
+
+                @Override
+                public void onClickExtraItem(int position, ZIMKitInputButtonModel itemModel,
+                    ZIMKitMessageModel repliedMessage) {
+
+                }
+
+                @Override
+                public void onClickExpandButton(CharSequence inputMsg, int selectionStart, int selectionEnd,
+                    ZIMKitMessageModel repliedMessage) {
+                    inputExpandDialog.dismiss();
+                }
+
+                @Override
+                public void onRequestScrollToBottom() {
+
+                }
+            });
+            inputExpandDialog.setOnDismissListener(dialog -> {
+                mBinding.inputViewLayout.setInputMessage(inputExpandDialog.getInputMsg(),
+                    inputExpandDialog.getSelectionStart(), inputExpandDialog.getSelectionEnd());
+                mBinding.inputViewLayout.setReplyMessage(inputExpandDialog.getRepliedMessage());
+            });
+        }
+        inputExpandDialog.setReplyMessage(mBinding.inputViewLayout.getRepliedMessage());
+        inputExpandDialog.setInputMessage(inputMsg, selectionStart, selectionEnd);
+        inputExpandDialog.setInputTitle(conversationName);
+        inputExpandDialog.show();
+    }
+
+    private void useCameraTakePhotoToSend() {
         PermissionHelper.requestCameraPermissionIfNeed(requireActivity(), new RequestCallback() {
             @Override
             public void onResult(boolean allGranted, @NonNull List<String> grantedList,
@@ -512,7 +839,7 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
      *
      * @param messageList
      */
-    private void deleteMessage(ArrayList<ZIMMessage> messageList) {
+    private void deleteMessage(ArrayList<ZIMKitMessageModel> messageList) {
         mViewModel.deleteMessage(messageList, conversationType, new ZIMMessageDeletedCallback() {
             @Override
             public void onMessageDeleted(String conversationID, ZIMConversationType conversationType,
@@ -540,9 +867,9 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
      */
     protected void showMultiSelectMessage(ZIMKitMessageModel messageModel) {
         if (mAdapter != null) {
-            mAdapter.setShowMultiSelectCheckBox(true);
+            mAdapter.setMultiSelectMode(true);
             messageModel.setCheck(true);
-            mBinding.inputViewLayout.hide();
+            mBinding.inputViewLayout.resetAndHideInput();
             mBinding.multiSelectOperate.setVisibility(View.VISIBLE);
             mAdapter.notifyDataSetChanged();
             if (mOnTitleClickListener != null) {
@@ -560,7 +887,7 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
      */
     public void hideMultiSelectMessage() {
         mBinding.multiSelectOperate.setVisibility(View.GONE);
-        mAdapter.setShowMultiSelectCheckBox(false);
+        mAdapter.setMultiSelectMode(false);
         mAdapter.notifyDataSetChanged();
     }
 
@@ -593,12 +920,12 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
             mAdapter.clear();
         }
         mViewModel.setReceiveMessageListener(null);
-        mViewModel.setMessageRevokeListener(null);
         ZIMKitMessageManager.share().setMessageStateListener(null);
         if (ZIMKitCore.getInstance().isKickedOutAccount()) {
             transparentActivity();
         }
         mBinding.inputViewLayout.setCallback(null);
+        mBinding.inputViewLayout.removeGlobalListener();
         ZIMKitAudioPlayer.getInstance().clearAudioRecordCallbacks();
     }
 
@@ -645,12 +972,7 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_CODE_FILE && resultCode == RESULT_OK) {
-            //Get uri, followed by the process of converting uri to file.
-            Uri uri = data.getData();
-            onFileSelected(uri);
-
-        } else if (requestCode == REQUEST_CODE_PHOTO && resultCode == RESULT_OK) {
+        if (requestCode == REQUEST_CODE_PHOTO && resultCode == RESULT_OK) {
             //Send picture message
             ArrayList<Item> selected = Matisse.obtainItemResult(data);
             if (selected != null && !selected.isEmpty()) {
@@ -675,13 +997,8 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
                 messageModel.setCommonAttribute(message);
                 messageModel.onProcessMessage(message);
                 messageModel.setFileLocalPath(path);
-                mBinding.getRoot().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        mViewModel.sendMediaMessage(messageModel);
-                        scrollToMessageEnd();
-                    }
-                });
+
+                sendMediaMessageSafe(messageModel);
             } else if (mItem.isVideo()) {
                 long duration = mItem.duration / 1000;
                 ZIMVideoMessage message = new ZIMVideoMessage(fileLocalPath, duration);
@@ -689,51 +1006,34 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
                 messageModel.setCommonAttribute(message);
                 messageModel.onProcessMessage(message);
                 messageModel.setFileLocalPath(fileLocalPath);
-                mBinding.getRoot().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        mViewModel.sendMediaMessage(messageModel);
-                        scrollToMessageEnd();
-                    }
-                });
+
+                sendMediaMessageSafe(messageModel);
             }
         }
     }
 
-    private void onFileSelected(Uri uri) {
-        ZIMKitMessageModel fileMessage = ChatMessageBuilder.buildFileMessage(uri);
-        mViewModel.sendMediaMessage(fileMessage);
-        scrollToMessageEnd();
+    private void sendMediaMessageSafe(ZIMKitMessageModel messageModel) {
+        mBinding.getRoot().post(() -> {
+            SendMediaRunnable runnable = new SendMediaRunnable();
+            runnable.setMessageModel(messageModel);
+            if (ZIMKitCore.getInstance().isPluginConnected()) {
+                runnable.run();
+            } else {
+                runnableList.add(runnable);
+            }
+        });
     }
-
-
-    // Checks if a volume containing external storage is available
-    // for read and write.
-    private boolean isExternalStorageWritable() {
-        return Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
-    }
-
-    // Checks if a volume containing external storage is available to at least read.
-    private boolean isExternalStorageReadable() {
-        return Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)
-            || Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED_READ_ONLY);
-    }
-
 
     /**
      * Get permission judgment
      */
-    private void requestPermission(int fromType) {
+    private void pickPhotoToSend(int fromType) {
         PermissionHelper.requestReadSDCardPermissionIfNeed((FragmentActivity) getActivity(), new RequestCallback() {
             @Override
             public void onResult(boolean allGranted, @NonNull List<String> grantedList,
                 @NonNull List<String> deniedList) {
                 if (allGranted) {
-                    if (fromType == REQUEST_CODE_PHOTO) {
-                        startSendPhoto();
-                    } else if (fromType == REQUEST_CODE_FILE) {
-                        startSendFile();
-                    }
+                    startSendPhoto();
                 } else {
                     BaseDialog baseDialog = new BaseDialog(getActivity());
                     baseDialog.setMsgTitle(getActivity().getString(R.string.zimkit_storage_permissions_tip));
@@ -752,13 +1052,6 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
                 }
             }
         });
-    }
-
-    private void startSendFile() {
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("*/*");
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        startActivityForResult(intent, REQUEST_CODE_FILE);
     }
 
     private void startSendPhoto() {
@@ -826,18 +1119,62 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
         return conversationName;
     }
 
-    class SendPicRunnable implements Runnable {
+    class SendMediaRunnable implements Runnable {
 
-        private ImageMessageModel messageModel;
+        private ZIMKitMessageModel messageModel;
 
-        public void setMessageModel(ImageMessageModel messageModel) {
+        public void setMessageModel(ZIMKitMessageModel messageModel) {
             this.messageModel = messageModel;
         }
 
         @Override
         public void run() {
-            mViewModel.sendMediaMessage(messageModel);
-            scrollToMessageEnd();
+            if (mBinding != null) {
+                ZIMKitMessageModel repliedMessage = mBinding.inputViewLayout.getRepliedMessage();
+                if (repliedMessage == null) {
+                    mViewModel.sendMediaMessage(messageModel);
+                } else {
+                    mViewModel.replyToMessage(messageModel.getMessage(), repliedMessage,
+                        new ZIMMessageSentFullCallback() {
+                            @Override
+                            public void onMessageAttached(ZIMMessage message) {
+                                ZIMKitMessageModel messageModel = ZIMMessageUtil.parseZIMMessageToModel(message);
+                                ChatMessageBuilder.setNickNameAndAvatar(messageModel);
+                                mAdapter.addMessageToBottom(messageModel);
+                                scrollToMessageEnd();
+                            }
+
+                            @Override
+                            public void onMessageSent(ZIMMessage message, ZIMError errorInfo) {
+                                ZIMKitMessageModel messageModel = ZIMMessageUtil.parseZIMMessageToModel(message);
+                                ChatMessageBuilder.setNickNameAndAvatar(messageModel);
+                                mAdapter.updateMessageInfo(Collections.singletonList(messageModel));
+                            }
+
+                            @Override
+                            public void onMediaUploadingProgress(ZIMMessage message, long currentFileSize,
+                                long totalFileSize) {
+                                ZIMKitMessageModel messageModel = ZIMMessageUtil.parseZIMMessageToModel(message);
+                                ChatMessageBuilder.setNickNameAndAvatar(messageModel);
+                                MediaTransferProgress progress = new MediaTransferProgress(currentFileSize,
+                                    totalFileSize);
+                                if (message.getType() == ZIMMessageType.IMAGE) {
+                                    ((ImageMessageModel) messageModel).setUploadProgress(progress);
+                                } else if (message.getType() == ZIMMessageType.AUDIO) {
+                                    ((AudioMessageModel) messageModel).setUploadProgress(progress);
+                                } else if (message.getType() == ZIMMessageType.FILE) {
+                                    ((FileMessageModel) messageModel).setUploadProgress(progress);
+                                } else if (message.getType() == ZIMMessageType.VIDEO) {
+                                    ((VideoMessageModel) messageModel).setUploadProgress(progress);
+                                }
+                                mAdapter.updateMessageInfo(Collections.singletonList(messageModel));
+                            }
+                        });
+                    mBinding.inputViewLayout.setReplyMessage(null);
+                    mBinding.inputViewLayout.resetAndHideInput();
+                }
+                scrollToMessageEnd();
+            }
         }
     }
 }

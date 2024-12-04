@@ -18,6 +18,8 @@
   <string name="zimkit_message_audio">[语音]</string>
   <string name="zimkit_message_file">[文件]</string>
   <string name="zimkit_message_revoke">撤回了一条消息</string>
+  <string name="zimkit_message_reply_revoke">此消息已撤回</string>
+  <string name="zimkit_message_reply_delete">此消息已删除</string>
   <string name="zimkit_message_unknown">暂不支持该类型消息，请升级到最新版本</string>
   <string name="zimkit_open_file_tips">选择要打开此文件的应用</string>
   <string name="zimkit_title_cancel">取消</string>
@@ -29,6 +31,8 @@
   <string name="zimkit_join_group_chat">加入群聊</string>
   <string name="zimkit_cancel">取消</string>
   <string name="zimkit_delete">删除</string>
+  <string name="zimkit_forward_merge">合并转发</string>
+  <string name="zimkit_forward_onebyone">逐条转发</string>
   <string name="zimkit_message_total_count">消息总数</string>
   <string name="zimkit_reload">重新加载</string>
 
@@ -79,6 +83,7 @@
   <string name="zimkit_option_speaker_on">扬声器播放</string>
   <string name="zimkit_option_speaker_off">听筒播放</string>
   <string name="zimkit_option_copy">复制</string>
+  <string name="zimkit_option_reply">回复</string>
   <string name="zimkit_speaker_on_tip">已切换扬声器播放</string>
   <string name="zimkit_speaker_off_tip">已切换听筒播放</string>
 
@@ -173,5 +178,19 @@
   <string name="zimkit_callkit_plugin_not_enabled">CallKit 插件未启用</string>
   <string name="zimkit_tips_group_create">%s 发起群聊，并邀请 %s 加入此群</string>
   <string name="zimkit_tips_group_invite">%s 邀请 %s 加入此群</string>
+  <string name="zimkit_input_expand_title">发送给 %s</string>
+  <string name="zimkit_reply_content">回复 %s:%s</string>
+  <string name="zimkit_option_forward">转发</string>
+  <string name="zimkit_chat_list">聊天列表</string>
+  <string name="zimkit_forward_detail_single">详情</string>
+  <string name="zimkit_forward_confirm_content">[%s] %s会话记录</string>
+  <string name="zimkit_forward_content_s2">%s 和 %s 的</string>
+  <string name="zimkit_forward_detail_title">%s会话记录</string>
+  <string name="zimkit_forward_audio_tips">你选择的消息中包含语音消息，转发后将不可播放</string>
+  <string name="zimkit_chat_records">[会话记录]</string>
+  <string name="zimkit_chat_message_revoke">消息撤回</string>
+  <string name="zimkit_chat_retract_confirm">确定要撤回此消息吗?</string>
+  <string name="forward_select_none_tips">请至少选择一条消息</string>
+  <string name="zimkit_sendto">发送给:</string>
 
 </resources>

@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.media.ExifInterface;
 
+import android.util.Log;
 import com.zegocloud.zimkit.common.utils.ZIMKitScreenUtils;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -21,8 +22,17 @@ public class ImageSizeUtils {
             this.imgConWidth = imgConWidth;
             this.imgConHeight = imgConHeight;
         }
+
+        @Override
+        public String toString() {
+            return "ImageSize{" +
+                "imgConWidth=" + imgConWidth +
+                ", imgConHeight=" + imgConHeight +
+                '}';
+        }
     }
 
+    private static final String TAG = "ImageSizeUtils";
     /**
      * Convert to the appropriate width and height for display in the interface
      *
@@ -31,6 +41,7 @@ public class ImageSizeUtils {
      * @return
      */
     public static ImageSize getImageConSize(int w, int h) {
+        Log.d(TAG, "getImageConSize() called with: w = [" + w + "], h = [" + h + "]");
         int mScreenWidth = ZIMKitScreenUtils.getScreenWidth(ZIMKitCore.getInstance().getApplication());
 
         try {

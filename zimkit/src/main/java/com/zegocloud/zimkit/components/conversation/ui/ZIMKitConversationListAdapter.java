@@ -43,6 +43,12 @@ public class ZIMKitConversationListAdapter extends
                 mOnClickListener.onClick(model);
             }
         });
+        holder.mBinding.getRoot().setOnLongClickListener(v -> {
+            if (mLongClickListener != null) {
+                mLongClickListener.onLongClick(model);
+            }
+            return true;
+        });
     }
 
     public ZIMKitConversationModel getModel(int position) {

@@ -24,26 +24,42 @@
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toTopOf="parent" />
 
-    <EditText
+    <FrameLayout
       android:id="@+id/content"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:layout_marginStart="16dp"
       android:layout_marginTop="13dp"
       android:layout_marginEnd="16dp"
-      android:background="@drawable/zimkit_shape_8dp_f1f4f8"
-      android:padding="12dp"
-      android:textColor="@color/color_2a2a2a"
-      android:textColorHint="@color/color_8e9093"
-      android:textSize="14sp"
-      app:layout_constraintTop_toBottomOf="@id/title" />
+      app:layout_constraintTop_toBottomOf="@id/title">
+
+      <EditText
+        android:id="@+id/content_edit_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/zimkit_shape_8dp_f1f4f8"
+        android:padding="12dp"
+        android:textColor="@color/color_2a2a2a"
+        android:textColorHint="@color/color_8e9093"
+        android:textSize="14sp" />
+
+      <TextView
+        android:id="@+id/content_text_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:padding="12dp"
+        android:textColor="@color/color_2a2a2a"
+        android:textSize="14sp" />
+    </FrameLayout>
 
     <View
       android:layout_width="match_parent"
       android:layout_height="1dp"
       android:layout_marginTop="17dp"
       android:background="@color/color_F1F4F8"
-      app:layout_constraintTop_toBottomOf="@+id/content" />
+      app:layout_constraintBottom_toTopOf="@+id/center" />
 
     <TextView
       android:id="@+id/cancel"
@@ -54,9 +70,9 @@
       android:text="@string/zimkit_cancel"
       android:textColor="@color/color_2a2a2a"
       android:textSize="16sp"
+      app:layout_constraintBottom_toBottomOf="parent"
       app:layout_constraintEnd_toStartOf="@id/center"
-      app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/content" />
+      app:layout_constraintStart_toStartOf="parent" />
 
     <View
       android:id="@+id/center"
@@ -64,9 +80,9 @@
       android:layout_height="50dp"
       android:layout_marginTop="16dp"
       android:background="@color/color_F1F4F8"
+      app:layout_constraintBottom_toBottomOf="parent"
       app:layout_constraintEnd_toStartOf="@id/confirm"
-      app:layout_constraintStart_toEndOf="@id/cancel"
-      app:layout_constraintTop_toBottomOf="@+id/content" />
+      app:layout_constraintStart_toEndOf="@id/cancel" />
 
     <TextView
       android:id="@+id/confirm"
@@ -77,8 +93,8 @@
       android:text="@string/zimkit_confirm"
       android:textColor="@color/album_3478fc"
       android:textSize="16sp"
+      app:layout_constraintBottom_toBottomOf="parent"
       app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintStart_toEndOf="@id/center"
-      app:layout_constraintTop_toBottomOf="@+id/content" />
+      app:layout_constraintStart_toEndOf="@id/center" />
   </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

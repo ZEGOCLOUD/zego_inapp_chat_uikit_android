@@ -36,7 +36,7 @@
             android:id="@+id/bottom_view"
             android:layout_width="match_parent"
             android:layout_height="61dp"
-            app:backgroundColor="@{model.isShowWhite}"
+            app:showWhiteColor="@{model.isShowWhite}"
             app:layout_constraintBottom_toTopOf="@+id/input_more_view" />
 
         <com.zegocloud.zimkit.components.message.widget.DrawableCenterTextView

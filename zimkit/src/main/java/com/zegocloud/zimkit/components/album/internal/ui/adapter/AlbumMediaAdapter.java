@@ -25,8 +25,8 @@ import com.zegocloud.zimkit.components.album.internal.ui.widget.MediaGrid;
 
 
 public class AlbumMediaAdapter extends
-        RecyclerViewCursorAdapter<RecyclerView.ViewHolder> implements
-        MediaGrid.OnMediaGridClickListener {
+    RecyclerViewCursorAdapter<RecyclerView.ViewHolder> implements
+    MediaGrid.OnMediaGridClickListener {
 
     private static final int VIEW_TYPE_CAPTURE = 0x01;
     private static final int VIEW_TYPE_MEDIA = 0x02;
@@ -53,7 +53,8 @@ public class AlbumMediaAdapter extends
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         if (viewType == VIEW_TYPE_CAPTURE) {
-            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.zimkit_item_photo_capture, parent, false);
+            View v = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.zimkit_item_photo_capture, parent, false);
             CaptureViewHolder holder = new CaptureViewHolder(v);
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -77,7 +78,7 @@ public class AlbumMediaAdapter extends
             CaptureViewHolder captureViewHolder = (CaptureViewHolder) holder;
             Drawable[] drawables = captureViewHolder.mHint.getCompoundDrawables();
             TypedArray ta = holder.itemView.getContext().getTheme().obtainStyledAttributes(
-                    new int[]{R.attr.capture_textColor});
+                new int[]{R.attr.capture_textColor});
             int color = ta.getColor(0, 0);
             ta.recycle();
 
@@ -101,10 +102,10 @@ public class AlbumMediaAdapter extends
 
             final Item item = Item.valueOf(cursor);
             mediaViewHolder.mMediaGrid.preBindMedia(new MediaGrid.PreBindInfo(
-                    getImageResize(mediaViewHolder.mMediaGrid.getContext()),
-                    mPlaceholder,
-                    mSelectionSpec.countable,
-                    holder
+                getImageResize(mediaViewHolder.mMediaGrid.getContext()),
+                mPlaceholder,
+                mSelectionSpec.countable,
+                holder
             ));
             mediaViewHolder.mMediaGrid.bindMedia(item);
             mediaViewHolder.mMediaGrid.setOnMediaGridClickListener(this);
@@ -244,7 +245,7 @@ public class AlbumMediaAdapter extends
             int spanCount = ((GridLayoutManager) lm).getSpanCount();
             int screenWidth = context.getResources().getDisplayMetrics().widthPixels;
             int availableWidth = screenWidth - context.getResources().getDimensionPixelSize(
-                    R.dimen.media_grid_spacing) * (spanCount - 1);
+                R.dimen.media_grid_spacing) * (spanCount - 1);
             mImageResize = availableWidth / spanCount;
             mImageResize = (int) (mImageResize * mSelectionSpec.thumbnailScale);
         }
@@ -252,14 +253,17 @@ public class AlbumMediaAdapter extends
     }
 
     public interface CheckStateListener {
+
         void onUpdate();
     }
 
     public interface OnMediaClickListener {
+
         void onMediaClick(Album album, Item item, int adapterPosition);
     }
 
     public interface OnPhotoCapture {
+
         void capture();
     }
 

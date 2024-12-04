@@ -26,35 +26,21 @@ public class TextMessageHolder extends MessageViewHolder {
     @Override
     public void bind(int id, int position, ZIMKitMessageModel model) {
         super.bind(id, position, model);
+
         if (model instanceof TextMessageModel) {
+            TextMessageModel textMessageModel = (TextMessageModel) model;
             if (Objects.equals(model.getMessage().localExtendedData, "loading")) {
                 if (receiveTextBinding != null) {
-                    receiveTextBinding.contentLoading.setVisibility(View.VISIBLE);
-                    receiveTextBinding.tvMessage.setVisibility(View.GONE);
+                    receiveTextBinding.itemContentLoading.setVisibility(View.VISIBLE);
+                    receiveTextBinding.itemContentText.setVisibility(View.GONE);
                 }
             } else {
                 if (receiveTextBinding != null) {
-                    receiveTextBinding.contentLoading.setVisibility(View.GONE);
-                    receiveTextBinding.tvMessage.setVisibility(View.VISIBLE);
-                }
-
-                TextMessageModel textMessageModel = (TextMessageModel) model;
-                boolean isSend = model.getDirection() == ZIMMessageDirection.SEND;
-                mMutiSelectCheckBox = isSend ? sendTextBinding.selectCheckbox : receiveTextBinding.selectCheckbox;
-                msgContent = isSend ? sendTextBinding.tvMessage : receiveTextBinding.tvMessage;
-
-                if (isSend) {
-                    sendTextBinding.tvMessage.setOnLongClickListener(v -> {
-                        initLongClickListener(v, position, model);
-                        return true;
-                    });
-                } else {
-                    receiveTextBinding.tvMessage.setOnLongClickListener(v -> {
-                        initLongClickListener(v, position, model);
-                        return true;
-                    });
+                    receiveTextBinding.itemContentLoading.setVisibility(View.GONE);
+                    receiveTextBinding.itemContentText.setVisibility(View.VISIBLE);
                 }
             }
         }
+
     }
 }

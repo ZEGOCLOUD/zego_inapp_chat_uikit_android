@@ -19,6 +19,8 @@
   <string name="zimkit_message_audio">[Audio]</string>
   <string name="zimkit_message_file">[File]</string>
   <string name="zimkit_message_revoke">have retracted a message</string>
+  <string name="zimkit_message_reply_revoke">Message retracted</string>
+  <string name="zimkit_message_reply_delete">Message deleted</string>
   <string name="zimkit_message_unknown">This type of message is not supported, Please upgrade to the latest version.</string>
   <string name="zimkit_open_file_tips">Select an app to open the file</string>
   <string name="zimkit_title_cancel">Cancel</string>
@@ -30,6 +32,8 @@
   <string name="zimkit_join_group_chat">Join a group</string>
   <string name="zimkit_cancel">Cancel</string>
   <string name="zimkit_delete">Delete</string>
+  <string name="zimkit_forward_merge">Merge Forward</string>
+  <string name="zimkit_forward_onebyone">Individual Forward </string>
   <string name="zimkit_message_total_count">Chats</string>
   <string name="zimkit_reload">Reload</string>
 
@@ -80,6 +84,7 @@
   <string name="zimkit_option_speaker_on">Speaker</string>
   <string name="zimkit_option_speaker_off">Earpiece</string>
   <string name="zimkit_option_copy">Copy</string>
+  <string name="zimkit_option_reply">Reply</string>
   <string name="zimkit_speaker_on_tip">Speaker mode on</string>
   <string name="zimkit_speaker_off_tip">Switched to ear speaker</string>
 
@@ -175,4 +180,18 @@
   <string name="zimkit_callkit_plugin_not_enabled">CallKit plugin not enabled</string>
   <string name="zimkit_tips_group_create">%s initiated a group chat and invited %s to join this group.</string>
   <string name="zimkit_tips_group_invite">%s invited %s to join this group</string>
+  <string name="zimkit_input_expand_title">Send to %s</string>
+  <string name="zimkit_reply_content">Reply to %s:%s</string>
+  <string name="zimkit_option_forward">Forward</string>
+  <string name="zimkit_chat_list">Chat List</string>
+  <string name="zimkit_forward_detail_single">Details</string>
+  <string name="zimkit_forward_confirm_content">[%s] %s records</string>
+  <string name="zimkit_forward_content_s2">%s and %s \'s</string>
+  <string name="zimkit_forward_detail_title">%s records</string>
+  <string name="zimkit_forward_audio_tips">The message you have selected contains voice message, it will not be playable after forwarding</string>
+  <string name="zimkit_chat_records">[Chat Records]</string>
+  <string name="zimkit_chat_message_revoke">Retract Message</string>
+  <string name="zimkit_chat_retract_confirm">Are you sure you want to retract this message?</string>
+  <string name="forward_select_none_tips">Please select at least one message</string>
+  <string name="zimkit_sendto">Send To:</string>
 </resources>

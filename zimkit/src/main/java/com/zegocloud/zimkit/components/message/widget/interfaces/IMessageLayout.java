@@ -12,18 +12,4 @@ public interface IMessageLayout {
      */
     void setAdapter(ZIMKitMessageAdapter adapter);
 
-    /**
-     * Get the click event of the message list
-     *
-     * @return
-     */
-    OnItemClickListener getOnItemClickListener();
-
-    /**
-     * Setting the event listener for the message list {@link OnItemClickListener}
-     *
-     * @param listener
-     */
-    void setOnItemClickListener(OnItemClickListener listener);
-
 }

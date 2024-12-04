@@ -1,14 +1,11 @@
 package com.zegocloud.zimkit.components.message.model;
 
-import android.text.TextUtils;
-
 import androidx.databinding.Bindable;
-
 import com.zegocloud.zimkit.components.message.utils.image.ImageSizeUtils;
 import com.zegocloud.zimkit.components.message.utils.image.ImageSizeUtils.ImageSize;
+import com.zegocloud.zimkit.services.model.MediaTransferProgress;
 import im.zego.zim.entity.ZIMImageMessage;
 import im.zego.zim.entity.ZIMMessage;
-import im.zego.zim.enums.ZIMMessageSentStatus;
 
 public class ImageMessageModel extends ZIMKitMessageModel {
 
@@ -22,6 +19,9 @@ public class ImageMessageModel extends ZIMKitMessageModel {
     //The height of the container displayed in the picture is obtained by calculating
     private int imgHeight;
 
+    private MediaTransferProgress uploadProgress;
+    private MediaTransferProgress downloadProgress;
+
     @Override
     public void onProcessMessage(ZIMMessage message) {
         if (message instanceof ZIMImageMessage) {
@@ -31,8 +31,7 @@ public class ImageMessageModel extends ZIMKitMessageModel {
             this.fileDownloadUrl = imageMessage.getFileDownloadUrl();
             this.largeImageDownloadUrl = imageMessage.getLargeImageDownloadUrl();
 
-            boolean sentStatus = imageMessage.getSentStatus() == ZIMMessageSentStatus.FAILED || getSentStatus() == ZIMMessageSentStatus.SENDING;
-            this.thumbnailDownloadUrl = sentStatus ? imageMessage.getFileLocalPath() : imageMessage.getThumbnailDownloadUrl();
+            this.thumbnailDownloadUrl = imageMessage.getThumbnailDownloadUrl();
 
             int imageWidth = imageMessage.getThumbnailWidth();
             int imageHeight = imageMessage.getThumbnailHeight();
@@ -71,7 +70,7 @@ public class ImageMessageModel extends ZIMKitMessageModel {
 
     @Bindable
     public String getThumbnailDownloadUrl() {
-        return !TextUtils.isEmpty(thumbnailDownloadUrl) ? thumbnailDownloadUrl : fileLocalPath;
+        return thumbnailDownloadUrl;
     }
 
     public void setThumbnailDownloadUrl(String thumbnailDownloadUrl) {
@@ -105,4 +104,21 @@ public class ImageMessageModel extends ZIMKitMessageModel {
         this.imgHeight = imgHeight;
     }
 
+    @Bindable
+    public MediaTransferProgress getUploadProgress() {
+        return uploadProgress;
+    }
+
+    public void setUploadProgress(MediaTransferProgress uploadProgress) {
+        this.uploadProgress = uploadProgress;
+    }
+
+    @Bindable
+    public MediaTransferProgress getDownloadProgress() {
+        return downloadProgress;
+    }
+
+    public void setDownloadProgress(MediaTransferProgress downloadProgress) {
+        this.downloadProgress = downloadProgress;
+    }
 }

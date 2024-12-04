@@ -1,26 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="message_time_decoration_bottom_padding">
-        12dp
-    </dimen>
-    <dimen name="message_time_decoration_top_padding">
-        4dp
-    </dimen>
-    <dimen name="message_other_side_nick_name_size">
-        11sp
-    </dimen>
+  <dimen name="message_time_decoration_bottom_padding">
+    12dp
+  </dimen>
+  <dimen name="message_time_decoration_top_padding">
+    4dp
+  </dimen>
+  <dimen name="message_other_side_nick_name_size">
+    11sp
+  </dimen>
 
-    <dimen name="message_grid_expected_size">93dp</dimen>
+  <dimen name="message_grid_expected_size">93dp</dimen>
 
-    <dimen name="message_pop_menu_item_space_width">8dp</dimen>
-    <dimen name="message_pop_menu_item_space_height">8dp</dimen>
-    <dimen name="message_pop_menu_indicator_height">6dp</dimen>
+  <dimen name="message_pop_menu_item_space_width">8dp</dimen>
+  <dimen name="message_pop_menu_item_space_height">8dp</dimen>
+  <dimen name="message_pop_menu_indicator_height">6dp</dimen>
+  <dimen name="message_pop_menu_indicator_width">16dp</dimen>
 
-    <dimen name="media_grid_size">48dp</dimen>
-    <dimen name="media_grid_spacing">1dp</dimen>
+  <dimen name="media_grid_size">48dp</dimen>
+  <dimen name="media_grid_spacing">1dp</dimen>
 
-    <dimen name="album_item_height">72dp</dimen>
+  <dimen name="album_item_height">72dp</dimen>
 
-    <dimen name="title_bar_height">54dp</dimen>
+  <dimen name="title_bar_height">54dp</dimen>
 
 </resources>

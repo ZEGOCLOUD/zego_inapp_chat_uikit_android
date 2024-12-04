@@ -2,6 +2,6 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:drawable="@drawable/zimkit_shape_8dp_503478fc" android:state_enabled="false" />
 
-    <item android:drawable="@drawable/zimkit_shape_8dp_ff3478fc" />
+    <item android:drawable="@drawable/zimkit_shape_12dp_ff3478fc" />
 
 </selector>

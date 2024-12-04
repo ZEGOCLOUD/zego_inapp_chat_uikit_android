@@ -6,7 +6,7 @@ import android.provider.MediaStore;
 import androidx.recyclerview.widget.RecyclerView;
 
 public abstract class RecyclerViewCursorAdapter<VH extends RecyclerView.ViewHolder> extends
-        RecyclerView.Adapter<VH> {
+    RecyclerView.Adapter<VH> {
 
     private Cursor mCursor;
     private int mRowIDColumn;
@@ -24,8 +24,8 @@ public abstract class RecyclerViewCursorAdapter<VH extends RecyclerView.ViewHold
             throw new IllegalStateException("Cannot bind view holder when cursor is in invalid state.");
         }
         if (!mCursor.moveToPosition(position)) {
-            throw new IllegalStateException("Could not move cursor to position " + position
-                    + " when trying to bind view holder");
+            throw new IllegalStateException(
+                "Could not move cursor to position " + position + " when trying to bind view holder");
         }
 
         onBindViewHolder(holder, mCursor);
@@ -34,8 +34,8 @@ public abstract class RecyclerViewCursorAdapter<VH extends RecyclerView.ViewHold
     @Override
     public int getItemViewType(int position) {
         if (!mCursor.moveToPosition(position)) {
-            throw new IllegalStateException("Could not move cursor to position " + position
-                    + " when trying to get item view type.");
+            throw new IllegalStateException(
+                "Could not move cursor to position " + position + " when trying to get item view type.");
         }
         return getItemViewType(position, mCursor);
     }
@@ -58,7 +58,7 @@ public abstract class RecyclerViewCursorAdapter<VH extends RecyclerView.ViewHold
         }
         if (!mCursor.moveToPosition(position)) {
             throw new IllegalStateException("Could not move cursor to position " + position
-                    + " when trying to get an item id");
+                + " when trying to get an item id");
         }
 
         return mCursor.getLong(mRowIDColumn);

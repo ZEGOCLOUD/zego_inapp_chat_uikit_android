@@ -7,11 +7,12 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.AndroidViewModel;
 import com.zegocloud.zimkit.R;
 import com.zegocloud.zimkit.components.message.ZIMKitMessageManager;
+import com.zegocloud.zimkit.components.message.model.AudioMessageModel;
+import com.zegocloud.zimkit.components.message.model.FileMessageModel;
 import com.zegocloud.zimkit.components.message.model.ImageMessageModel;
 import com.zegocloud.zimkit.components.message.model.SystemMessageModel;
 import com.zegocloud.zimkit.components.message.model.VideoMessageModel;
 import com.zegocloud.zimkit.components.message.model.ZIMKitMessageModel;
-import com.zegocloud.zimkit.components.message.utils.ChatMessageParser;
 import com.zegocloud.zimkit.components.message.utils.SortZIMKitMessageComparator;
 import com.zegocloud.zimkit.components.message.utils.image.ImageSizeUtils;
 import com.zegocloud.zimkit.components.message.utils.image.ImageSizeUtils.ImageSize;
@@ -23,17 +24,25 @@ import com.zegocloud.zimkit.services.callback.LoadMoreMessageCallback;
 import com.zegocloud.zimkit.services.callback.MessageSentCallback;
 import com.zegocloud.zimkit.services.internal.ZIMKitCore;
 import com.zegocloud.zimkit.services.model.ZIMKitMessage;
-import com.zegocloud.zimkit.services.utils.MessageTransform;
+import com.zegocloud.zimkit.services.utils.ZIMMessageUtil;
 import im.zego.zim.callback.ZIMMessageDeletedCallback;
 import im.zego.zim.callback.ZIMMessageRevokedCallback;
+import im.zego.zim.callback.ZIMMessageSentFullCallback;
 import im.zego.zim.entity.ZIMError;
 import im.zego.zim.entity.ZIMMessage;
+import im.zego.zim.entity.ZIMMessageReaction;
+import im.zego.zim.entity.ZIMMessageSendConfig;
 import im.zego.zim.enums.ZIMConversationType;
 import im.zego.zim.enums.ZIMErrorCode;
 import im.zego.zim.enums.ZIMMessageSentStatus;
+import im.zego.zim.enums.ZIMMessageType;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public abstract class ZIMKitMessageVM extends AndroidViewModel {
 
@@ -41,7 +50,6 @@ public abstract class ZIMKitMessageVM extends AndroidViewModel {
     public ArrayList<ZIMKitMessageModel> mMessageList = new ArrayList<>();
     public final static int QUERY_HISTORY_MESSAGE_COUNT = 30; //default  100
     private OnReceiveMessageListener mReceiveMessageListener;
-    private MessageRevokeListener messageRevokeListener;
 
     public ZIMKitMessageVM(@NonNull Application application) {
         super(application);
@@ -76,27 +84,99 @@ public abstract class ZIMKitMessageVM extends AndroidViewModel {
             }
         }
 
-        private static final String TAG = "ZIMKitMessageVM";
-
         @Override
         public void onMessageRevokeReceived(String conversationID, ZIMConversationType type,
             ArrayList<ZIMKitMessage> messageList) {
-            if (messageRevokeListener != null) {
-                messageRevokeListener.onMessageRevokeReceived(messageList);
+            List<ZIMKitMessageModel> collect = messageList.stream()
+                .map(zimKitMessage -> ZIMMessageUtil.parseZIMMessageToModel(zimKitMessage.zim))
+                .collect(Collectors.toList());
+            postList(collect, LoadData.DATA_STATE_NEW_UPDATE);
+        }
+
+        @Override
+        public void onMediaMessageUploadingProgressUpdated(ZIMKitMessage message, boolean isFinished) {
+            if (!message.zim.getConversationID().equals(mtoId)) {
+                return;
             }
-//            onMessageReceived(conversationID, type, messageList);
+            ZIMKitMessageModel messageModel = ZIMMessageUtil.parseZIMMessageToModel(message.zim);
+            if (message.type == ZIMMessageType.IMAGE) {
+                ((ImageMessageModel) messageModel).setUploadProgress(message.imageContent.uploadProgress);
+            } else if (message.type == ZIMMessageType.AUDIO) {
+                ((AudioMessageModel) messageModel).setUploadProgress(message.audioContent.uploadProgress);
+            } else if (message.type == ZIMMessageType.FILE) {
+                ((FileMessageModel) messageModel).setUploadProgress(message.fileContent.uploadProgress);
+            } else if (message.type == ZIMMessageType.VIDEO) {
+                ((VideoMessageModel) messageModel).setUploadProgress(message.videoContent.uploadProgress);
+            }
+            // when uploading,no with and height in model.so make it
+            if (messageModel.getMessage().getType() == ZIMMessageType.IMAGE) {
+                ImageMessageModel imageMessageModel = (ImageMessageModel) messageModel;
+                ImageSize imageSize = ImageSizeUtils.getImageConSize(message.imageContent.thumbnailWidth,
+                    message.imageContent.thumbnailHeight);
+                imageMessageModel.setImgWidth(imageSize.imgConWidth);
+                imageMessageModel.setImgHeight(imageSize.imgConHeight);
+            } else if (messageModel.getMessage().getType() == ZIMMessageType.VIDEO) {
+                VideoMessageModel videoMessageModel = (VideoMessageModel) messageModel;
+                ImageSizeUtils.ImageSize imageSize = ImageSizeUtils.getImageConSize(
+                    message.videoContent.videoFirstFrameWidth, message.videoContent.videoFirstFrameHeight);
+                videoMessageModel.setImgWidth(imageSize.imgConWidth);
+                videoMessageModel.setImgHeight(imageSize.imgConHeight);
+                if (TextUtils.isEmpty(((VideoMessageModel) messageModel).getVideoFirstFrameDownloadUrl())) {
+                    videoMessageModel.setVideoFirstFrameDownloadUrl(message.videoContent.firstFrameLocalPath);
+                }
+            }
+            postList(Collections.singletonList(messageModel), LoadData.DATA_STATE_NEW_UPDATE);
+        }
+
+        @Override
+        public void onMediaMessageDownloadingProgressUpdated(ZIMKitMessage message, boolean isFinished) {
+            if (!message.zim.getConversationID().equals(mtoId)) {
+                return;
+            }
+            ZIMKitMessageModel messageModel = ZIMMessageUtil.parseZIMMessageToModel(message.zim);
+            if (message.type == ZIMMessageType.IMAGE) {
+                ((ImageMessageModel) messageModel).setDownloadProgress(message.imageContent.downloadProgress);
+            } else if (message.type == ZIMMessageType.AUDIO) {
+                ((AudioMessageModel) messageModel).setDownloadProgress(message.audioContent.downloadProgress);
+            } else if (message.type == ZIMMessageType.FILE) {
+                ((FileMessageModel) messageModel).setDownloadProgress(message.fileContent.downloadProgress);
+            } else if (message.type == ZIMMessageType.VIDEO) {
+                ((VideoMessageModel) messageModel).setDownloadProgress(message.videoContent.downloadProgress);
+            }
+            // when uploading,no with and height in model.so make it
+            if (messageModel.getMessage().getType() == ZIMMessageType.IMAGE) {
+                ImageMessageModel imageMessageModel = (ImageMessageModel) messageModel;
+                ImageSize imageSize = ImageSizeUtils.getImageConSize(message.imageContent.thumbnailWidth,
+                    message.imageContent.thumbnailHeight);
+                imageMessageModel.setImgWidth(imageSize.imgConWidth);
+                imageMessageModel.setImgHeight(imageSize.imgConHeight);
+            } else if (messageModel.getMessage().getType() == ZIMMessageType.VIDEO) {
+                VideoMessageModel videoMessageModel = (VideoMessageModel) messageModel;
+                ImageSizeUtils.ImageSize imageSize = ImageSizeUtils.getImageConSize(
+                    message.videoContent.videoFirstFrameWidth, message.videoContent.videoFirstFrameHeight);
+                videoMessageModel.setImgWidth(imageSize.imgConWidth);
+                videoMessageModel.setImgHeight(imageSize.imgConHeight);
+                if (TextUtils.isEmpty(((VideoMessageModel) messageModel).getVideoFirstFrameDownloadUrl())) {
+                    videoMessageModel.setVideoFirstFrameDownloadUrl(message.videoContent.firstFrameLocalPath);
+                }
+            }
+            postList(Collections.singletonList(messageModel), LoadData.DATA_STATE_NEW_UPDATE);
         }
 
         @Override
         public void onMessageSentStatusChanged(ZIMKitMessage message) {
+            if (!message.zim.getConversationID().equals(mtoId)) {
+                return;
+            }
             ArrayList<ZIMKitMessageModel> models = new ArrayList<>();
-            ZIMKitMessageModel itemModel = ChatMessageParser.parseMessage(message.zim);
+            ZIMKitMessageModel itemModel = ZIMMessageUtil.parseZIMMessageToModel(message.zim);
             setNickNameAndAvatar(itemModel, ZIMKit.getLocalUser().getName(), ZIMKit.getLocalUser().getAvatarUrl());
             boolean isSending = itemModel.getSentStatus() == ZIMMessageSentStatus.SENDING;
             if (!isSending) {
                 mMessageList.add(itemModel);
             }
             if (isSending) {
+                // when onmessage attached,no with and height in model.so make it
                 if (itemModel instanceof ImageMessageModel) {
                     ImageMessageModel imageMessageModel = (ImageMessageModel) itemModel;
                     ImageSize imageSize = ImageSizeUtils.getImageConSize(message.imageContent.thumbnailWidth,
@@ -119,6 +199,64 @@ public abstract class ZIMKitMessageVM extends AndroidViewModel {
             postList(models, isSending ? LoadData.DATA_STATE_NEW : LoadData.DATA_STATE_NEW_UPDATE);
         }
 
+        @Override
+        public void onMessageRepliedInfoChanged(String conversationID, ZIMConversationType type,
+            ArrayList<ZIMKitMessage> kitMessages) {
+            List<ZIMKitMessageModel> collect = kitMessages.stream()
+                .map(zimKitMessage -> ZIMMessageUtil.parseZIMMessageToModel(zimKitMessage.zim))
+                .collect(Collectors.toList());
+            postList(collect, LoadData.DATA_STATE_NEW_UPDATE);
+        }
+
+        @Override
+        public void onMessageReactionsChanged(ArrayList<ZIMMessageReaction> reactions) {
+            ArrayList<ZIMKitMessage> messageList = ZIMKitCore.getInstance().getMessageList();
+
+            // key: userID ,value : List<ZIMMessageReaction>
+            Map<Long, List<ZIMMessageReaction>> reactionMap = new HashMap<>();
+            for (ZIMMessageReaction reaction : reactions) {
+                long messageID = reaction.messageID;
+                List<ZIMMessageReaction> reactionList;
+                if (reactionMap.containsKey(messageID)) {
+                    reactionList = reactionMap.get(messageID);
+                } else {
+                    reactionList = new ArrayList<>();
+                    reactionMap.put(messageID, reactionList);
+                }
+                reactionList.add(reaction);
+            }
+
+            List<ZIMKitMessageModel> collect = messageList.stream()
+                .filter(zimKitMessage -> reactionMap.containsKey(zimKitMessage.info.messageID)).map(zimKitMessage -> {
+                    // merge two ZIMMessageReaction list
+                    ArrayList<ZIMMessageReaction> zimReactions = zimKitMessage.zim.getReactions();
+                    List<ZIMMessageReaction> newReactions = reactionMap.get(zimKitMessage.info.messageID);
+                    //  key:emoji , value: ZIMMessageReaction
+                    Map<String, ZIMMessageReaction> newReactionMap = new HashMap<>();
+                    for (ZIMMessageReaction newReaction : newReactions) {
+                        newReactionMap.put(newReaction.reactionType, newReaction);
+                    }
+                    Iterator<ZIMMessageReaction> iterator = zimReactions.iterator();
+                    while (iterator.hasNext()) {
+                        ZIMMessageReaction messageReaction = iterator.next();
+                        if (newReactionMap.containsKey(messageReaction.reactionType)) {
+                            ZIMMessageReaction newReaction = newReactionMap.get(messageReaction.reactionType);
+                            messageReaction.userList = newReaction.userList;
+                            newReactions.remove(newReaction);
+                            if (messageReaction.userList.isEmpty()) {
+                                iterator.remove();
+                            }
+                        }
+                    }
+
+                    if (!newReactions.isEmpty()) {
+                        zimReactions.addAll(newReactions);
+                    }
+                    return ZIMMessageUtil.parseZIMMessageToModel(zimKitMessage.zim);
+                }).collect(Collectors.toList());
+
+            postList(collect, LoadData.DATA_STATE_NEW_UPDATE);
+        }
     };
 
     protected void postList(List<ZIMKitMessageModel> newList, int state) {
@@ -197,11 +335,31 @@ public abstract class ZIMKitMessageVM extends AndroidViewModel {
 
     abstract protected void loadNextPage(ZIMMessage message);
 
-    abstract public void sendTextMessage(ZIMKitMessageModel model, MessageSentCallback callback);
-
     abstract public void sendMediaMessage(List<ZIMKitMessageModel> messageModelList);
 
     abstract public void sendMediaMessage(ZIMKitMessageModel messageModel);
+
+    public void sendTextMessage(String text, String targetID, String targetName, ZIMConversationType targetType,
+        MessageSentCallback callback) {
+        ZIMKit.sendTextMessage(text, targetID, targetName, targetType, new MessageSentCallback() {
+            @Override
+            public void onMessageSent(ZIMError error) {
+                targetDoesNotExist(error);
+                if (callback != null) {
+                    callback.onMessageSent(error);
+                }
+            }
+        });
+    }
+
+    public void replyToMessage(ZIMMessage zimMessage, ZIMKitMessageModel repliedMessage,
+        ZIMMessageSentFullCallback callback) {
+        if (zimMessage == null) {
+            return;
+        }
+        ZIMKitCore.getInstance()
+            .replyMessage(zimMessage, repliedMessage.getMessage(), new ZIMMessageSendConfig(), callback);
+    }
 
     public void insertNewMessage(ZIMKitMessage zimMessage) {
         handlerNewMessageList(new ArrayList<>(Collections.singletonList(zimMessage)));
@@ -214,9 +372,12 @@ public abstract class ZIMKitMessageVM extends AndroidViewModel {
      * @param conversationType
      * @param callback
      */
-    public void deleteMessage(ArrayList<ZIMMessage> messageList, ZIMConversationType conversationType,
+    public void deleteMessage(ArrayList<ZIMKitMessageModel> messageList, ZIMConversationType conversationType,
         ZIMMessageDeletedCallback callback) {
-        ZIMKit.deleteMessage(MessageTransform.parseMessageList(messageList), new DeleteMessageCallback() {
+        List<ZIMKitMessage> collect = messageList.stream()
+            .map(kitMessageModel -> ZIMMessageUtil.parseZIMMessageToKitMessage(kitMessageModel.getMessage()))
+            .collect(Collectors.toList());
+        ZIMKit.deleteMessage(collect, new DeleteMessageCallback() {
             @Override
             public void onDeleteMessage(ZIMError error) {
                 if (callback != null) {
@@ -230,19 +391,10 @@ public abstract class ZIMKitMessageVM extends AndroidViewModel {
         mReceiveMessageListener = listener;
     }
 
-    public void setMessageRevokeListener(MessageRevokeListener messageRevokeListener) {
-        this.messageRevokeListener = messageRevokeListener;
-    }
-
     abstract protected void setNickNameAndAvatar(ZIMKitMessageModel model, String nickName, String avatar);
 
     public void withDrawMessage(ZIMKitMessageModel model, ZIMMessageRevokedCallback callback) {
         ZIMKitCore.getInstance().withDrawMessage(model, callback);
-    }
-
-    public interface MessageRevokeListener {
-
-        void onMessageRevokeReceived(ArrayList<ZIMKitMessage> messageList);
     }
 
     public interface OnReceiveMessageListener {

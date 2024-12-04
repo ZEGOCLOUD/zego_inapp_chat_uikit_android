@@ -1,105 +1,207 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools">
 
-    <data>
+  <data>
 
-        <variable
-            name="view"
-            type="android.view.View" />
+    <variable
+      name="view"
+      type="android.view.View" />
 
-        <import
-            alias="textUtils"
-            type="android.text.TextUtils" />
+    <import
+      alias="textUtils"
+      type="android.text.TextUtils" />
 
-        <variable
-            name="sentStatus"
-            type="im.zego.zim.enums.ZIMMessageSentStatus" />
+    <variable
+      name="sentStatus"
+      type="im.zego.zim.enums.ZIMMessageSentStatus" />
 
-        <variable
-            name="zimImage"
-            type="im.zego.zim.entity.ZIMImageMessage" />
+    <variable
+      name="zimImage"
+      type="im.zego.zim.entity.ZIMImageMessage" />
 
-        <variable
-            name="model"
-            type="com.zegocloud.zimkit.components.message.model.ImageMessageModel" />
-    </data>
+    <variable
+      name="model"
+      type="com.zegocloud.zimkit.components.message.model.ImageMessageModel" />
+  </data>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
+  <androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="16dp"
+    tools:background="@color/color_eff0f2">
+
+    <androidx.appcompat.widget.AppCompatCheckBox
+      android:id="@+id/select_checkbox"
+      android:layout_width="wrap_content"
+      android:layout_height="match_parent"
+      android:layout_marginLeft="8dp"
+      android:layout_marginRight="8dp"
+      android:button="@drawable/zimkit_selector_checkbox"
+      android:checked="@{model.isCheck}"
+      android:clickable="false"
+      app:layout_constraintBottom_toBottomOf="@id/iv_avatar"
+      app:layout_constraintLeft_toLeftOf="parent"
+      app:layout_constraintTop_toTopOf="@id/iv_avatar" />
+
+    <ImageView
+      android:id="@+id/iv_avatar"
+      android:layout_width="43dp"
+      android:layout_height="43dp"
+      android:layout_marginStart="8dp"
+      android:layout_marginEnd="12dp"
+      app:avatarMessageUrl="@{model.avatar}"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toEndOf="@id/item_status_message_layout"
+      app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+      android:id="@+id/item_status_message_layout"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:gravity="end|center_vertical"
+      android:orientation="horizontal"
+      app:layout_constraintEnd_toStartOf="@id/iv_avatar"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="@id/iv_avatar">
+
+      <ImageView
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        tools:background="@color/color_eff0f2">
+        android:layout_marginRight="8dp"
+        android:src="@mipmap/zimkit_icon_fail"
+        android:visibility="@{model.message.sentStatus==sentStatus.FAILED?view.VISIBLE:view.GONE}" />
 
-        <androidx.appcompat.widget.AppCompatCheckBox
-            android:id="@+id/select_checkbox"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginLeft="8dp"
-            android:layout_marginRight="8dp"
-            android:button="@drawable/zimkit_selector_checkbox"
-            android:checked="@{model.isCheck}"
-            android:visibility="@{model.isShowMultiSelectCheckBox ? view.VISIBLE : view.GONE}"
-            app:layout_constraintBottom_toBottomOf="@id/iv_avatar"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintTop_toTopOf="@id/iv_avatar" />
-
-        <ImageView
-            android:id="@+id/iv_avatar"
-            android:layout_width="43dp"
-            android:layout_height="43dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="12dp"
-            app:avatarMessageUrl="@{model.avatar}"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/ll_content"
-            app:layout_constraintTop_toTopOf="parent" />
+      <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/item_message_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/zimkit_shape_12dp_ff3478fc"
+        android:clickable="true">
 
         <LinearLayout
-            android:id="@+id/ll_content"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:gravity="end|center_vertical"
-            android:orientation="horizontal"
-            app:layout_constraintEnd_toStartOf="@id/iv_avatar"
+          android:id="@+id/item_message_reply_layout"
+          android:layout_width="match_parent"
+          android:layout_height="22dp"
+          android:orientation="horizontal"
+          android:visibility="@{model.message.repliedInfo != null ? view.VISIBLE:view.GONE}"
+          app:layout_constraintTop_toTopOf="parent">
+
+          <View
+            android:id="@+id/item_message_reply_line"
+            android:layout_width="1dp"
+            android:layout_height="match_parent"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
+            android:background="@color/color_b3ffffff"
+            app:layout_constraintBottom_toBottomOf="@+id/item_message_reply_content"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@id/iv_avatar">
+            app:layout_constraintTop_toTopOf="@+id/item_message_reply_content" />
 
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="8dp"
-                android:src="@mipmap/zimkit_icon_fail"
-                android:visibility="@{model.message.sentStatus==sentStatus.FAILED?view.VISIBLE:view.GONE}" />
-
-            <ProgressBar
-                android:id="@+id/message_sending_pb"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_marginRight="8dp"
-                android:indeterminateTint="@color/color_ff3478fc"
-                android:visibility="@{model.sentStatus==sentStatus.SENDING?view.VISIBLE:view.GONE}" />
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                app:cardBackgroundColor="@color/color_eff0f2"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="0dp">
-
-                <ImageView
-                    android:id="@+id/send_photo"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:scaleType="centerCrop"
-                    app:fileName="@{model.fileName}"
-                    app:height="@{model.imgHeight}"
-                    app:messageImageUrl="@{model.thumbnailDownloadUrl}"
-                    app:width="@{model.imgWidth}" />
-
-            </androidx.cardview.widget.CardView>
+          <TextView
+            android:id="@+id/item_message_reply_content"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="3dp"
+            android:ellipsize="end"
+            android:gravity="start|center_vertical"
+            android:maxLines="1"
+            android:singleLine="true"
+            android:textColor="@color/color_b3ffffff"
+            android:textSize="13sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/item_message_reply_line"
+            app:layout_constraintTop_toTopOf="parent"
+            app:replyMessageContent="@{model.message}" />
 
         </LinearLayout>
-    </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <FrameLayout
+          android:id="@+id/msg_content_layout"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:clickable="true"
+          android:layout_marginTop="4dp"
+          app:layout_goneMarginTop="0dp"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintTop_toBottomOf="@+id/item_message_reply_layout">
+
+          <ImageView
+            android:id="@+id/msg_content_photo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:scaleType="centerCrop"
+            app:fileLocalPath="@{model.fileLocalPath}"
+            app:fileName="@{model.fileName}"
+            app:imgHeight="@{model.imgHeight}"
+            app:imgWidth="@{model.imgWidth}"
+            app:messageImageUrl="@{model.thumbnailDownloadUrl}" />
+        </FrameLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+          android:layout_width="0dp"
+          android:layout_height="0dp"
+          android:background="@drawable/zimkit_shape_8dp_80000000"
+          android:visibility="@{model.sentStatus==sentStatus.SUCCESS?view.GONE:view.VISIBLE}"
+          app:layout_constraintBottom_toBottomOf="@+id/msg_content_layout"
+          app:layout_constraintEnd_toEndOf="@+id/msg_content_layout"
+          app:layout_constraintStart_toStartOf="@+id/msg_content_layout"
+          app:layout_constraintTop_toTopOf="@+id/msg_content_layout">
+
+          <ImageView
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="@drawable/zimkit_shape_circular_white"
+            android:visibility="@{model.sentStatus==sentStatus.SENDING?view.VISIBLE:view.GONE}"
+            app:layout_constraintBottom_toBottomOf="@+id/message_sending_pb"
+            app:layout_constraintEnd_toEndOf="@+id/message_sending_pb"
+            app:layout_constraintStart_toStartOf="@+id/message_sending_pb"
+            app:layout_constraintTop_toTopOf="@+id/message_sending_pb" />
+
+          <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:id="@+id/message_sending_pb"
+            style="@style/Widget.MaterialComponents.CircularProgressIndicator.Small"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:max="100"
+            android:progress="@{Math.round(model.uploadProgress.percent() * 100)}"
+            android:visibility="@{model.sentStatus==sentStatus.SENDING?view.VISIBLE:view.GONE}"
+            app:indicatorColor="@color/color_ff3478fc"
+            app:indicatorInset="2dp"
+            app:indicatorSize="36dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+          <TextView
+            android:id="@+id/message_sending_percent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{String.valueOf(Math.round(model.uploadProgress.percent() * 100)) + '%'}"
+            android:textColor="@color/color_2a2a2a"
+            android:textSize="10sp"
+            android:visibility="@{model.sentStatus==sentStatus.SENDING?view.VISIBLE:view.GONE}"
+            app:layout_constraintBottom_toBottomOf="@+id/message_sending_pb"
+            app:layout_constraintEnd_toEndOf="@+id/message_sending_pb"
+            app:layout_constraintStart_toStartOf="@+id/message_sending_pb"
+            app:layout_constraintTop_toTopOf="@+id/message_sending_pb" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <com.google.android.flexbox.FlexboxLayout
+          android:id="@+id/msg_reaction_layout"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="8dp"
+          app:applyReactions="@{model}"
+          app:flexDirection="row"
+          app:flexWrap="wrap"
+          app:justifyContent="flex_start"
+          app:layout_constraintTop_toBottomOf="@+id/msg_content_layout" />
+      </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </LinearLayout>
+  </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

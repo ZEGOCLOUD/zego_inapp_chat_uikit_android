@@ -1,16 +1,115 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-  android:id="@+id/menu_content_layout"
-  android:layout_width="wrap_content"
-  android:layout_height="wrap_content"
-  android:layout_gravity="center"
-  android:orientation="vertical">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto">
 
-  <androidx.recyclerview.widget.RecyclerView
-    android:id="@+id/chat_pop_menu_content_view"
+  <data>
+
+  </data>
+
+  <LinearLayout
+    android:id="@+id/menu_content_layout"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
- />
+    android:layout_gravity="center"
+    android:orientation="vertical">
 
-</FrameLayout>
+    <androidx.constraintlayout.widget.ConstraintLayout
+      android:id="@+id/chat_pop_menu_recent_emoji_layout"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content">
+
+      <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/chat_pop_menu_recent_emoji"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+      <ImageView
+        android:id="@+id/chat_pop_menu_recent_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:scaleType="center"
+        android:src="@drawable/zimkit_selector_recent_emoji"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <View
+      android:id="@+id/line"
+      android:layout_width="match_parent"
+      android:layout_height="1dp"
+      android:layout_marginStart="16dp"
+      android:layout_marginTop="8dp"
+      android:layout_marginEnd="16dp"
+      android:background="@color/color_33ffffff" />
+
+    <FrameLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content">
+
+      <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/chat_pop_menu_action_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="4dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+      <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/chat_pop_menu_emoji_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+
+        <androidx.viewpager2.widget.ViewPager2
+          android:id="@+id/chat_pop_menu_emojis"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginStart="8dp"
+          android:layout_marginEnd="8dp"
+          app:layout_constraintEnd_toEndOf="parent"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintTop_toTopOf="parent" />
+
+        <com.google.android.material.tabs.TabLayout
+          android:id="@+id/chat_pop_menu_emoji_tablayout"
+          android:layout_width="match_parent"
+          android:layout_height="12dp"
+          android:layout_marginTop="4dp"
+          android:background="#00FFFFFF"
+          app:layout_constraintEnd_toEndOf="parent"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintTop_toBottomOf="@+id/chat_pop_menu_emojis"
+          app:tabBackground="@drawable/tab_pager_selector"
+          app:tabGravity="center"
+          app:tabIndicatorHeight="0dp"
+          app:tabPaddingEnd="5dp"
+          app:tabPaddingStart="5dp">
+
+        </com.google.android.material.tabs.TabLayout>
+      </androidx.constraintlayout.widget.ConstraintLayout>
+    </FrameLayout>
+
+    <View
+      android:layout_width="match_parent"
+      android:layout_height="1dp"
+      android:layout_marginTop="4dp" />
+
+  </LinearLayout>
+</layout>
 

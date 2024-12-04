@@ -1,7 +1,8 @@
 package com.zegocloud.zimkit.services.internal;
 
 import android.media.MediaPlayer;
-
+import android.text.TextUtils;
+import com.zegocloud.uikit.plugin.signaling.ZegoSignalingPlugin;
 import com.zegocloud.zimkit.R;
 import com.zegocloud.zimkit.components.message.model.ZIMKitMessageModel;
 import com.zegocloud.zimkit.components.message.utils.image.HEIFImageHelper;
@@ -14,22 +15,12 @@ import com.zegocloud.zimkit.services.callback.MessageSentCallback;
 import com.zegocloud.zimkit.services.model.ZIMKitMessage;
 import com.zegocloud.zimkit.services.model.ZIMKitUser;
 import com.zegocloud.zimkit.services.utils.MessageTransform;
-import im.zego.zim.callback.ZIMMessageRevokedCallback;
-import im.zego.zim.entity.ZIMMessageRevokeConfig;
-import im.zego.zim.entity.ZIMPushConfig;
-import im.zego.zim.entity.ZIMUserFullInfo;
-import im.zego.zim.enums.ZIMMessageType;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
-
+import com.zegocloud.zimkit.services.utils.ZIMMessageUtil;
 import im.zego.zim.callback.ZIMMediaDownloadedCallback;
 import im.zego.zim.callback.ZIMMediaMessageSentCallback;
 import im.zego.zim.callback.ZIMMessageDeletedCallback;
 import im.zego.zim.callback.ZIMMessageQueriedCallback;
+import im.zego.zim.callback.ZIMMessageRevokedCallback;
 import im.zego.zim.callback.ZIMMessageSentCallback;
 import im.zego.zim.entity.ZIMAudioMessage;
 import im.zego.zim.entity.ZIMError;
@@ -39,12 +30,22 @@ import im.zego.zim.entity.ZIMMediaMessage;
 import im.zego.zim.entity.ZIMMessage;
 import im.zego.zim.entity.ZIMMessageDeleteConfig;
 import im.zego.zim.entity.ZIMMessageQueryConfig;
+import im.zego.zim.entity.ZIMMessageRevokeConfig;
 import im.zego.zim.entity.ZIMMessageSendConfig;
+import im.zego.zim.entity.ZIMPushConfig;
 import im.zego.zim.entity.ZIMTextMessage;
+import im.zego.zim.entity.ZIMUserFullInfo;
 import im.zego.zim.entity.ZIMVideoMessage;
 import im.zego.zim.enums.ZIMConversationType;
 import im.zego.zim.enums.ZIMErrorCode;
 import im.zego.zim.enums.ZIMMediaFileType;
+import im.zego.zim.enums.ZIMMessageType;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -89,7 +90,7 @@ public class MessageService {
         queryConfig.nextMessage = message;
         queryConfig.reverse = true;
 
-        ZIMKitCore.getInstance().zim()
+        ZegoSignalingPlugin.getInstance()
             .queryHistoryMessage(conversationID, type, queryConfig, new ZIMMessageQueriedCallback() {
                 @Override
                 public void onMessageQueried(String conversationID, ZIMConversationType conversationType,
@@ -122,36 +123,17 @@ public class MessageService {
     }
 
     private String convertMessageData(ZIMMessage zimMessage) {
-        String message = "";
-        if (zimMessage.getType() == ZIMMessageType.TEXT) {
-            message = ((ZIMTextMessage) zimMessage).message;
-        } else if (zimMessage.getType() == ZIMMessageType.IMAGE) {
-            message = ZIMKitCore.getInstance().getApplication().getString(R.string.zimkit_message_photo);
-        } else if (zimMessage.getType() == ZIMMessageType.VIDEO) {
-            message = ZIMKitCore.getInstance().getApplication().getString(R.string.zimkit_message_video);
-        } else if (zimMessage.getType() == ZIMMessageType.AUDIO) {
-            message = ZIMKitCore.getInstance().getApplication().getString(R.string.zimkit_message_audio);
-        } else if (zimMessage.getType() == ZIMMessageType.FILE) {
-            message = ZIMKitCore.getInstance().getApplication().getString(R.string.zimkit_message_file);
-        } else if (zimMessage.getType() == ZIMMessageType.REVOKE) {
-            ZIMUserFullInfo memoryUserInfo = ZIMKitCore.getInstance().getMemoryUserInfo(zimMessage.getSenderUserID());
-            if (memoryUserInfo == null) {
-                message = zimMessage.getSenderUserID() + " " + ZIMKitCore.getInstance().getApplication()
-                    .getString(R.string.zimkit_message_revoke);
-            } else {
-                message = memoryUserInfo.baseInfo.userName + " " + ZIMKitCore.getInstance().getApplication()
-                    .getString(R.string.zimkit_message_revoke);
-            }
-        } else {
-            message = ZIMKitCore.getInstance().getApplication().getString(R.string.zimkit_message_unknown);
+        String content = ZIMMessageUtil.simplifyZIMMessageContent(zimMessage);
+        if (TextUtils.isEmpty(content)) {
+            content = ZIMKitCore.getInstance().getApplication().getString(R.string.zimkit_message_unknown);
         }
-        return message;
+        return content;
     }
 
     public void sendTextMessage(String text, String conversationID, String title, ZIMConversationType type,
         MessageSentCallback callback) {
         ZIMMessage message = new ZIMTextMessage(text);
-        ZIMKitMessage kitMessage = MessageTransform.parseMessage(message);
+        ZIMKitMessage kitMessage = ZIMMessageUtil.parseZIMMessageToKitMessage(message);
         AtomicBoolean canSendMessage = new AtomicBoolean(true);
         ZIMKitCore.getInstance().getZimkitNotifyList().notifyAllListener(zimKitDelegate -> {
             ZIMKitMessage preSending = zimKitDelegate.onMessagePreSending(kitMessage);
@@ -189,10 +171,10 @@ public class MessageService {
             config.pushConfig.payload = jsonObject.toString();
         }
 
-        ZIMKitCore.getInstance().zim().sendMessage(message, conversationID, type, config, new ZIMMessageSentCallback() {
+        sendMessage(message, conversationID, type, config, new ZIMMessageSentCallback() {
             @Override
             public void onMessageAttached(ZIMMessage message) {
-                ZIMKitMessage zimKitMessage = MessageTransform.parseMessage(message);
+                ZIMKitMessage zimKitMessage = ZIMMessageUtil.parseZIMMessageToKitMessage(message);
                 ZIMKitCore.getInstance().getMessageList().add(zimKitMessage);
                 ZIMKitCore.getInstance().getZimkitNotifyList().notifyAllListener(zimKitDelegate -> {
                     zimKitDelegate.onMessageSentStatusChanged(zimKitMessage);
@@ -201,7 +183,7 @@ public class MessageService {
 
             @Override
             public void onMessageSent(ZIMMessage message, ZIMError errorInfo) {
-                ZIMKitMessage zimKitMessage = MessageTransform.parseMessage(message);
+                ZIMKitMessage zimKitMessage = ZIMMessageUtil.parseZIMMessageToKitMessage(message);
                 ArrayList<ZIMKitMessage> mMessageList = ZIMKitCore.getInstance().getMessageList();
                 for (int i = 0; i < mMessageList.size(); i++) {
                     if (message.getMessageID() == mMessageList.get(i).zim.getMessageID()) {
@@ -256,7 +238,7 @@ public class MessageService {
     private void sendMediaMessage(ZIMMediaMessage message, String conversationID, String title,
         ZIMConversationType type, MessageSentCallback callback) {
 
-        ZIMKitMessage kitMessage = MessageTransform.parseMessage(message);
+        ZIMKitMessage kitMessage = ZIMMessageUtil.parseZIMMessageToKitMessage(message);
         AtomicBoolean canSendMessage = new AtomicBoolean(true);
         ZIMKitCore.getInstance().getZimkitNotifyList().notifyAllListener(zimKitDelegate -> {
             ZIMKitMessage preSending = zimKitDelegate.onMessagePreSending(kitMessage);
@@ -294,54 +276,52 @@ public class MessageService {
             config.pushConfig.payload = jsonObject.toString();
         }
 
-        ZIMKitCore.getInstance().zim()
-            .sendMediaMessage(message, conversationID, type, config, new ZIMMediaMessageSentCallback() {
-                @Override
-                public void onMessageAttached(ZIMMediaMessage message) {
-                    ZIMKitMessage zimKitMessage = MessageTransform.parseMessage(message);
-                    ZIMKitCore.getInstance().getMessageList().add(zimKitMessage);
-                    ZIMKitCore.getInstance().getZimkitNotifyList().notifyAllListener(zimKitDelegate -> {
-                        zimKitDelegate.onMessageSentStatusChanged(zimKitMessage);
-                    });
+        sendMediaMessage(message, conversationID, type, config, new ZIMMediaMessageSentCallback() {
+            @Override
+            public void onMessageAttached(ZIMMediaMessage message) {
+                ZIMKitMessage zimKitMessage = ZIMMessageUtil.parseZIMMessageToKitMessage(message);
+                ZIMKitCore.getInstance().getMessageList().add(zimKitMessage);
+                ZIMKitCore.getInstance().getZimkitNotifyList().notifyAllListener(zimKitDelegate -> {
+                    zimKitDelegate.onMessageSentStatusChanged(zimKitMessage);
+                });
+            }
+
+            @Override
+            public void onMediaUploadingProgress(ZIMMediaMessage message, long currentFileSize, long totalFileSize) {
+                ZIMKitMessage zimKitMessage = getZIMKitMessage(message.getMessageID());
+                if (zimKitMessage == null) {
+                    zimKitMessage = ZIMMessageUtil.parseZIMMessageToKitMessage(message);
+                }
+                boolean isFinished = currentFileSize == totalFileSize;
+                ZIMKitMessage finalZimKitMessage = zimKitMessage;
+                ZIMKitCore.getInstance().getZimkitNotifyList().notifyAllListener(zimKitDelegate -> {
+                    zimKitDelegate.onMediaMessageUploadingProgressUpdated(
+                        MessageTransform.updateUploadProgress(finalZimKitMessage, currentFileSize, totalFileSize),
+                        isFinished);
+                });
+            }
+
+            @Override
+            public void onMessageSent(ZIMMediaMessage message, ZIMError errorInfo) {
+                ZIMKitMessage zimKitMessage = ZIMMessageUtil.parseZIMMessageToKitMessage(message);
+                ArrayList<ZIMKitMessage> mMessageList = ZIMKitCore.getInstance().getMessageList();
+                for (int i = 0; i < mMessageList.size(); i++) {
+                    if (message.getMessageID() == mMessageList.get(i).zim.getMessageID()) {
+                        mMessageList.set(i, zimKitMessage);
+                        break;
+                    }
                 }
 
-                @Override
-                public void onMediaUploadingProgress(ZIMMediaMessage message, long currentFileSize,
-                    long totalFileSize) {
-                    ZIMKitMessage zimKitMessage = getZIMKitMessage(message.getMessageID());
-                    if (zimKitMessage == null) {
-                        zimKitMessage = MessageTransform.parseMessage(message);
-                    }
-                    boolean isFinished = currentFileSize == totalFileSize;
-                    ZIMKitMessage finalZimKitMessage = zimKitMessage;
-                    ZIMKitCore.getInstance().getZimkitNotifyList().notifyAllListener(zimKitDelegate -> {
-                        zimKitDelegate.onMediaMessageUploadingProgressUpdated(
-                            MessageTransform.updateUploadProgress(finalZimKitMessage, currentFileSize, totalFileSize),
-                            isFinished);
-                    });
+                ZIMKitCore.getInstance().getZimkitNotifyList().notifyAllListener(zimKitDelegate -> {
+                    zimKitDelegate.onMessageSentStatusChanged(zimKitMessage);
+                });
+
+                if (callback != null) {
+                    callback.onMessageSent(errorInfo);
                 }
 
-                @Override
-                public void onMessageSent(ZIMMediaMessage message, ZIMError errorInfo) {
-                    ZIMKitMessage zimKitMessage = MessageTransform.parseMessage(message);
-                    ArrayList<ZIMKitMessage> mMessageList = ZIMKitCore.getInstance().getMessageList();
-                    for (int i = 0; i < mMessageList.size(); i++) {
-                        if (message.getMessageID() == mMessageList.get(i).zim.getMessageID()) {
-                            mMessageList.set(i, zimKitMessage);
-                            break;
-                        }
-                    }
-
-                    ZIMKitCore.getInstance().getZimkitNotifyList().notifyAllListener(zimKitDelegate -> {
-                        zimKitDelegate.onMessageSentStatusChanged(zimKitMessage);
-                    });
-
-                    if (callback != null) {
-                        callback.onMessageSent(errorInfo);
-                    }
-
-                }
-            });
+            }
+        });
     }
 
     public void downloadMediaFile(ZIMKitMessage zimMessage, DownloadMediaFileCallback callback) {
@@ -355,7 +335,7 @@ public class MessageService {
         }
 
         if (zimMessage.zim instanceof ZIMMediaMessage) {
-            ZIMKitCore.getInstance().zim()
+            ZegoSignalingPlugin.getInstance()
                 .downloadMediaFile((ZIMMediaMessage) zimMessage.zim, ZIMMediaFileType.ORIGINAL_FILE,
                     new ZIMMediaDownloadedCallback() {
                         @Override
@@ -363,7 +343,7 @@ public class MessageService {
                             boolean isFinished = errorInfo.code == ZIMErrorCode.SUCCESS;
                             ZIMKitCore.getInstance().getZimkitNotifyList().notifyAllListener(zimKitDelegate -> {
                                 zimKitDelegate.onMediaMessageDownloadingProgressUpdated(
-                                    MessageTransform.parseMessage(message), isFinished);
+                                    ZIMMessageUtil.parseZIMMessageToKitMessage(message), isFinished);
                             });
                             if (callback != null) {
                                 callback.onDownloadMediaFile(errorInfo);
@@ -375,7 +355,7 @@ public class MessageService {
                             long totalFileSize) {
                             ZIMKitMessage zimKitMessage = getZIMKitMessage(message.getMessageID());
                             if (zimKitMessage == null) {
-                                zimKitMessage = MessageTransform.parseMessage(message);
+                                zimKitMessage = ZIMMessageUtil.parseZIMMessageToKitMessage(message);
                             }
                             ZIMKitMessage finalZimKitMessage = zimKitMessage;
                             ZIMKitCore.getInstance().getZimkitNotifyList().notifyAllListener(zimKitDelegate -> {
@@ -424,7 +404,7 @@ public class MessageService {
             zimKitDelegate.onMessageDeleted(conversationID, conversationType, messageDeleted);
         });
 
-        ZIMKitCore.getInstance().zim()
+        ZegoSignalingPlugin.getInstance()
             .deleteMessages(messageList, conversationID, conversationType, new ZIMMessageDeleteConfig(),
                 new ZIMMessageDeletedCallback() {
                     @Override
@@ -471,6 +451,16 @@ public class MessageService {
     }
 
     public void withDrawMessage(ZIMKitMessageModel model, ZIMMessageRevokedCallback callback) {
-        ZIMKitCore.getInstance().zim().revokeMessage(model.getMessage(), new ZIMMessageRevokeConfig(), callback);
+        ZegoSignalingPlugin.getInstance().revokeMessage(model.getMessage(), new ZIMMessageRevokeConfig(), callback);
+    }
+
+    public void sendMessage(ZIMMessage message, String toConversationID, ZIMConversationType conversationType,
+        ZIMMessageSendConfig config, ZIMMessageSentCallback callback) {
+        ZegoSignalingPlugin.getInstance().sendMessage(message, toConversationID, conversationType, config, callback);
+    }
+
+    public void sendMediaMessage(ZIMMediaMessage message, String toConversationID, ZIMConversationType conversationType,
+        ZIMMessageSendConfig config, ZIMMediaMessageSentCallback callback) {
+        ZegoSignalingPlugin.getInstance().sendMediaMessage(message, toConversationID, conversationType, config, callback);
     }
 }

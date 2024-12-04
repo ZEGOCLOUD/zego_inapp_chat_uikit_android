@@ -9,17 +9,24 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
+import android.util.TypedValue;
 import android.widget.ImageView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.bitmap.CenterCrop;
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.bumptech.glide.request.RequestOptions;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Transformation;
 import com.zegocloud.zimkit.R;
 import im.zego.zim.enums.ZIMConversationType;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.concurrent.ExecutionException;
 
 public class ZIMKitGlideLoader {
@@ -90,17 +97,38 @@ public class ZIMKitGlideLoader {
      *
      * @param imageView
      * @param url
+     * @param fileLocalPath
      * @param width
      * @param height
      */
-    public static void displayMessageImage(ImageView imageView, String url, int width, int height) {
-        RequestOptions options = new RequestOptions().override(width, height).transform(new CenterCrop()).dontAnimate();
-        //        Picasso.get().load(url).resize(width,height).centerCrop()
-        //            .placeholder(R.drawable.zimkit_icon_image_placeholder).into(imageView);
-        Glide.with(imageView).load(url).placeholder(R.drawable.zimkit_icon_image_placeholder)
-            .error(R.drawable.zimkit_icon_image_placeholder).apply(options)
+    public static void displayMessageImage(ImageView imageView, String url, String fileLocalPath, int width,
+        int height) {
+        // if sending, no download url,so use file localPath to show.
+        // when send finished,use download url
+        if (TextUtils.isEmpty(url)) {
+            url = fileLocalPath;
+        }
+        int corner = dp2px(8, imageView.getResources().getDisplayMetrics());
+        RequestOptions options = new RequestOptions().override(width, height)
+            .transform(new CenterCrop(), new RoundedCorners(corner)).dontAnimate()
             .diskCacheStrategy(DiskCacheStrategy.ALL) // Setting the policy for caching
-            .into(imageView);
+            .error(R.drawable.zimkit_icon_image_placeholder);
+        Drawable drawable = null;
+        if (!TextUtils.isEmpty(fileLocalPath)) {
+            drawable = getDrawableFromLocalPath(fileLocalPath);
+        }
+        if (drawable == null) {
+            options = options.placeholder(R.drawable.zimkit_icon_image_placeholder);
+        } else {
+            options = options.placeholder(drawable);
+        }
+        Glide.with(imageView).load(url).apply(options).into(imageView);
+    }
+
+    private static final String TAG = "ZIMKitGlideLoader";
+
+    public static int dp2px(float v, DisplayMetrics displayMetrics) {
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, v, displayMetrics);
     }
 
     /**
@@ -108,15 +136,41 @@ public class ZIMKitGlideLoader {
      *
      * @param imageView
      * @param url
+     * @param fileLocalPath
      * @param width
      * @param height
      */
-    public static void displayMessageGifImage(ImageView imageView, String url, int width, int height) {
-        RequestOptions options = new RequestOptions().override(width, height).transform(new CenterCrop());
-        Glide.with(imageView).asGif().load(url).placeholder(R.drawable.zimkit_icon_image_placeholder)
-            .error(R.drawable.zimkit_icon_image_placeholder).apply(options)
+    public static void displayMessageGifImage(ImageView imageView, String url, String fileLocalPath, int width,
+        int height) {
+        if (TextUtils.isEmpty(url)) {
+            url = fileLocalPath;
+        }
+        int corner = dp2px(8, imageView.getResources().getDisplayMetrics());
+        Drawable drawable = null;
+        if (!TextUtils.isEmpty(fileLocalPath)) {
+            drawable = getDrawableFromLocalPath(fileLocalPath);
+        }
+
+        RequestOptions options = new RequestOptions().override(width, height).transform(new RoundedCorners(corner))
             .diskCacheStrategy(DiskCacheStrategy.ALL) // Setting the policy for caching
-            .into(imageView);
+            .error(R.drawable.zimkit_icon_image_placeholder).transform(new RoundedCorners(corner));
+        if (drawable == null) {
+            options = options.placeholder(R.drawable.zimkit_icon_image_placeholder);
+        } else {
+            options = options.placeholder(drawable);
+        }
+        Glide.with(imageView).asGif().load(url).apply(options).into(imageView);
+    }
+
+    public static Drawable getDrawableFromLocalPath(String fileLocalPath) {
+        try {
+            InputStream inputStream = new FileInputStream(fileLocalPath);
+            Drawable drawable = Drawable.createFromStream(inputStream, fileLocalPath);
+            return drawable;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     /**
@@ -146,16 +200,14 @@ public class ZIMKitGlideLoader {
 
         if (type == ZIMConversationType.PEER) {
             if (!TextUtils.isEmpty(url)) {
-                Picasso.get().load(url)
-                    .transform(new PicassoRoundTransform()).fit()
+                Picasso.get().load(url).transform(new PicassoRoundTransform()).fit()
                     .placeholder(R.drawable.zimkit_icon_avatar_placeholder)
                     .error(R.drawable.zimkit_icon_avatar_placeholder).centerCrop().into(imageView);
             }
         } else {
-            Picasso.get().load(R.drawable.zimkit_icon_group)
-                .transform(new PicassoRoundTransform()).fit()
-                .placeholder(R.drawable.zimkit_icon_avatar_placeholder)
-                .error(R.drawable.zimkit_icon_avatar_placeholder).centerCrop().into(imageView);
+            Picasso.get().load(R.drawable.zimkit_icon_group).transform(new PicassoRoundTransform()).fit()
+                .placeholder(R.drawable.zimkit_icon_avatar_placeholder).error(R.drawable.zimkit_icon_avatar_placeholder)
+                .centerCrop().into(imageView);
         }
 
     }

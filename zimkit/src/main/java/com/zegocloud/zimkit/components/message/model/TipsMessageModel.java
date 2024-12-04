@@ -1,5 +1,9 @@
 package com.zegocloud.zimkit.components.message.model;
 
+import android.graphics.Color;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
 import androidx.databinding.Bindable;
 import com.zegocloud.zimkit.R;
 import com.zegocloud.zimkit.services.internal.ZIMKitCore;
@@ -16,7 +20,7 @@ public class TipsMessageModel extends ZIMKitMessageModel {
     public ZIMKitUser operatedUser;
     public ArrayList<ZIMKitUser> targetUserList;
     public ZIMKitTipsMessageChangeInfo changeInfo;
-    private String mContent;
+    private CharSequence mContent;
 
     @Override
     public void onProcessMessage(ZIMMessage message) {
@@ -44,23 +48,66 @@ public class TipsMessageModel extends ZIMKitMessageModel {
             Optional<String> namesOpt = targetUserList.stream().map(ZIMKitUser::getName)
                 .reduce((s, s2) -> s + "," + s2);
 
+            ForegroundColorSpan blueSpan = new ForegroundColorSpan(Color.parseColor("#3478FC"));
+            ForegroundColorSpan graySpan = new ForegroundColorSpan(Color.parseColor("#b8b8b8"));
             if (event == ZIMKitTipsMessageEvent.GROUP_CREATED) {
-                mContent = ZIMKitCore.getInstance().getApplication()
-                    .getString(R.string.zimkit_tips_group_create, operatedUser.getName(), namesOpt.get());
+                String targetNames = namesOpt.orElse("");
+                String string = ZIMKitCore.getInstance().getApplication()
+                    .getString(R.string.zimkit_tips_group_create, operatedUser.getName(), targetNames);
+                int indexOfOperator = string.indexOf(operatedUser.getName());
+                SpannableString spannableString = new SpannableString(string);
+                spannableString.setSpan(new ForegroundColorSpan(Color.parseColor("#3478FC")), indexOfOperator,
+                    indexOfOperator + operatedUser.getName().length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+                if (targetNames.isEmpty()) {
+                    spannableString.setSpan(new ForegroundColorSpan(Color.parseColor("#b8b8b8")),
+                        indexOfOperator + operatedUser.getName().length(), string.length() ,
+                        Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+                } else {
+                    int indexOfTargets = string.indexOf(targetNames);
+                    spannableString.setSpan(new ForegroundColorSpan(Color.parseColor("#b8b8b8")),
+                        indexOfOperator + operatedUser.getName().length(), indexOfTargets,
+                        Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+                    spannableString.setSpan(new ForegroundColorSpan(Color.parseColor("#3478FC")), indexOfTargets,
+                        indexOfTargets + targetNames.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+                    spannableString.setSpan(new ForegroundColorSpan(Color.parseColor("#b8b8b8")),
+                        indexOfTargets + targetNames.length(), string.length() , Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+                }
+
+                mContent = spannableString;
             } else if (event == ZIMKitTipsMessageEvent.GROUP_INVITED) {
-                mContent = ZIMKitCore.getInstance().getApplication()
+                String targetNames = namesOpt.orElse("");
+                String string = ZIMKitCore.getInstance().getApplication()
                     .getString(R.string.zimkit_tips_group_invite, operatedUser.getName(), namesOpt.get());
+                int indexOfOperator = string.indexOf(operatedUser.getName());
+                SpannableString spannableString = new SpannableString(string);
+                spannableString.setSpan(new ForegroundColorSpan(Color.parseColor("#3478FC")), indexOfOperator,
+                    indexOfOperator + operatedUser.getName().length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+                if (targetNames.isEmpty()) {
+                    spannableString.setSpan(new ForegroundColorSpan(Color.parseColor("#b8b8b8")),
+                        indexOfOperator + operatedUser.getName().length(), string.length() - 1,
+                        Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+                } else {
+                    int indexOfTargets = string.indexOf(targetNames);
+                    spannableString.setSpan(new ForegroundColorSpan(Color.parseColor("#b8b8b8")),
+                        indexOfOperator + operatedUser.getName().length(), indexOfTargets,
+                        Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+                    spannableString.setSpan(new ForegroundColorSpan(Color.parseColor("#3478FC")), indexOfTargets,
+                        indexOfTargets + targetNames.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+                    spannableString.setSpan(new ForegroundColorSpan(Color.parseColor("#b8b8b8")),
+                        indexOfTargets + targetNames.length(), string.length() , Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+                }
+                mContent = spannableString;
             }
         }
 
     }
 
     @Bindable
-    public String getContent() {
+    public CharSequence getContent() {
         return mContent;
     }
 
-    public void setContent(String content) {
+    public void setContent(CharSequence content) {
         this.mContent = content;
     }
 }

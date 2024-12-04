@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <data>
+
+  </data>
+
+  <LinearLayout
+    android:id="@+id/emoji_view_layout"
+    android:layout_width="wrap_content"
+    android:layout_height="24dp"
+    android:background="@drawable/zimkit_shape_40dp_1a63f1"
+    android:clickable="true"
+    android:orientation="horizontal"
+    android:paddingStart="8dp"
+    android:paddingEnd="8dp">
+
+    <TextView
+      android:id="@+id/emoji_textview"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center_vertical"
+      android:clickable="true"
+      android:textColor="@color/black" />
+
+    <View
+      android:id="@+id/emoji_line"
+      android:layout_width="1dp"
+      android:layout_height="match_parent"
+      android:layout_marginStart="6dp"
+      android:layout_marginTop="5dp"
+      android:layout_marginBottom="5dp"
+      android:background="@color/color_33ffffff" />
+
+    <TextView
+      android:id="@+id/emoji_names"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center_vertical"
+      android:layout_marginStart="5dp"
+      android:clickable="true"
+      android:ellipsize="end"
+      android:singleLine="true"
+      android:textColor="@color/color_b3ffffff"
+      android:textSize="12sp" />
+
+  </LinearLayout>
+</layout>

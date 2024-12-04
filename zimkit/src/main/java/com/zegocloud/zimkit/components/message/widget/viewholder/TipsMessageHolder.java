@@ -21,7 +21,6 @@ public class TipsMessageHolder extends MessageViewHolder {
         super.bind(id, position, model);
         if (model instanceof TipsMessageModel) {
             TipsMessageModel tipsMessageModel = (TipsMessageModel) model;
-            msgContent = binding.tvMessage;
         }
     }
 }

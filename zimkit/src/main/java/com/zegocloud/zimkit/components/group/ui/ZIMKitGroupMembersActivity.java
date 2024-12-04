@@ -11,7 +11,6 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 import androidx.activity.ComponentActivity;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AlertDialog.Builder;
@@ -19,7 +18,6 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import com.google.android.material.textfield.TextInputLayout;
 import com.zegocloud.zimkit.R;
 import com.zegocloud.zimkit.common.ZIMKitConstant.MessagePageConstant;
 import com.zegocloud.zimkit.common.utils.ZIMKitToastUtils;
@@ -31,7 +29,6 @@ import com.zegocloud.zimkit.services.ZIMKit;
 import com.zegocloud.zimkit.services.ZIMKitDelegate;
 import com.zegocloud.zimkit.services.callback.InviteUsersToJoinGroupCallback;
 import com.zegocloud.zimkit.services.internal.ZIMKitCore;
-import com.zegocloud.zimkit.services.model.ZIMKitErrorToast;
 import im.zego.zim.entity.ZIMError;
 import im.zego.zim.entity.ZIMErrorUserInfo;
 import im.zego.zim.entity.ZIMGroupMemberInfo;
@@ -67,10 +64,11 @@ public class ZIMKitGroupMembersActivity extends ComponentActivity {
         binding.add.setOnClickListener(view -> {
             AlertDialog.Builder builder = new Builder(ZIMKitGroupMembersActivity.this);
             ViewGroup viewGroup = (ViewGroup) View.inflate(ZIMKitGroupMembersActivity.this,
-                R.layout.zimkit_dialog_confirm_content_edittext, null);
+                R.layout.zimkit_dialog_confirm_content, null);
             TextView title = viewGroup.findViewById(R.id.title);
             title.setText(R.string.zimkit_add_group_member);
-            EditText inputLayout = viewGroup.findViewById(R.id.content);
+            EditText inputLayout = viewGroup.findViewById(R.id.content_edit_text);
+            viewGroup.findViewById(R.id.content_text_view).setVisibility(View.GONE);
             inputLayout.setHint(R.string.zimkit_input_member_id);
             builder.setView(viewGroup);
             AlertDialog dialog = builder.create();

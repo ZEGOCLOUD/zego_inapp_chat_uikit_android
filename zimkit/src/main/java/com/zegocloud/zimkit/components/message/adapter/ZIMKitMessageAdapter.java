@@ -3,10 +3,12 @@ package com.zegocloud.zimkit.components.message.adapter;
 import android.content.Context;
 import android.media.AudioManager;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.AppCompatCheckBox;
 import androidx.databinding.DataBindingUtil;
 import androidx.databinding.ViewDataBinding;
 import androidx.recyclerview.widget.RecyclerView;
@@ -19,8 +21,8 @@ import com.zegocloud.zimkit.components.message.model.VideoMessageModel;
 import com.zegocloud.zimkit.components.message.model.ZIMKitMessageModel;
 import com.zegocloud.zimkit.components.message.ui.ZIMKitVideoViewActivity;
 import com.zegocloud.zimkit.components.message.widget.ZIMKitAudioPlayer;
-import com.zegocloud.zimkit.components.message.widget.interfaces.OnItemClickListener;
 import com.zegocloud.zimkit.components.message.widget.viewholder.AudioMessageHolder;
+import com.zegocloud.zimkit.components.message.widget.viewholder.CombineMessageHolder;
 import com.zegocloud.zimkit.components.message.widget.viewholder.CustomMessageHolder;
 import com.zegocloud.zimkit.components.message.widget.viewholder.FileMessageHolder;
 import com.zegocloud.zimkit.components.message.widget.viewholder.ImageMessageHolder;
@@ -33,9 +35,6 @@ import com.zegocloud.zimkit.components.message.widget.viewholder.VideoMessageHol
 import com.zegocloud.zimkit.services.ZIMKit;
 import com.zegocloud.zimkit.services.ZIMKitDelegate;
 import com.zegocloud.zimkit.services.model.ZIMKitMessage;
-import im.zego.zim.ZIM;
-import im.zego.zim.entity.ZIMMessage;
-import im.zego.zim.entity.ZIMMessageDeleteConfig;
 import im.zego.zim.enums.ZIMMessageDirection;
 import im.zego.zim.enums.ZIMMessageType;
 import java.util.ArrayList;
@@ -43,31 +42,51 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import timber.log.Timber;
 
 public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder> {
 
-    private OnItemClickListener mOnItemClickListener;
-
     private final List<ZIMKitMessageModel> mList = new ArrayList<>();
 
-    public List<ZIMKitMessageModel> getData() {
-        return mList;
+    protected boolean isMultiSelectMode = false;
+    private boolean forwardMode;
+    private boolean oneSideForwardMode;
+
+    public ZIMKitMessageAdapter() {
+        this(false, false);
     }
 
-    protected boolean isShowMultiSelectCheckBox = false;
-    private Context context;
-
-    public ZIMKitMessageAdapter(Context context) {
-        this.context = context;
+    public ZIMKitMessageAdapter(boolean forwardMode, boolean oneSideForwardMode) {
+        if (oneSideForwardMode) {
+            this.forwardMode = true;
+        } else {
+            this.forwardMode = forwardMode;
+        }
+        this.oneSideForwardMode = oneSideForwardMode;
         ZIMKit.registerZIMKitDelegate(eventCallBack);
     }
 
     public void setNewList(List<ZIMKitMessageModel> list) {
-        if (mList.size() == list.size()) {
+        List<ZIMKitMessageModel> newList = new ArrayList<>(list);
+        //        if (forwardMode) {
+        //            newList = new ArrayList<>();
+        //            for (ZIMKitMessageModel messageModel : list) {
+        //                if (messageModel.getMessage().getType() == ZIMMessageType.AUDIO) {
+        //                    String content = ZIMMessageUtil.simplifyZIMMessageContent(messageModel.getMessage());
+        //                    ZIMKitMessageModel model = ChatMessageBuilder.buildTextMessage(content);
+        //                    model.setSentStatus(ZIMMessageSentStatus.SUCCESS);
+        //                    newList.add(model);
+        //                } else {
+        //                    newList.add(messageModel);
+        //                }
+        //            }
+        //        } else {
+        //            newList = new ArrayList<>(list);
+        //        }
+
+        if (mList.size() == newList.size()) {
             mList.clear();
-            mList.addAll(list);
-            this.notifyItemRangeChanged(0, list.size());
+            mList.addAll(newList);
+            this.notifyItemRangeChanged(0, newList.size());
             return;
         }
         if (mList.size() > 0) {
@@ -75,9 +94,9 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
             mList.clear();
             this.notifyItemRangeRemoved(0, count);
         }
-        if (list.size() > 0) {
-            mList.addAll(list);
-            this.notifyItemRangeInserted(0, list.size());
+        if (newList.size() > 0) {
+            mList.addAll(newList);
+            this.notifyItemRangeInserted(0, newList.size());
         }
     }
 
@@ -95,7 +114,7 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
         this.notifyItemRangeInserted(oldCount, list.size());
     }
 
-    public void addLocalMessageToBottom(ZIMKitMessageModel model) {
+    public void addMessageToBottom(ZIMKitMessageModel model) {
         if (model == null) {
             return;
         }
@@ -120,28 +139,11 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
         this.notifyItemRemoved(index);
     }
 
-    public void deleteMessages(ZIMKitMessage zimKitMessage) {
-        ZIMKitMessageModel deleteModel = null;
-        for (ZIMKitMessageModel messageModel : mList) {
-            if (Objects.equals(zimKitMessage.zim.getMessageID(), messageModel.getMessage().getMessageID())) {
-                deleteModel = messageModel;
-                break;
-            }
-        }
-        deleteMessages(deleteModel);
-    }
-
     /**
      * Delete multi-select messages
      */
     public void deleteMultiMessages() {
-        Timber.d("deleteMultiMessages() called");
         Iterator<ZIMKitMessageModel> it = mList.iterator();
-
-        for (int i = 0; i < mList.size(); i++) {
-            Timber.d("deleteMultiMessages: " + i + "," + mList.get(i).isCheck());
-        }
-
         while (it.hasNext()) {
             ZIMKitMessageModel model = it.next();
             if (model.isCheck()) {
@@ -174,6 +176,7 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
      * @param list
      */
     public void updateMessageInfo(List<ZIMKitMessageModel> list) {
+        Log.d(TAG, "updateMessageInfo() called with: list = [" + list + "]");
         if (mList.isEmpty()) {
             mList.addAll(list);
             notifyDataSetChanged();
@@ -199,6 +202,14 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
         }
     }
 
+    public boolean isOneSideForwardMode() {
+        return oneSideForwardMode;
+    }
+
+    public boolean isForwardMode() {
+        return forwardMode;
+    }
+
     private void deleteLoadingMessage() {
         List<ZIMKitMessageModel> collect = mList.stream()
             .filter(messageModel -> Objects.equals(messageModel.getMessage().localExtendedData, "loading"))
@@ -207,16 +218,16 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
             mList.removeAll(collect);
             notifyDataSetChanged();
         }
-//        List<ZIMMessage> messageList = collect.stream().map(zimKitMessageModel -> zimKitMessageModel.getMessage())
-//            .collect(Collectors.toList());
-//        if (!messageList.isEmpty()) {
-//            ZIMMessage zimMessage = messageList.get(0);
-//            if (zimMessage.getConversationID() != null) {
-//                ZIM.getInstance()
-//                    .deleteMessages(messageList, zimMessage.getConversationID(), zimMessage.getConversationType(),
-//                        new ZIMMessageDeleteConfig(), null);
-//            }
-//        }
+        //        List<ZIMMessage> messageList = collect.stream().map(zimKitMessageModel -> zimKitMessageModel.getMessage())
+        //            .collect(Collectors.toList());
+        //        if (!messageList.isEmpty()) {
+        //            ZIMMessage zimMessage = messageList.get(0);
+        //            if (zimMessage.getConversationID() != null) {
+        //                ZIM.getInstance()
+        //                    .deleteMessages(messageList, zimMessage.getConversationID(), zimMessage.getConversationType(),
+        //                        new ZIMMessageDeleteConfig(), null);
+        //            }
+        //        }
 
     }
 
@@ -230,7 +241,12 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
                 R.layout.zimkit_item_message_system, parent, false);
             viewHolder = new MessageSystemHolder(binding);
         } else {
-            boolean isSend = (viewType / 1000) == 0; // because send =0,RECEIVE = 1
+            boolean isSend;
+            if (oneSideForwardMode) {
+                isSend = false;
+            } else {
+                isSend = (viewType / 1000) == 0; // because send =0,RECEIVE = 1
+            }
             int type = (viewType % 1000);
             if (type == ZIMMessageType.TIPS.value()) {
                 binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
@@ -259,13 +275,24 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
                             R.layout.zimkit_item_message_send_video, parent, false);
                         viewHolder = new VideoMessageHolder(binding);
                     } else if (type == ZIMMessageType.AUDIO.value()) {
+                        //                        if (forwardMode) {
+                        //                            binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
+                        //                                R.layout.zimkit_item_message_send_text, parent, false);
+                        //                            viewHolder = new TextMessageHolder(binding);
+                        //                        } else {
                         binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
                             R.layout.zimkit_item_message_send_audio, parent, false);
                         viewHolder = new AudioMessageHolder(binding);
+                        //                        }
+
                     } else if (type == ZIMMessageType.FILE.value()) {
                         binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
                             R.layout.zimkit_item_message_send_file, parent, false);
                         viewHolder = new FileMessageHolder(binding);
+                    } else if (type == ZIMMessageType.COMBINE.value()) {
+                        binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
+                            R.layout.zimkit_item_message_send_combine, parent, false);
+                        viewHolder = new CombineMessageHolder(binding);
                     } else {
                         binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
                             R.layout.zimkit_item_message_send_text, parent, false);
@@ -285,13 +312,23 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
                             R.layout.zimkit_item_message_receive_video, parent, false);
                         viewHolder = new VideoMessageHolder(binding);
                     } else if (type == ZIMMessageType.AUDIO.value()) {
+                        //                        if (forwardMode) {
+                        //                            binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
+                        //                                R.layout.zimkit_item_message_receive_text, parent, false);
+                        //                            viewHolder = new TextMessageHolder(binding);
+                        //                        } else {
                         binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
                             R.layout.zimkit_item_message_receive_audio, parent, false);
                         viewHolder = new AudioMessageHolder(binding);
+                        //                        }
                     } else if (type == ZIMMessageType.FILE.value()) {
                         binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
                             R.layout.zimkit_item_message_receive_file, parent, false);
                         viewHolder = new FileMessageHolder(binding);
+                    } else if (type == ZIMMessageType.COMBINE.value()) {
+                        binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
+                            R.layout.zimkit_item_message_receive_combine, parent, false);
+                        viewHolder = new CombineMessageHolder(binding);
                     } else {
                         binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
                             R.layout.zimkit_item_message_receive_text, parent, false);
@@ -303,23 +340,34 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
         return viewHolder;
     }
 
+    private static final String TAG = "ZIMKitMessageAdapter";
+
     @Override
     public void onBindViewHolder(@NonNull MessageViewHolder holder, int position) {
+        Log.d(TAG, "onBindViewHolder() called with: holder = [" + holder + "], position = [" + position + "]");
         ZIMKitMessageModel model = mList.get(holder.getAdapterPosition());
-        model.setShowMultiSelectCheckBox(isShowMultiSelectCheckBox);
-        if (!isShowMultiSelectCheckBox && model.isCheck()) {
-            model.setCheck(false);
-        }
-        holder.setContext(context);
-        holder.isMultiSelectMode = isShowMultiSelectCheckBox;
         holder.mAdapter = this;
         holder.bind(BR.model, holder.getAdapterPosition(), model);
-        holder.setOnItemClickListener(mOnItemClickListener);
-
-        setCheckBoxStatus(position, model, holder);
-
-        if (position == mList.size() - 1) {
-
+        ViewGroup reactionLayout = holder.itemView.findViewById(R.id.msg_reaction_layout);
+        AppCompatCheckBox checkBox = holder.itemView.findViewById(R.id.select_checkbox);
+        ViewGroup replyLayout = holder.itemView.findViewById(R.id.item_message_reply_layout);
+        if (isForwardMode()) {
+            if (checkBox != null) {
+                checkBox.setVisibility(View.GONE);
+            }
+            if (reactionLayout != null) {
+                reactionLayout.setVisibility(View.GONE);
+            }
+            if (replyLayout != null) {
+                replyLayout.setVisibility(View.GONE);
+            }
+        } else {
+            if (checkBox != null) {
+                checkBox.setVisibility(isMultiSelectMode() ? View.VISIBLE : View.GONE);
+            }
+            if (!isMultiSelectMode()) {
+                model.setCheck(false);
+            }
         }
 
     }
@@ -345,48 +393,14 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
         return mList.size();
     }
 
-    private void setCheckBoxStatus(final int position, ZIMKitMessageModel model, MessageViewHolder holder) {
-        if (isShowMultiSelectCheckBox) {
-            //The checkBox listener
-            if (holder.mMutiSelectCheckBox != null) {
-                holder.mMutiSelectCheckBox.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        model.setCheck(!model.isCheck());
-                    }
-                });
-            }
 
-            //Listening to the view of an entry
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    model.setCheck(!model.isCheck());
-                }
-            });
-
-            if (holder.msgContent != null) {
-                holder.msgContent.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        model.setCheck(!model.isCheck());
-                    }
-                });
-            }
-
-        }
+    public void setMultiSelectMode(boolean show) {
+        this.isMultiSelectMode = show;
+        notifyDataSetChanged();
     }
 
-    public void setShowMultiSelectCheckBox(boolean show) {
-        this.isShowMultiSelectCheckBox = show;
-    }
-
-    public OnItemClickListener getOnItemClickListener() {
-        return this.mOnItemClickListener;
-    }
-
-    public void setOnItemClickListener(OnItemClickListener listener) {
-        this.mOnItemClickListener = listener;
+    public boolean isMultiSelectMode() {
+        return isMultiSelectMode;
     }
 
     /**
@@ -394,18 +408,26 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
      *
      * @return
      */
-    public ArrayList<ZIMMessage> getSelectedItem() {
+    public ArrayList<ZIMKitMessageModel> getSelectedItem() {
         if (mList == null || mList.size() == 0) {
             return null;
         }
-        ArrayList<ZIMMessage> selectList = new ArrayList<>();
+        ArrayList<ZIMKitMessageModel> selectList = new ArrayList<>();
         for (int i = 0; i < mList.size(); i++) {
             if (mList.get(i).isCheck()) {
-                selectList.add(mList.get(i).getMessage());
+                selectList.add(mList.get(i));
             }
         }
 
         return selectList;
+    }
+
+    public List<ZIMKitMessageModel> getItemDataList() {
+        return mList;
+    }
+
+    public ZIMKitMessageModel getItemData(int position) {
+        return mList.get(position);
     }
 
     /**
@@ -413,7 +435,7 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
      *
      * @param isSpeaker
      */
-    public void setAudioPlayByEarPhone(boolean isSpeaker) {
+    public static void setAudioPlayByEarPhone(Context context, boolean isSpeaker) {
         AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         if (isSpeaker) {
             // Outgoing mode

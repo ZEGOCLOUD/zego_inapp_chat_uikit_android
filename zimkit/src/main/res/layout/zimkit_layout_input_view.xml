@@ -16,7 +16,6 @@
 
     <EditText
       android:id="@+id/input_edittext"
-      :paddingStart="12dp"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:layout_marginStart="8dp"
@@ -28,12 +27,73 @@
       android:maxLines="4"
       android:paddingStart="12dp"
       android:paddingTop="12dp"
-      android:paddingEnd="12dp"
+      android:paddingEnd="41dp"
       android:paddingBottom="12dp"
+      android:textColor="@color/color_2a2a2a"
       android:textColorHint="@color/color_8e9093"
       android:textSize="15sp"
-      android:textColor="@color/color_2a2a2a"
       app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+      android:id="@+id/input_reply_layout"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="12dp"
+      android:layout_marginTop="20dp"
+      android:layout_marginEnd="12dp"
+      android:background="@drawable/zimkit_shape_4dp_f2f3f5"
+      android:gravity="center_vertical"
+      android:orientation="horizontal"
+      android:visibility="gone"
+      app:layout_constraintEnd_toEndOf="@+id/input_edittext"
+      app:layout_constraintStart_toStartOf="@+id/input_edittext"
+      app:layout_constraintTop_toTopOf="parent">
+
+      <ImageView
+        android:id="@+id/input_reply_delete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingStart="10dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="10dp"
+        android:paddingBottom="8dp"
+        android:scaleType="center"
+        android:src="@drawable/zimkit_icon_reply_remove"
+        app:layout_constraintTop_toTopOf="parent" />
+
+      <View
+        android:layout_width="1dp"
+        android:layout_height="16dp"
+        android:layout_marginTop="7dp"
+        android:layout_marginBottom="7dp"
+        android:background="@color/color_d3d4d6" />
+
+      <TextView
+        android:id="@+id/input_reply_content"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:singleLine="true"
+        android:text="@string/zimkit_reply_content"
+        android:textColor="@color/color_646A73"
+        android:textSize="13dp" />
+    </LinearLayout>
+
+
+    <ImageButton
+      android:id="@+id/input_expand_panel"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="5dp"
+      android:layout_marginBottom="5dp"
+      android:background="@null"
+      android:src="@drawable/zimkit_input_expand_panel"
+      app:layout_constraintEnd_toEndOf="@+id/input_edittext"
+      app:layout_constraintTop_toBottomOf="@+id/input_reply_layout"
+      app:layout_goneMarginTop="13dp" />
 
     <LinearLayout
       android:id="@+id/input_buttons_layout"
@@ -56,37 +116,39 @@
       app:layout_constraintTop_toBottomOf="@+id/input_edittext" />
 
     <View
+      android:id="@+id/input_line"
       android:layout_width="match_parent"
       android:layout_height="9dp"
       app:layout_constraintTop_toBottomOf="@+id/input_send" />
 
-    <FrameLayout
-      android:id="@+id/input_content_container"
+    <!--    <FrameLayout-->
+    <!--      android:id="@+id/input_content_container"-->
+    <!--      android:layout_width="match_parent"-->
+    <!--      android:layout_height="352dp"-->
+    <!--      android:visibility="gone"-->
+    <!--      app:layout_constraintTop_toTopOf="parent">-->
+
+    <com.zegocloud.zimkit.components.message.widget.input.ZIMKitInputAudioRecordView
+      android:id="@+id/input_view_audio_layout"
       android:layout_width="match_parent"
-      android:layout_height="352dp"
+      android:layout_height="wrap_content"
       android:visibility="gone"
-      app:layout_constraintTop_toTopOf="parent">
+      app:layout_constraintTop_toTopOf="parent" />
 
-      <com.zegocloud.zimkit.components.message.widget.input.ZIMKitAudioRecordView
-        android:id="@+id/input_view_audio_layout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone" />
+    <com.zegocloud.zimkit.components.message.widget.input.ZIMKitInputEmojiPagerView
+      android:id="@+id/input_view_emoji_layout"
+      android:layout_width="match_parent"
+      android:layout_height="250dp"
+      android:visibility="gone"
+      app:layout_constraintTop_toBottomOf="@+id/input_line" />
 
-      <com.zegocloud.zimkit.components.message.widget.input.ZIMKitEmojiView
-        android:id="@+id/input_view_emoji_layout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:paddingTop="102dp"
-        android:visibility="gone" />
-
-      <com.zegocloud.zimkit.components.message.widget.input.ZIMKitMoreView
-        android:id="@+id/input_view_more_layout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:paddingTop="102dp"
-        android:visibility="gone" />
-    </FrameLayout>
+    <com.zegocloud.zimkit.components.message.widget.input.ZIMKitInputAddMoreView
+      android:id="@+id/input_view_more_layout"
+      android:layout_width="match_parent"
+      android:layout_height="250dp"
+      android:visibility="gone"
+      app:layout_constraintTop_toBottomOf="@+id/input_line" />
+    <!--    </FrameLayout>-->
 
   </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

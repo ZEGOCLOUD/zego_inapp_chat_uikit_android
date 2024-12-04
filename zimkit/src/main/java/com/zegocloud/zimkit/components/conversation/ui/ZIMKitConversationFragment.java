@@ -54,8 +54,8 @@ import java.util.List;
 public class ZIMKitConversationFragment extends BaseFragment<ZimkitFragmentConversationBinding, ZIMKitConversationVM> {
 
     private ZIMKitConversationListAdapter mListAdapter;
-    private CustomBottomSheet<ZimkitLayoutConversationDeleteBinding> mDeleteConversationBottomSheet;
     private ZIMKitConversationModel mCurrentSelectModel;
+    private CustomBottomSheet<ZimkitLayoutConversationDeleteBinding> mDeleteConversationBottomSheet;
     private CustomBottomSheet<ZimkitLayoutSeletectChatTypeBinding> mSelectChatBottomSheet;
 
     private ZIMKitConversationListListener conversationListListener;
@@ -81,16 +81,16 @@ public class ZIMKitConversationFragment extends BaseFragment<ZimkitFragmentConve
     protected void initView() {
         mListAdapter = new ZIMKitConversationListAdapter();
         mListAdapter.setLongClickListener(model -> {
-            if (mDeleteConversationBottomSheet != null && mDeleteConversationBottomSheet.getDialog() != null
-                && mDeleteConversationBottomSheet.getDialog().isShowing()) {
-                mDeleteConversationBottomSheet.dismiss();
-            }
-            if (mDeleteConversationBottomSheet == null) {
-                mDeleteConversationBottomSheet = new CustomBottomSheet<>(R.layout.zimkit_layout_conversation_delete,
-                    this::setBottomSheetItemListener);
-            }
-            mCurrentSelectModel = model;
-            mDeleteConversationBottomSheet.show(getParentFragmentManager(), "delete_conversation");
+//            if (mDeleteConversationBottomSheet != null && mDeleteConversationBottomSheet.getDialog() != null
+//                && mDeleteConversationBottomSheet.getDialog().isShowing()) {
+//                mDeleteConversationBottomSheet.dismiss();
+//            }
+//            if (mDeleteConversationBottomSheet == null) {
+//                mDeleteConversationBottomSheet = new CustomBottomSheet<>(R.layout.zimkit_layout_conversation_delete,
+//                    this::setBottomSheetItemListener);
+//            }
+//            mCurrentSelectModel = model;
+//            mDeleteConversationBottomSheet.show(getParentFragmentManager(), "delete_conversation");
         });
         mListAdapter.setItemClickListener(model -> {
             if (conversationListListener != null) {

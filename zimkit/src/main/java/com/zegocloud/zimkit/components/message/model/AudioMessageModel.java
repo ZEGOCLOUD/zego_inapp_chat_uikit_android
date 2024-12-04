@@ -6,6 +6,7 @@ import androidx.databinding.Bindable;
 import androidx.lifecycle.MutableLiveData;
 
 import com.zegocloud.zimkit.BR;
+import com.zegocloud.zimkit.services.model.MediaTransferProgress;
 import im.zego.zim.entity.ZIMAudioMessage;
 import im.zego.zim.entity.ZIMMessage;
 
@@ -19,6 +20,9 @@ public class AudioMessageModel extends ZIMKitMessageModel {
     private long audioDuration;
     private String fileLocalPath;
     private String fileDownloadUrl;
+
+    private MediaTransferProgress uploadProgress;
+    private MediaTransferProgress downloadProgress;
 
     @Override
     public void onProcessMessage(ZIMMessage message) {
@@ -69,5 +73,23 @@ public class AudioMessageModel extends ZIMKitMessageModel {
 
     public void setPlaying(boolean playing) {
         isPlaying.setValue(playing);
+    }
+
+    @Bindable
+    public MediaTransferProgress getUploadProgress() {
+        return uploadProgress;
+    }
+
+    public void setUploadProgress(MediaTransferProgress uploadProgress) {
+        this.uploadProgress = uploadProgress;
+    }
+
+    @Bindable
+    public MediaTransferProgress getDownloadProgress() {
+        return downloadProgress;
+    }
+
+    public void setDownloadProgress(MediaTransferProgress downloadProgress) {
+        this.downloadProgress = downloadProgress;
     }
 }

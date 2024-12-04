@@ -11,7 +11,6 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 import androidx.activity.ComponentActivity;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AlertDialog.Builder;
@@ -107,10 +106,11 @@ public class ZIMKitGroupChatSettingActivity extends ComponentActivity {
                         if (groupMember.getId() == null) {
                             AlertDialog.Builder builder = new Builder(ZIMKitGroupChatSettingActivity.this);
                             ViewGroup viewGroup = (ViewGroup) View.inflate(ZIMKitGroupChatSettingActivity.this,
-                                R.layout.zimkit_dialog_confirm_content_edittext, null);
+                                R.layout.zimkit_dialog_confirm_content, null);
                             TextView title = viewGroup.findViewById(R.id.title);
                             title.setText(R.string.zimkit_add_group_member);
-                            EditText inputLayout = viewGroup.findViewById(R.id.content);
+                            EditText inputLayout = viewGroup.findViewById(R.id.content_edit_text);
+                            viewGroup.findViewById(R.id.content_text_view).setVisibility(View.GONE);
                             inputLayout.setHint(R.string.zimkit_input_member_id);
                             builder.setView(viewGroup);
                             AlertDialog dialog = builder.create();
@@ -127,7 +127,7 @@ public class ZIMKitGroupChatSettingActivity extends ComponentActivity {
                                             ArrayList<ZIMKitGroupMemberInfo> groupMembers,
                                             ArrayList<ZIMErrorUserInfo> inviteUserErrors, ZIMError error) {
                                             if (error.code != ZIMErrorCode.SUCCESS) {
-                                                ZIMKitToastUtils.showToast( error.message);
+                                                ZIMKitToastUtils.showToast(error.message);
                                             }
                                             dialog.dismiss();
                                         }

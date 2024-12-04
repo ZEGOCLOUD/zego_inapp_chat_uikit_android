@@ -20,8 +20,5 @@ public class RevokeMessageHolder extends MessageViewHolder {
     @Override
     public void bind(int id, int position, ZIMKitMessageModel model) {
         super.bind(id, position, model);
-        if (model instanceof RevokeMessageModel) {
-            msgContent = binding.tvMessage;
-        }
     }
 }

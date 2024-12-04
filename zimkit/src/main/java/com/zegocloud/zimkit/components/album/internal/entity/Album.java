@@ -12,6 +12,7 @@ import com.zegocloud.zimkit.components.album.internal.loader.AlbumLoader;
 import com.zegocloud.zimkit.R;
 
 public class Album implements Parcelable {
+
     public static final Creator<Album> CREATOR = new Creator<Album>() {
         @Nullable
         @Override
@@ -47,16 +48,24 @@ public class Album implements Parcelable {
     }
 
     /**
-     * Constructs a new {@link Album} entity from the {@link Cursor}.
-     * This method is not responsible for managing cursor resource, such as close, iterate, and so on.
+     * Constructs a new {@link Album} entity from the {@link Cursor}. This method is not responsible for managing cursor
+     * resource, such as close, iterate, and so on.
      */
     public static Album valueOf(Cursor cursor) {
-        String clumn = cursor.getString(cursor.getColumnIndex(AlbumLoader.COLUMN_URI));
-        return new Album(
-                cursor.getString(cursor.getColumnIndex("bucket_id")),
-                Uri.parse(clumn != null ? clumn : ""),
-                cursor.getString(cursor.getColumnIndex("bucket_display_name")),
-                cursor.getLong(cursor.getColumnIndex(AlbumLoader.COLUMN_COUNT)));
+        int columnIndex = cursor.getColumnIndex(AlbumLoader.COLUMN_URI);
+        int columnIndex1 = cursor.getColumnIndex("bucket_id");
+        int columnIndex2 = cursor.getColumnIndex("bucket_display_name");
+        int columnIndex3 = cursor.getColumnIndex(AlbumLoader.COLUMN_COUNT);
+        if (columnIndex >= 0 && columnIndex1 >= 0 && columnIndex2 >= 0 && columnIndex3 >= 0) {
+            String column = cursor.getString(columnIndex);
+            return new Album(cursor.getString(columnIndex1),
+                Uri.parse(column != null ? column : ""),
+                cursor.getString(columnIndex2),
+                cursor.getLong(columnIndex3));
+        } else {
+            return null;
+        }
+
     }
 
     @Override

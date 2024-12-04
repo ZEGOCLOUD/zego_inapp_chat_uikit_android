@@ -20,7 +20,8 @@
   <androidx.constraintlayout.widget.ConstraintLayout
     android:id="@+id/cl_contain"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
 
     <com.scwang.smart.refresh.layout.SmartRefreshLayout
       android:id="@+id/refresh_layout"
@@ -42,11 +43,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/color_eff0f2"
+        android:paddingBottom="12dp"
         android:clickable="false" />
 
     </com.scwang.smart.refresh.layout.SmartRefreshLayout>
 
-    <com.zegocloud.zimkit.components.message.widget.input.ZIMKitInputView
+    <com.zegocloud.zimkit.components.message.widget.input.ZIMKitMessageInputView
       android:id="@+id/input_view_layout"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
@@ -58,30 +60,52 @@
       android:layout_height="0dp"
       android:background="@color/color_F5F6F7"
       android:clickable="true"
+      android:paddingTop="10dp"
       android:translationZ="8dp"
       android:visibility="gone"
       app:layout_constraintBottom_toBottomOf="@id/input_view_layout"
       app:layout_constraintTop_toTopOf="@id/input_view_layout">
 
-      <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="68dp"
-        app:layout_constraintTop_toTopOf="parent">
+      <TextView
+        android:id="@+id/multi_select_forward_merge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="48dp"
+        android:drawableTop="@drawable/zimkit_icon_multi_forward_merge"
+        android:text="@string/zimkit_forward_merge"
+        android:textColor="@color/color_646A73"
+        android:textSize="11sp"
+        app:layout_constraintEnd_toStartOf="@+id/multi_select_forward_onebyone"
+        app:layout_constraintHorizontal_chainStyle="spread_inside"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-          android:id="@+id/multi_select_delete"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:drawableTop="@drawable/zimkit_icon_multi_delete"
-          android:text="@string/zimkit_delete"
-          android:textColor="@color/color_646A73"
-          android:textSize="11sp"
-          app:layout_constraintBottom_toBottomOf="parent"
-          app:layout_constraintEnd_toEndOf="parent"
-          app:layout_constraintStart_toStartOf="parent"
-          app:layout_constraintTop_toTopOf="parent" />
+      <TextView
+        android:id="@+id/multi_select_forward_onebyone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:drawableTop="@drawable/zimkit_icon_multi_forward_onebyone"
+        android:text="@string/zimkit_forward_onebyone"
+        android:textColor="@color/color_646A73"
+        android:textSize="11sp"
+        app:layout_constraintEnd_toStartOf="@+id/multi_select_delete"
+        app:layout_constraintHorizontal_chainStyle="spread"
+        app:layout_constraintStart_toEndOf="@+id/multi_select_forward_merge"
+        app:layout_constraintTop_toTopOf="parent" />
 
-      </androidx.constraintlayout.widget.ConstraintLayout>
+      <TextView
+        android:id="@+id/multi_select_delete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="58dp"
+        android:drawableTop="@drawable/zimkit_icon_multi_delete"
+        android:text="@string/zimkit_delete"
+        android:textColor="@color/color_646A73"
+        android:textSize="11sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/multi_select_forward_onebyone"
+        app:layout_constraintTop_toTopOf="parent" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
   </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

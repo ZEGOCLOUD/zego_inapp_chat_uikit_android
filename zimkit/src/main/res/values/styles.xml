@@ -87,4 +87,7 @@
         <item name="android:popupBackground">@color/dracula_album_popup_bg</item>
     </style>
 
+    <style name="Call_TransparentDialog" parent="Theme.Design.Light.BottomSheetDialog">
+        <item name="android:colorBackground">@android:color/transparent</item>
+    </style>
 </resources>

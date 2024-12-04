@@ -1,6 +1,7 @@
 package com.zegocloud.zimkit.services.internal;
 
 import android.text.TextUtils;
+import com.zegocloud.uikit.plugin.signaling.ZegoSignalingPlugin;
 import com.zegocloud.zimkit.components.group.bean.ZIMKitGroupMemberInfo;
 import com.zegocloud.zimkit.services.callback.CreateGroupCallback;
 import com.zegocloud.zimkit.services.callback.InviteUsersToJoinGroupCallback;
@@ -79,7 +80,7 @@ public class GroupService {
     }
 
     public void queryGroupMemberInfo(String userID, String groupID, QueryGroupMemberInfoCallback callback) {
-        ZIMKitCore.getInstance().zim().queryGroupMemberInfo(userID, groupID, (groupID1, userInfo, errorInfo) -> {
+        ZegoSignalingPlugin.getInstance().queryGroupMemberInfo(userID, groupID, (groupID1, userInfo, errorInfo) -> {
             if (callback != null) {
                 callback.onQueryGroupMemberInfo(transGroupMember(userInfo), errorInfo);
             }
@@ -88,7 +89,7 @@ public class GroupService {
 
     public void queryGroupMemberList(String groupID, ZIMGroupMemberQueryConfig config,
         QueryGroupMemberListCallback callback) {
-        ZIMKitCore.getInstance().zim().queryGroupMemberList(groupID, config, new ZIMGroupMemberListQueriedCallback() {
+        ZegoSignalingPlugin.getInstance().queryGroupMemberList(groupID, config, new ZIMGroupMemberListQueriedCallback() {
             @Override
             public void onGroupMemberListQueried(String groupID, ArrayList<ZIMGroupMemberInfo> userList, int nextFlag,
                 ZIMError errorInfo) {

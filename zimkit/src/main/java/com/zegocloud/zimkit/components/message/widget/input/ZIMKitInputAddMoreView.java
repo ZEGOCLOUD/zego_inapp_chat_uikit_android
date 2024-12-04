@@ -18,23 +18,23 @@ import com.zegocloud.zimkit.components.message.utils.OnRecyclerViewItemTouchList
 import com.zegocloud.zimkit.databinding.ZimkitLayoutInputMoreBinding;
 import java.util.List;
 
-public class ZIMKitMoreView extends FrameLayout {
+public class ZIMKitInputAddMoreView extends FrameLayout {
 
     private ZimkitLayoutInputMoreBinding binding;
     private InputMoreCallback mCallback;
     private ZIMKitInputMoreAdapter inputMoreAdapter;
 
-    public ZIMKitMoreView(@NonNull Context context) {
+    public ZIMKitInputAddMoreView(@NonNull Context context) {
         super(context);
         initView();
     }
 
-    public ZIMKitMoreView(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public ZIMKitInputAddMoreView(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         initView();
     }
 
-    public ZIMKitMoreView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public ZIMKitInputAddMoreView(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         initView();
     }

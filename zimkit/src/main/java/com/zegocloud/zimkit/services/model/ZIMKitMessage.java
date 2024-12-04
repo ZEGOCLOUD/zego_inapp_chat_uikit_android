@@ -18,6 +18,7 @@ public class ZIMKitMessage {
     public FileMessageContent fileContent = new FileMessageContent();
     public RevokeMessageContent revokeContent = new RevokeMessageContent();
     public TipsMessageContent tipsMessageContent = new TipsMessageContent();
+    public CombineMessageContent combineMessageContent = new CombineMessageContent();
     public CustomMessageContent customMessageContent = new CustomMessageContent();
 
 }

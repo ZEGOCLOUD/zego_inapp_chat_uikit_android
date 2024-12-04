@@ -39,7 +39,7 @@ public class ToastUtil {
         });
     }
 
-    private static void showColorToast(Context context, ToastMessageType type, String message) {
+    public static void showColorToast(Context context, ToastMessageType type, String message) {
         View view = LayoutInflater.from(context).inflate(R.layout.zimkit_album_view_center_toast, null);
         TextView mTvToastMassage = (TextView) view.findViewById(R.id.tv_toast_message);
         mTvToastMassage.setText(message);

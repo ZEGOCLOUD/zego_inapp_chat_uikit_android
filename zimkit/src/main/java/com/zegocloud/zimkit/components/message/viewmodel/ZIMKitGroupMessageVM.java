@@ -9,17 +9,14 @@ import com.zegocloud.zimkit.components.group.bean.ZIMKitGroupMemberInfo;
 import com.zegocloud.zimkit.components.message.model.AudioMessageModel;
 import com.zegocloud.zimkit.components.message.model.FileMessageModel;
 import com.zegocloud.zimkit.components.message.model.ImageMessageModel;
-import com.zegocloud.zimkit.components.message.model.RevokeMessageModel;
-import com.zegocloud.zimkit.components.message.model.TextMessageModel;
 import com.zegocloud.zimkit.components.message.model.VideoMessageModel;
 import com.zegocloud.zimkit.components.message.model.ZIMKitMessageModel;
-import com.zegocloud.zimkit.components.message.utils.ChatMessageParser;
 import com.zegocloud.zimkit.services.ZIMKit;
-import com.zegocloud.zimkit.services.callback.MessageSentCallback;
 import com.zegocloud.zimkit.services.callback.QueryGroupMemberInfoCallback;
 import com.zegocloud.zimkit.services.internal.ZIMKitCore;
 import com.zegocloud.zimkit.services.model.ZIMKitMessage;
 import com.zegocloud.zimkit.services.model.ZIMKitUser;
+import com.zegocloud.zimkit.services.utils.ZIMMessageUtil;
 import im.zego.zim.entity.ZIMError;
 import im.zego.zim.entity.ZIMMessage;
 import im.zego.zim.enums.ZIMConversationType;
@@ -115,7 +112,7 @@ public class ZIMKitGroupMessageVM extends ZIMKitMessageVM {
                 .filter(model -> Objects.equals(model.getMessage().getMessageID(), zimMessage.zim.getMessageID()))
                 .findAny();
             if (!any.isPresent()) {
-                ZIMKitMessageModel itemModel = ChatMessageParser.parseMessage(zimMessage.zim);
+                ZIMKitMessageModel itemModel = ZIMMessageUtil.parseZIMMessageToModel(zimMessage.zim);
 
                 String nickName = zimMessage.info.senderUserName;
                 String avatar = zimMessage.info.senderUserAvatarUrl;
@@ -159,7 +156,7 @@ public class ZIMKitGroupMessageVM extends ZIMKitMessageVM {
     protected void handlerNewMessageList(ArrayList<ZIMKitMessage> messageList) {
         ArrayList<ZIMKitMessageModel> models = new ArrayList<>();
         for (ZIMKitMessage message : messageList) {
-            ZIMKitMessageModel itemModel = ChatMessageParser.parseMessage(message.zim);
+            ZIMKitMessageModel itemModel = ZIMMessageUtil.parseZIMMessageToModel(message.zim);
             String nickName = message.info.senderUserName;
             String avatar = message.info.senderUserAvatarUrl;
             if (!TextUtils.isEmpty(nickName)) {
@@ -171,23 +168,6 @@ public class ZIMKitGroupMessageVM extends ZIMKitMessageVM {
             models.add(itemModel);
         }
         postList(models, LoadData.DATA_STATE_NEW);
-    }
-
-    @Override
-    public void sendTextMessage(ZIMKitMessageModel model, MessageSentCallback callback) {
-        if (model instanceof TextMessageModel) {
-            TextMessageModel textMessageModel = (TextMessageModel) model;
-            ZIMKit.sendGroupTextMessage(textMessageModel.getContent(), mtoId, title, ZIMConversationType.GROUP,
-                new MessageSentCallback() {
-                    @Override
-                    public void onMessageSent(ZIMError error) {
-                        targetDoesNotExist(error);
-                        if (callback != null) {
-                            callback.onMessageSent(error);
-                        }
-                    }
-                });
-        }
     }
 
     /**

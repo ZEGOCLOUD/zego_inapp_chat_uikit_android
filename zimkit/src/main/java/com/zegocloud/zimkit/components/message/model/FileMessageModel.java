@@ -5,6 +5,7 @@ import androidx.databinding.Bindable;
 import com.zegocloud.zimkit.common.utils.ZIMKitFileUtils;
 import com.zegocloud.zimkit.components.message.utils.FileIconUtils;
 import com.zegocloud.zimkit.BR;
+import com.zegocloud.zimkit.services.model.MediaTransferProgress;
 import im.zego.zim.entity.ZIMFileMessage;
 import im.zego.zim.entity.ZIMMessage;
 
@@ -17,6 +18,9 @@ public class FileMessageModel extends ZIMKitMessageModel {
     private long fileSize;
     //Files over 10M need to be flagged and downloaded manually
     private boolean sizeLimit = false;
+
+    private MediaTransferProgress uploadProgress;
+    private MediaTransferProgress downloadProgress;
 
     @Override
     public void onProcessMessage(ZIMMessage message) {
@@ -85,5 +89,23 @@ public class FileMessageModel extends ZIMKitMessageModel {
     @Bindable
     public boolean isSizeLimit() {
         return sizeLimit;
+    }
+
+    @Bindable
+    public MediaTransferProgress getUploadProgress() {
+        return uploadProgress;
+    }
+
+    public void setUploadProgress(MediaTransferProgress uploadProgress) {
+        this.uploadProgress = uploadProgress;
+    }
+
+    @Bindable
+    public MediaTransferProgress getDownloadProgress() {
+        return downloadProgress;
+    }
+
+    public void setDownloadProgress(MediaTransferProgress downloadProgress) {
+        this.downloadProgress = downloadProgress;
     }
 }

@@ -9,6 +9,7 @@ import android.graphics.Point;
 import android.media.ExifInterface;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.provider.MediaStore.Images.ImageColumns;
 import android.util.DisplayMetrics;
 import android.util.Log;
 
@@ -28,6 +29,7 @@ import com.zegocloud.zimkit.components.album.filter.Filter;
 
 
 public final class PhotoMetadataUtils {
+
     private static final String TAG = PhotoMetadataUtils.class.getSimpleName();
     private static final int MAX_WIDTH = 1600;
     private static final String SCHEME_CONTENT = "content";
@@ -50,7 +52,9 @@ public final class PhotoMetadataUtils {
             w = imageSize.y;
             h = imageSize.x;
         }
-        if (h == 0) return new Point(MAX_WIDTH, MAX_WIDTH);
+        if (h == 0) {
+            return new Point(MAX_WIDTH, MAX_WIDTH);
+        }
         DisplayMetrics metrics = new DisplayMetrics();
         activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
         float screenWidth = (float) metrics.widthPixels;
@@ -95,11 +99,16 @@ public final class PhotoMetadataUtils {
             Cursor cursor = null;
             try {
                 cursor = resolver.query(uri, new String[]{MediaStore.Images.ImageColumns.DATA},
-                        null, null, null);
+                    null, null, null);
                 if (cursor == null || !cursor.moveToFirst()) {
                     return null;
                 }
-                return cursor.getString(cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA));
+                int columnIndex = cursor.getColumnIndex(ImageColumns.DATA);
+                if (columnIndex >= 0) {
+                    return cursor.getString(columnIndex);
+                } else {
+                    return uri.getPath();
+                }
             } finally {
                 if (cursor != null) {
                     cursor.close();
@@ -149,7 +158,7 @@ public final class PhotoMetadataUtils {
         }
         int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, -1);
         return orientation == ExifInterface.ORIENTATION_ROTATE_90
-                || orientation == ExifInterface.ORIENTATION_ROTATE_270;
+            || orientation == ExifInterface.ORIENTATION_ROTATE_270;
     }
 
     public static float getSizeInMB(long sizeInBytes) {

@@ -2,20 +2,22 @@ package com.zegocloud.zimkit.components.message.widget.input;
 
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.drawable.StateListDrawable;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.provider.Settings;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
-import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
@@ -23,11 +25,8 @@ import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.view.GestureDetectorCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.FragmentActivity;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.RecyclerView.SimpleOnItemTouchListener;
 import com.permissionx.guolindev.callback.RequestCallback;
 import com.zegocloud.zimkit.R;
 import com.zegocloud.zimkit.common.base.BaseDialog;
@@ -36,59 +35,71 @@ import com.zegocloud.zimkit.common.utils.ZIMKitToastUtils;
 import com.zegocloud.zimkit.components.message.model.ZIMKitEmojiItemModel;
 import com.zegocloud.zimkit.components.message.model.ZIMKitInputButtonModel;
 import com.zegocloud.zimkit.components.message.model.ZIMKitMessageModel;
-import com.zegocloud.zimkit.components.message.utils.ChatMessageBuilder;
-import com.zegocloud.zimkit.components.message.widget.MessageRecyclerView;
 import com.zegocloud.zimkit.components.message.widget.ZIMKitAudioPlayer;
 import com.zegocloud.zimkit.components.message.widget.ZIMKitAudioPlayer.MediaRecordCallback;
 import com.zegocloud.zimkit.databinding.ZimkitLayoutInputViewBinding;
 import com.zegocloud.zimkit.services.ZIMKitConfig;
 import com.zegocloud.zimkit.services.config.ZIMKitInputButtonName;
 import com.zegocloud.zimkit.services.internal.ZIMKitCore;
+import com.zegocloud.zimkit.services.utils.ZIMMessageUtil;
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class ZIMKitInputView extends LinearLayout {
+public class ZIMKitMessageInputView extends LinearLayout {
 
+    private boolean isInputShow;
     private ZimkitLayoutInputViewBinding binding;
-    private GestureDetectorCompat gestureDetectorCompat;
-    private MessageRecyclerView recyclerView;
     private InputCallback callback;
+    private ZIMKitMessageModel repliedMessage;
+    private OnGlobalLayoutListener globalLayoutListener;
 
-    public ZIMKitInputView(Context context) {
+    public ZIMKitMessageInputView(Context context) {
         super(context);
         initView(context);
     }
 
-    public ZIMKitInputView(Context context, @Nullable AttributeSet attrs) {
+    public ZIMKitMessageInputView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         initView(context);
     }
 
-    public ZIMKitInputView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public ZIMKitMessageInputView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         initView(context);
     }
 
     private void initView(Context context) {
         binding = DataBindingUtil.inflate(LayoutInflater.from(context), R.layout.zimkit_layout_input_view, this, true);
-        gestureDetectorCompat = new GestureDetectorCompat(getContext(), new SimpleOnGestureListener() {
+
+        globalLayoutListener = new ViewTreeObserver.OnGlobalLayoutListener() {
+            private final Rect r = new Rect();
+            DisplayMetrics displayMetrics = getContext().getResources().getDisplayMetrics();
+            private final int visibleThreshold = dp2px(150, displayMetrics);
 
             @Override
-            public boolean onScroll(@NonNull MotionEvent e1, @NonNull MotionEvent e2, float distanceX,
-                float distanceY) {
-                reset();
-                hideInputWindow(binding.inputEdittext);
-                return true;
+            public void onGlobalLayout() {
+                getRootView().getWindowVisibleDisplayFrame(r);
+                int heightDiff = getRootView().getHeight() - r.height();
+                boolean isOpen = heightDiff > visibleThreshold;
+                isInputShow = isOpen;
             }
-        });
+        };
+
+        postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                View rootView = getRootView();
+                getRootView().getViewTreeObserver().addOnGlobalLayoutListener(globalLayoutListener);
+
+            }
+        }, 100);
 
         binding.inputEdittext.setOnTouchListener(new OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent event) {
                 if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-                    reset();
-                    requestInputWindow(view);
+                    resetAndShowInput();
                     scrollMessageView();
                 }
                 return false;
@@ -101,7 +112,7 @@ public class ZIMKitInputView extends LinearLayout {
             binding.inputEdittext.setHint(zimKitConfig.inputConfig.inputHint);
         }
         List<ZIMKitInputButtonModel> buttonModels = new ArrayList<>();
-        if (zimKitConfig.inputConfig != null) {
+        if (zimKitConfig != null && zimKitConfig.inputConfig != null) {
             List<ZIMKitInputButtonName> buttonNames = new ArrayList<>(zimKitConfig.inputConfig.smallButtons);
             if (buttonNames.contains(ZIMKitInputButtonName.VOICE_CALL) && buttonNames.contains(
                 ZIMKitInputButtonName.VIDEO_CALL)) {
@@ -127,11 +138,7 @@ public class ZIMKitInputView extends LinearLayout {
             imageView.setLayoutParams(layoutParams);
             imageView.setScaleType(ScaleType.CENTER);
 
-            StateListDrawable stateListDrawable = new StateListDrawable();
-            stateListDrawable.addState(new int[]{android.R.attr.state_selected},
-                inputButtonModel.getSmallIconSelected());
-            stateListDrawable.addState(new int[]{}, inputButtonModel.getSmallIcon());
-            imageView.setImageDrawable(stateListDrawable);
+            imageView.setImageDrawable(inputButtonModel.getSmallIcon());
 
             binding.inputButtonsLayout.addView(imageView);
 
@@ -155,7 +162,7 @@ public class ZIMKitInputView extends LinearLayout {
                     final int index = i;
                     imageView.setOnClickListener(v -> {
                         if (callback != null) {
-                            callback.onClickSmallItem(index, inputButtonModel);
+                            callback.onClickSmallItem(index, inputButtonModel, repliedMessage);
                         }
                     });
                     break;
@@ -168,9 +175,8 @@ public class ZIMKitInputView extends LinearLayout {
                 if (status == MediaRecordCallback.FINISHED_USER) {
                     if (callback != null) {
                         int duration = ZIMKitAudioPlayer.getInstance().getDuration();
-                        ZIMKitMessageModel messageModel = ChatMessageBuilder.buildAudioMessage(
-                            ZIMKitAudioPlayer.getInstance().getPath(), duration);
-                        callback.onSendAudioMessage(messageModel);
+                        String path = ZIMKitAudioPlayer.getInstance().getPath();
+                        callback.onSendAudioMessage(path, duration, repliedMessage);
                     }
                 } else if (status == MediaRecordCallback.STOP_TIME_SHORT) {
                     ZIMKitToastUtils.showToast(R.string.zimkit_audio_record_too_short);
@@ -178,7 +184,7 @@ public class ZIMKitInputView extends LinearLayout {
             }
         });
 
-        binding.inputViewEmojiLayout.setEmojiListener(new ZIMKitEmojiView.OnEmojiClickListener() {
+        binding.inputViewEmojiLayout.setEmojiListener(new ZIMKitInputEmojiPagerView.OnEmojiClickListener() {
             @Override
             public void onEmojiDelete() {
                 int action = KeyEvent.ACTION_DOWN;
@@ -195,15 +201,34 @@ public class ZIMKitInputView extends LinearLayout {
             }
         });
 
-        binding.inputViewMoreLayout.setInputMoreCallback(new ZIMKitMoreView.InputMoreCallback() {
+        binding.inputViewMoreLayout.setInputMoreCallback(new ZIMKitInputAddMoreView.InputMoreCallback() {
             @Override
             public void onClickMoreItem(int position, ZIMKitInputButtonModel itemModel) {
                 if (callback != null) {
-                    callback.onClickExpandItem(position, itemModel);
+                    callback.onClickExtraItem(position, itemModel, repliedMessage);
                 }
             }
         });
+
+        binding.inputExpandPanel.setOnClickListener(v -> {
+            reset();
+            if (callback != null) {
+                int selectionStart = binding.inputEdittext.getSelectionStart();
+                int selectionEnd = binding.inputEdittext.getSelectionEnd();
+                CharSequence inputMsg = binding.inputEdittext.getText().toString();
+                callback.onClickExpandButton(inputMsg, selectionStart, selectionEnd, repliedMessage);
+            }
+        });
         initSendMessageButton();
+
+        initReplyLayout();
+    }
+
+    private void initReplyLayout() {
+        binding.inputReplyDelete.setOnClickListener(v -> {
+            updateToReplyLayout(false);
+            repliedMessage = null;
+        });
     }
 
     private static final String TAG = "ZIMKitInputView";
@@ -214,10 +239,9 @@ public class ZIMKitInputView extends LinearLayout {
 
     private void initSelectPicButton(ImageView imageView, int index, ZIMKitInputButtonModel inputButtonModel) {
         imageView.setOnClickListener(v -> {
-            reset();
-            hideInputWindow(binding.inputEdittext);
+            resetAndHideInput();
             if (callback != null) {
-                callback.onClickSmallItem(index, inputButtonModel);
+                callback.onClickSmallItem(index, inputButtonModel, repliedMessage);
             }
         });
     }
@@ -237,29 +261,35 @@ public class ZIMKitInputView extends LinearLayout {
 
             @Override
             public void afterTextChanged(Editable s) {
-                binding.inputSend.setEnabled(s.length() > 0);
+                binding.inputSend.setEnabled(!s.toString().trim().isEmpty());
             }
         });
 
         binding.inputSend.setOnClickListener(v -> {
             if (callback != null) {
                 String inputMsg = binding.inputEdittext.getText().toString();
-                ZIMKitMessageModel messageModel = ChatMessageBuilder.buildTextMessage(inputMsg);
-                callback.onSendTextMessage(messageModel);
+                callback.onSendTextMessage(inputMsg, repliedMessage);
             }
             binding.inputEdittext.setText("");
+            setReplyMessage(null);
         });
     }
 
     private void reset() {
         hideAllSubContentViews();
         unselectOtherButtons(null);
-        binding.inputContentContainer.setVisibility(View.GONE);
+        //        binding.inputContentContainer.setVisibility(View.GONE);
+        binding.inputViewMoreLayout.setVisibility(View.GONE);
+        binding.inputViewEmojiLayout.setVisibility(View.GONE);
+        binding.inputViewAudioLayout.setVisibility(View.GONE);
     }
 
     private void initMoreButton(ImageView imageView, int index, ZIMKitInputButtonModel inputButtonModel) {
         imageView.setOnClickListener(v -> {
-            unselectOtherButtons(imageView);
+            boolean extraSpaceShow = isInputExtraSpaceShow();
+            if (extraSpaceShow) {
+                unselectOtherButtons(imageView);
+            }
             hideAllSubContentViews();
 
             boolean selected = v.isSelected();
@@ -267,20 +297,30 @@ public class ZIMKitInputView extends LinearLayout {
             v.setSelected(newState);
 
             if (newState) {
-                showMoreView();
+                if (isInputShow) {
+                    hideInputWindow(binding.inputEdittext);
+                    showViewDelayed(binding.inputViewMoreLayout);
+                } else {
+                    showView(binding.inputViewMoreLayout);
+                }
             } else {
-                hideMoreView();
+                if (!isInputShow) {
+                    showInputDelayed(binding.inputEdittext);
+                }
             }
             scrollMessageView();
             if (callback != null) {
-                callback.onClickSmallItem(index, inputButtonModel);
+                callback.onClickSmallItem(index, inputButtonModel, repliedMessage);
             }
         });
     }
 
     private void initEmojiButton(ImageView imageView, int index, ZIMKitInputButtonModel inputButtonModel) {
         imageView.setOnClickListener(v -> {
-            unselectOtherButtons(imageView);
+            boolean extraSpaceShow = isInputExtraSpaceShow();
+            if (extraSpaceShow) {
+                unselectOtherButtons(imageView);
+            }
             hideAllSubContentViews();
 
             boolean selected = v.isSelected();
@@ -288,14 +328,21 @@ public class ZIMKitInputView extends LinearLayout {
             v.setSelected(newState);
 
             if (newState) {
-                showEmojiView();
+                if (isInputShow) {
+                    hideInputWindow(binding.inputEdittext);
+                    showViewDelayed(binding.inputViewEmojiLayout);
+                } else {
+                    showView(binding.inputViewEmojiLayout);
+                }
             } else {
-                hideEmojiView();
+                if (!isInputShow) {
+                    showInputDelayed(binding.inputEdittext);
+                }
             }
             scrollMessageView();
 
             if (callback != null) {
-                callback.onClickSmallItem(index, inputButtonModel);
+                callback.onClickSmallItem(index, inputButtonModel, repliedMessage);
             }
         });
     }
@@ -308,21 +355,31 @@ public class ZIMKitInputView extends LinearLayout {
                 public void onResult(boolean allGranted, @NonNull List<String> grantedList,
                     @NonNull List<String> deniedList) {
                     if (allGranted) {
-                        unselectOtherButtons(imageView);
+                        boolean extraSpaceShow = isInputExtraSpaceShow();
+                        if (extraSpaceShow) {
+                            unselectOtherButtons(imageView);
+                        }
                         hideAllSubContentViews();
 
                         boolean selected = v.isSelected();
                         boolean newState = !selected;
                         v.setSelected(newState);
                         if (newState) {
-                            showAudioRecordView();
+                            if (isInputShow) {
+                                hideInputWindow(binding.inputEdittext);
+                                showViewDelayed(binding.inputViewAudioLayout);
+                            } else {
+                                showView(binding.inputViewAudioLayout);
+                            }
                         } else {
-                            hideRecordView();
+                            if (!isInputShow) {
+                                showInputDelayed(binding.inputEdittext);
+                            }
                         }
                         scrollMessageView();
 
                         if (callback != null) {
-                            callback.onClickSmallItem(index, inputButtonModel);
+                            callback.onClickSmallItem(index, inputButtonModel, repliedMessage);
                         }
                     } else {
                         BaseDialog baseDialog = new BaseDialog(getContext());
@@ -345,25 +402,28 @@ public class ZIMKitInputView extends LinearLayout {
         });
     }
 
-    private void showAudioRecordView() {
-        hideInputWindow(binding.inputEdittext);
-        postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                binding.inputViewAudioLayout.setVisibility(View.VISIBLE);
-                binding.inputContentContainer.setVisibility(View.VISIBLE);
-            }
-        }, 100);
-
+    private void hideView(View view) {
+        view.setVisibility(View.GONE);
     }
 
-    private void hideRecordView() {
-        binding.inputViewAudioLayout.setVisibility(View.GONE);
-        binding.inputContentContainer.setVisibility(View.GONE);
+    private void showView(View view) {
+        view.setVisibility(View.VISIBLE);
+    }
+
+    private void showViewDelayed(View view) {
         postDelayed(new Runnable() {
             @Override
             public void run() {
-                requestInputWindow(binding.inputEdittext);
+                view.setVisibility(View.VISIBLE);
+            }
+        }, 100);
+    }
+
+    private void showInputDelayed(View view) {
+        postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                requestInputWindow(view);
             }
         }, 100);
     }
@@ -373,16 +433,19 @@ public class ZIMKitInputView extends LinearLayout {
         postDelayed(new Runnable() {
             @Override
             public void run() {
-                binding.inputContentContainer.setVisibility(View.VISIBLE);
                 binding.inputViewEmojiLayout.setVisibility(View.VISIBLE);
+                //                binding.inputContentContainer.setVisibility(View.VISIBLE);
             }
         }, 100);
 
     }
 
     private void hideEmojiView() {
-        binding.inputViewEmojiLayout.setVisibility(View.GONE);
-        binding.inputContentContainer.setVisibility(View.GONE);
+        //        binding.inputViewEmojiLayout.setVisibility(View.GONE);
+        //        binding.inputContentContainer.setVisibility(View.GONE);
+        //        binding.inputViewMoreLayout.setVisibility(View.GONE);
+        //        binding.inputViewEmojiLayout.setVisibility(View.GONE);
+        //        binding.inputViewAudioLayout.setVisibility(View.GONE);
         postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -396,15 +459,18 @@ public class ZIMKitInputView extends LinearLayout {
         postDelayed(new Runnable() {
             @Override
             public void run() {
-                binding.inputContentContainer.setVisibility(View.VISIBLE);
                 binding.inputViewMoreLayout.setVisibility(View.VISIBLE);
+                //                binding.inputContentContainer.setVisibility(View.VISIBLE);
             }
         }, 100);
     }
 
     private void hideMoreView() {
+        //        binding.inputViewMoreLayout.setVisibility(View.GONE);
+        //        binding.inputContentContainer.setVisibility(View.GONE);
         binding.inputViewMoreLayout.setVisibility(View.GONE);
-        binding.inputContentContainer.setVisibility(View.GONE);
+        binding.inputViewEmojiLayout.setVisibility(View.GONE);
+        binding.inputViewAudioLayout.setVisibility(View.GONE);
         postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -413,11 +479,18 @@ public class ZIMKitInputView extends LinearLayout {
         }, 100);
     }
 
+    private boolean isInputExtraSpaceShow() {
+        return binding.inputViewEmojiLayout.getVisibility() == VISIBLE
+            || binding.inputViewMoreLayout.getVisibility() == VISIBLE
+            || binding.inputViewAudioLayout.getVisibility() == VISIBLE;
+    }
+
     private void hideAllSubContentViews() {
         binding.inputViewEmojiLayout.setVisibility(View.GONE);
         binding.inputViewMoreLayout.setVisibility(View.GONE);
         binding.inputViewAudioLayout.setVisibility(View.GONE);
     }
+
 
     private void unselectOtherButtons(ImageView imageView) {
         int childCount = binding.inputButtonsLayout.getChildCount();
@@ -433,38 +506,20 @@ public class ZIMKitInputView extends LinearLayout {
         postDelayed(new Runnable() {
             @Override
             public void run() {
-                recyclerView.scrollToEnd();
+                if (callback != null) {
+                    callback.onRequestScrollToBottom();
+                }
             }
         }, 200);
     }
 
-    public void attach(MessageRecyclerView recyclerView, ViewGroup parent) {
-        this.recyclerView = recyclerView;
-        recyclerView.addOnItemTouchListener(new SimpleOnItemTouchListener() {
-            @Override
-            public boolean onInterceptTouchEvent(@NonNull RecyclerView rv, @NonNull MotionEvent e) {
-                gestureDetectorCompat.onTouchEvent(e);
-                return super.onInterceptTouchEvent(rv, e);
-            }
-        });
-        //        parent.addOnLayoutChangeListener(new OnLayoutChangeListener() {
-        //            @Override
-        //            public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop,
-        //                int oldRight, int oldBottom) {
-        //                //                Log.d(TAG, "onLayoutChange() called with: v = [" + v + "], left = [" + left + "], top = [" + top
-        //                //                    + "], right = [" + right + "], bottom = [" + bottom + "], oldLeft = [" + oldLeft + "], oldTop = ["
-        //                //                    + oldTop + "], oldRight = [" + oldRight + "], oldBottom = [" + oldBottom + "]");
-        //            }
-        //        });
-    }
-
-    public static void hideInputWindow(View view) {
+    public void hideInputWindow(View view) {
         InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         view.clearFocus();
     }
 
-    public static void requestInputWindow(View view) {
+    public void requestInputWindow(View view) {
         view.requestFocus();
         InputMethodManager imm = (InputMethodManager) view.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
         boolean input = false;
@@ -477,12 +532,67 @@ public class ZIMKitInputView extends LinearLayout {
         this.callback = callback;
     }
 
-    public void hide() {
+    public void removeGlobalListener() {
+        getRootView().getViewTreeObserver().removeOnGlobalLayoutListener(globalLayoutListener);
+    }
+
+    public void resetAndHideInput() {
         reset();
         hideInputWindow(binding.inputEdittext);
     }
 
+    public void resetAndShowInput() {
+        reset();
+        requestInputWindow(binding.inputEdittext);
+    }
+
     public void setInputMoreItems(List<ZIMKitInputButtonModel> inputMoreItems) {
         binding.inputViewMoreLayout.setInputMoreItems(inputMoreItems);
+    }
+
+    public void setInputMessage(CharSequence inputMsg, int selectionStart, int selectionEnd) {
+        binding.inputEdittext.setText(inputMsg);
+        if (!TextUtils.isEmpty(inputMsg)) {
+            binding.inputEdittext.setSelection(selectionStart, selectionEnd);
+        }
+        binding.inputSend.setEnabled(!inputMsg.toString().trim().isEmpty());
+    }
+
+
+    private void updateToReplyLayout(boolean reply) {
+        DisplayMetrics displayMetrics = getContext().getResources().getDisplayMetrics();
+        int top = dp2px(12, displayMetrics);
+        if (reply) {
+            top = dp2px(49, displayMetrics);
+            binding.inputReplyLayout.setVisibility(View.VISIBLE);
+        } else {
+            binding.inputReplyLayout.setVisibility(View.GONE);
+        }
+        binding.inputEdittext.setPadding(dp2px(12, displayMetrics), top, dp2px(41, displayMetrics),
+            dp2px(12, displayMetrics));
+        binding.inputViewAudioLayout.updateReplyMargin(reply);
+    }
+
+    public void setReplyMessage(ZIMKitMessageModel repliedMessage) {
+        this.repliedMessage = repliedMessage;
+        if (repliedMessage != null) {
+            updateToReplyLayout(true);
+            String content = ZIMMessageUtil.simplifyZIMMessageContent(repliedMessage.getMessage());
+            if (!TextUtils.isEmpty(content)) {
+                String nickName = repliedMessage.getNickName();
+                binding.inputReplyContent.setText(
+                    getContext().getString(R.string.zimkit_reply_content, nickName, content));
+            }
+            if (isInputExtraSpaceShow()) {
+            } else {
+                requestInputWindow(binding.inputEdittext);
+            }
+        } else {
+            updateToReplyLayout(false);
+        }
+    }
+
+    public ZIMKitMessageModel getRepliedMessage() {
+        return repliedMessage;
     }
 }
