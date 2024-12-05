@@ -104,26 +104,31 @@ public class UserService {
             public void onUsersInfoQueried(ArrayList<ZIMUserFullInfo> userList,
                 ArrayList<ZIMErrorUserInfo> errorUserList, ZIMError errorInfo) {
 
-                if (!userList.isEmpty()) {
+                if (userList != null && !userList.isEmpty()) {
                     ZIMUserFullInfo userFullInfo = userList.get(0);
                     ZIMKitUser userInfo = new ZIMKitUser();
                     userInfo.setId(userFullInfo.baseInfo.userID);
                     userInfo.setName(userFullInfo.baseInfo.userName);
                     userInfo.setAvatarUrl(userFullInfo.baseInfo.userAvatarUrl);
-                    if (callback != null) {
-                        callback.onQueryUser(userInfo, errorInfo);
-                    }
 
                     ZIMKitConversation kitConversation = ZIMKitCore.getInstance()
                         .getZIMKitConversation(userFullInfo.baseInfo.userID);
                     if (kitConversation != null) {
                         kitConversation.setAvatarUrl(userFullInfo.baseInfo.userAvatarUrl);
+                        ZIMKitCore.getInstance().getZimkitNotifyList().notifyAllListener(zimKitDelegate -> {
+                            zimKitDelegate.onConversationListChanged(
+                                new ArrayList<>(ZIMKitCore.getInstance().getConversations()));
+                        });
                     }
-                    ZIMKitCore.getInstance().getZimkitNotifyList().notifyAllListener(zimKitDelegate -> {
-                        zimKitDelegate.onConversationListChanged(
-                            new ArrayList<>(ZIMKitCore.getInstance().getConversations()));
-                    });
+                    if (callback != null) {
+                        callback.onQueryUser(userInfo, errorInfo);
+                    }
+                } else {
+                    if (callback != null) {
+                        callback.onQueryUser(null, errorInfo);
+                    }
                 }
+
             }
         });
     }
