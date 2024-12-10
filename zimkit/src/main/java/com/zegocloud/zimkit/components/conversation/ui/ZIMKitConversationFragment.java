@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 import com.zegocloud.uikit.plugin.adapter.ZegoPluginAdapter;
 import com.zegocloud.uikit.plugin.adapter.plugins.call.ZegoCallPluginProtocol;
+import com.zegocloud.uikit.plugin.signaling.ZegoSignalingPlugin;
 import com.zegocloud.zimkit.BR;
 import com.zegocloud.zimkit.R;
 import com.zegocloud.zimkit.common.ZIMKitConstant;
@@ -221,11 +222,13 @@ public class ZIMKitConversationFragment extends BaseFragment<ZimkitFragmentConve
         }
     }
 
-        @Override
-        public void onResume() {
-            super.onResume();
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (ZegoSignalingPlugin.getInstance().getUserInfo() != null) {
             mViewModel.loadConversation();
         }
+    }
 
     private void updatePinButtonUI(SwipeButton pinButton, boolean isPinned) {
         pinButton.setActivated(isPinned);
@@ -390,7 +393,9 @@ public class ZIMKitConversationFragment extends BaseFragment<ZimkitFragmentConve
                 ZIMKitToastUtils.showErrorMessageIfNeeded(error.code.value(), error.message);
             }
         });
-        mViewModel.loadConversation(); // the first
+        if (ZegoSignalingPlugin.getInstance().getUserInfo() != null) {
+            mViewModel.loadConversation(); // the first
+        }
     }
 
     public void registerConversationListListener(ZIMKitConversationListListener listener) {

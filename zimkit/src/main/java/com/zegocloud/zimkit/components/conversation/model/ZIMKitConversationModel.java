@@ -8,8 +8,6 @@ import com.zegocloud.zimkit.BR;
 import com.zegocloud.zimkit.R;
 import com.zegocloud.zimkit.common.utils.ZIMKitDateUtils;
 import com.zegocloud.zimkit.components.group.bean.ZIMKitGroupMemberInfo;
-import com.zegocloud.zimkit.components.message.model.CustomMessageModel;
-import com.zegocloud.zimkit.components.message.model.TipsMessageModel;
 import com.zegocloud.zimkit.services.ZIMKit;
 import com.zegocloud.zimkit.services.callback.QueryGroupMemberInfoCallback;
 import com.zegocloud.zimkit.services.internal.ZIMKitCore;
@@ -43,6 +41,8 @@ public class ZIMKitConversationModel extends BaseObservable {
     private ZIMConversationEvent mConversationEvent;
     private boolean doNotDisturb;
     private boolean pinned;
+
+    private static final String TAG = "ZIMKitConversationModel";
 
     public ZIMKitConversationModel(ZIMConversation conversation, ZIMConversationEvent conversationEvent) {
         this.mConversation = conversation;
