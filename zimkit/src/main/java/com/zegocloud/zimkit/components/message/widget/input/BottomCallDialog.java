@@ -1,6 +1,6 @@
 package com.zegocloud.zimkit.components.message.widget.input;
 
-import android.app.Activity;
+import android.Manifest.permission;
 import android.app.Dialog;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -15,9 +15,11 @@ import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.databinding.DataBindingUtil;
+import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import com.permissionx.guolindev.callback.RequestCallback;
 import com.zegocloud.uikit.plugin.adapter.ZegoPluginAdapter;
 import com.zegocloud.uikit.plugin.adapter.plugins.call.PluginCallType;
 import com.zegocloud.uikit.plugin.adapter.plugins.call.PluginCallUser;
@@ -25,6 +27,7 @@ import com.zegocloud.uikit.plugin.adapter.plugins.call.ZegoCallPluginProtocol;
 import com.zegocloud.uikit.plugin.adapter.plugins.common.ZegoPluginCallback;
 import com.zegocloud.uikit.plugin.adapter.plugins.signaling.ZegoSignalingPluginNotificationConfig;
 import com.zegocloud.zimkit.R;
+import com.zegocloud.zimkit.common.utils.PermissionHelper;
 import com.zegocloud.zimkit.databinding.ZimkitLayoutSeletectCallTypeBinding;
 import com.zegocloud.zimkit.services.ZIMKitConfig;
 import com.zegocloud.zimkit.services.config.ZIMKitInputButtonName;
@@ -128,35 +131,53 @@ public class BottomCallDialog extends BottomSheetDialogFragment {
                             List<PluginCallUser> callUsers = new ArrayList<>();
                             callUsers.add(callUser);
 
-                            ZIMKitConfig zimKitConfig = ZIMKitCore.getInstance().getZimKitConfig();
-                            ZegoSignalingPluginNotificationConfig notificationConfig = null;
-                            if (zimKitConfig != null && zimKitConfig.callPluginConfig != null && !TextUtils.isEmpty(
-                                zimKitConfig.callPluginConfig.resourceID)) {
-                                notificationConfig = new ZegoSignalingPluginNotificationConfig();
-                                notificationConfig.setResourceID(zimKitConfig.callPluginConfig.resourceID);
+                            List<String> permissions = new ArrayList<>();
+                            if (callType == PluginCallType.VIDEO_CALL) {
+                                permissions.add(permission.CAMERA);
+                                permissions.add(permission.RECORD_AUDIO);
+                            } else {
+                                permissions.add(permission.RECORD_AUDIO);
                             }
-                            Activity activity = (Activity) getContext();
-                            ZegoCallPluginProtocol callkitPlugin = ZegoPluginAdapter.callkitPlugin();
-                            if (callkitPlugin != null && zimKitConfig != null
-                                && zimKitConfig.callPluginConfig != null) {
-                                callkitPlugin.sendInvitationWithUIChange(activity, callUsers, callType, "", 60, null,
-                                    notificationConfig, new ZegoPluginCallback() {
-                                        @Override
-                                        public void onSuccess() {
-                                        }
-
-                                        @Override
-                                        public void onError(int errorCode, String errorMessage) {
-
-                                        }
-                                    });
+                            if (!(getContext() instanceof FragmentActivity)) {
+                                return;
                             }
+                            FragmentActivity activity = (FragmentActivity) getContext();
+                            PermissionHelper.requestPermissionsIfNeed(activity, permissions, new RequestCallback() {
+                                @Override
+                                public void onResult(boolean allGranted, @NonNull List<String> grantedList,
+                                    @NonNull List<String> deniedList) {
+                                    if (allGranted) {
+                                        ZegoCallPluginProtocol callkitPlugin = ZegoPluginAdapter.callkitPlugin();
+                                        ZIMKitConfig zimKitConfig = ZIMKitCore.getInstance().getZimKitConfig();
+                                        ZegoSignalingPluginNotificationConfig notificationConfig = null;
+                                        if (zimKitConfig != null && zimKitConfig.callPluginConfig != null
+                                            && !TextUtils.isEmpty(zimKitConfig.callPluginConfig.resourceID)) {
+                                            notificationConfig = new ZegoSignalingPluginNotificationConfig();
+                                            notificationConfig.setResourceID(zimKitConfig.callPluginConfig.resourceID);
+                                        }
+                                        if (callkitPlugin != null && zimKitConfig != null
+                                            && zimKitConfig.callPluginConfig != null) {
+                                            callkitPlugin.sendInvitationWithUIChange(activity, callUsers, callType, "",
+                                                60, null, notificationConfig, new ZegoPluginCallback() {
+                                                    @Override
+                                                    public void onSuccess() {
+                                                    }
+
+                                                    @Override
+                                                    public void onError(int errorCode, String errorMessage) {
+
+                                                    }
+                                                });
+                                        }
+                                    }
+                                }
+                            });
                         }
 
                     }
                 });
     }
-
+    
     public void showDialog(FragmentManager supportFragmentManager, boolean fromExpand) {
         show(supportFragmentManager, "callType");
         this.fromExpand = fromExpand;
