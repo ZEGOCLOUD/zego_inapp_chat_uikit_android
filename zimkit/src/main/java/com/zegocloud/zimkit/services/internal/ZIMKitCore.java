@@ -626,7 +626,7 @@ public class ZIMKitCore implements IZIMKitCore {
         messageService.withDrawMessage(model, callback);
     }
 
-    public void queryUsersInfo(ArrayList<String> userIDs, ZIMUsersInfoQueryConfig config,
+    public void queryUserInfo(ArrayList<String> userIDs, ZIMUsersInfoQueryConfig config,
         ZIMUsersInfoQueriedCallback zimUsersInfoQueriedCallback) {
         ZegoSignalingPlugin.getInstance().queryUserInfo(userIDs, config, zimUsersInfoQueriedCallback);
     }

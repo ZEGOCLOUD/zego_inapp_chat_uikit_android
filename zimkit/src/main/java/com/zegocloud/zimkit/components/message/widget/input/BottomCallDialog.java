@@ -118,7 +118,7 @@ public class BottomCallDialog extends BottomSheetDialogFragment {
 
     private void sendCall(PluginCallType callType) {
         ZIMKitCore.getInstance()
-            .queryUsersInfo(new ArrayList<>(Collections.singletonList(conversationID)), new ZIMUsersInfoQueryConfig(),
+            .queryUserInfo(new ArrayList<>(Collections.singletonList(conversationID)), new ZIMUsersInfoQueryConfig(),
                 new ZIMUsersInfoQueriedCallback() {
                     @Override
                     public void onUsersInfoQueried(ArrayList<ZIMUserFullInfo> userList,
@@ -177,7 +177,7 @@ public class BottomCallDialog extends BottomSheetDialogFragment {
                     }
                 });
     }
-    
+
     public void showDialog(FragmentManager supportFragmentManager, boolean fromExpand) {
         show(supportFragmentManager, "callType");
         this.fromExpand = fromExpand;

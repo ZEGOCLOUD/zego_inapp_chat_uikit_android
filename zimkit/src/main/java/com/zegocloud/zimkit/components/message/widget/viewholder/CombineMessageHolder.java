@@ -120,7 +120,7 @@ public class CombineMessageHolder extends MessageViewHolder {
                     if (error.code == ZIMErrorCode.SUCCESS) {
                         ArrayList<String> combineSubSenderList = message.messageList.stream()
                             .map(ZIMMessage::getSenderUserID).collect(Collectors.toCollection(ArrayList::new));
-                        ZIMKitCore.getInstance().queryUsersInfo(combineSubSenderList, new ZIMUsersInfoQueryConfig(),
+                        ZIMKitCore.getInstance().queryUserInfo(combineSubSenderList, new ZIMUsersInfoQueryConfig(),
                             (userList, errorUserList, errorInfo) -> {
                                 if (errorInfo.code == ZIMErrorCode.SUCCESS) {
                                     combineMessageModel.messageList = message.messageList.stream().map(zimMessage -> {

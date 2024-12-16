@@ -30,7 +30,7 @@ public class RevokeMessageModel extends ZIMKitMessageModel {
                 ArrayList<String> stringList = new ArrayList<>(
                     Collections.singletonList(revokeMessage.getSenderUserID()));
                 ZIMKitCore.getInstance()
-                    .queryUsersInfo(stringList, new ZIMUsersInfoQueryConfig(), new ZIMUsersInfoQueriedCallback() {
+                    .queryUserInfo(stringList, new ZIMUsersInfoQueryConfig(), new ZIMUsersInfoQueriedCallback() {
                         @Override
                         public void onUsersInfoQueried(ArrayList<ZIMUserFullInfo> userList,
                             ArrayList<ZIMErrorUserInfo> errorUserList, ZIMError errorInfo) {

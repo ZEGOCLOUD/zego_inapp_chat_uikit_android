@@ -1,6 +1,7 @@
 package com.zegocloud.zimkit.components.message.ui;
 
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import androidx.activity.ComponentActivity;
 import androidx.core.graphics.Insets;
@@ -17,10 +18,16 @@ import com.zegocloud.zimkit.services.internal.ZIMKitCore;
 import com.zegocloud.zimkit.services.model.ZIMKitConversation;
 import im.zego.zim.callback.ZIMConversationNotificationStatusSetCallback;
 import im.zego.zim.callback.ZIMConversationPinnedStateUpdatedCallback;
+import im.zego.zim.callback.ZIMUsersInfoQueriedCallback;
 import im.zego.zim.entity.ZIMError;
+import im.zego.zim.entity.ZIMErrorUserInfo;
+import im.zego.zim.entity.ZIMUserFullInfo;
+import im.zego.zim.entity.ZIMUsersInfoQueryConfig;
 import im.zego.zim.enums.ZIMConversationNotificationStatus;
 import im.zego.zim.enums.ZIMConversationType;
 import im.zego.zim.enums.ZIMErrorCode;
+import java.util.ArrayList;
+import java.util.Collections;
 
 public class ZIMKitPrivateChatSettingActivity extends ComponentActivity {
 
@@ -45,8 +52,27 @@ public class ZIMKitPrivateChatSettingActivity extends ComponentActivity {
 
         ZIMKitConversation conversation = ZIMKitCore.getInstance().getZIMKitConversation(id);
 
-        ZIMKitGlideLoader.displayMessageAvatarImage(binding.contactIcon, avatar);
-        binding.contactName.setText(title);
+        if (TextUtils.isEmpty(avatar)) {
+            ArrayList<String> userIDs = new ArrayList<>(Collections.singletonList(id));
+            ZIMKitCore.getInstance()
+                .queryUserInfo(userIDs, new ZIMUsersInfoQueryConfig(), new ZIMUsersInfoQueriedCallback() {
+                    @Override
+                    public void onUsersInfoQueried(ArrayList<ZIMUserFullInfo> userList,
+                        ArrayList<ZIMErrorUserInfo> errorUserList, ZIMError errorInfo) {
+                        if (errorInfo.code == ZIMErrorCode.SUCCESS) {
+                            if (!userList.isEmpty()) {
+                                ZIMUserFullInfo zimUserFullInfo = userList.get(0);
+                                ZIMKitGlideLoader.displayMessageAvatarImage(binding.contactIcon,
+                                    zimUserFullInfo.baseInfo.userAvatarUrl);
+                                binding.contactName.setText(zimUserFullInfo.baseInfo.userName);
+                            }
+                        }
+                    }
+                });
+        } else {
+            ZIMKitGlideLoader.displayMessageAvatarImage(binding.contactIcon, avatar);
+            binding.contactName.setText(title);
+        }
 
         if (conversation != null) {
             binding.pinChat.realSetChecked(conversation.getZimConversation().isPinned);
