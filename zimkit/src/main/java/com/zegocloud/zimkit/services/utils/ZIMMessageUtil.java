@@ -20,6 +20,7 @@ import com.zegocloud.zimkit.services.internal.ZIMKitCore;
 import com.zegocloud.zimkit.services.model.ZIMKitMessage;
 import im.zego.zim.entity.ZIMAudioMessage;
 import im.zego.zim.entity.ZIMCombineMessage;
+import im.zego.zim.entity.ZIMCustomMessage;
 import im.zego.zim.entity.ZIMFileMessage;
 import im.zego.zim.entity.ZIMImageMessage;
 import im.zego.zim.entity.ZIMMessage;
@@ -140,6 +141,7 @@ public class ZIMMessageUtil {
                 break;
             case CUSTOM:
                 message = new CustomMessageModel();
+                break;
             default:
                 message = new TextMessageModel();
                 ((TextMessageModel) message).setContent(
@@ -278,6 +280,10 @@ public class ZIMMessageUtil {
             case COMBINE:
                 ZIMCombineMessage combineMessage = (ZIMCombineMessage) zimMessage;
                 zimKitMessage.combineMessageContent.message = combineMessage;
+                break;
+            case CUSTOM:
+                ZIMCustomMessage customMessage = (ZIMCustomMessage) zimMessage;
+                zimKitMessage.customMessageContent.customMessage = customMessage;
                 break;
             default:
                 zimKitMessage.textContent.content = ZIMKitCore.getInstance().getApplication()
