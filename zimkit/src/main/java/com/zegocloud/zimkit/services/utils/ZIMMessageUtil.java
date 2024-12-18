@@ -138,6 +138,8 @@ public class ZIMMessageUtil {
             case COMBINE:
                 message = new CombineMessageModel();
                 break;
+            case CUSTOM:
+                message = new CustomMessageModel();
             default:
                 message = new TextMessageModel();
                 ((TextMessageModel) message).setContent(
