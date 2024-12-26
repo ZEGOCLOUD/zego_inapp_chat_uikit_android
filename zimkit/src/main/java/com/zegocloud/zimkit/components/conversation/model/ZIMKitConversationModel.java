@@ -193,7 +193,7 @@ public class ZIMKitConversationModel extends BaseObservable {
                         operatorName = operatorName + ":";
                     } else if (lastMessage.getType() == ZIMMessageType.TIPS
                         || lastMessage.getType() == ZIMMessageType.CUSTOM) {
-                        operatorName = operatorName + " ";
+                        operatorName = "";
                     } else if (lastMessage.getType() == ZIMMessageType.REVOKE) {
 
                     }

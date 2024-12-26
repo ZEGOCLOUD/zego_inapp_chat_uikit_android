@@ -132,7 +132,7 @@ public class ZIMKitCore implements IZIMKitCore {
         //Sort by orderKey
         long value = model2.getOrderKey() - model1.getOrderKey();
         if (value == 0) {
-            return 0;
+            return model1.getId().compareTo(model2.getId());
         }
         return value > 0 ? 1 : -1;
     });

@@ -9,14 +9,18 @@ import androidx.annotation.NonNull;
 import androidx.databinding.ObservableField;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.MutableLiveData;
+import com.zegocloud.uikit.plugin.signaling.ZegoSignalingPlugin;
 import com.zegocloud.zimkit.R;
 import com.zegocloud.zimkit.common.ZIMKitConstant;
 import com.zegocloud.zimkit.services.ZIMKit;
 import com.zegocloud.zimkit.services.callback.CreateGroupCallback;
 import com.zegocloud.zimkit.services.callback.JoinGroupCallback;
 import com.zegocloud.zimkit.services.model.ZIMKitGroupInfo;
+import im.zego.zim.callback.ZIMUsersInfoQueriedCallback;
 import im.zego.zim.entity.ZIMError;
 import im.zego.zim.entity.ZIMErrorUserInfo;
+import im.zego.zim.entity.ZIMUserFullInfo;
+import im.zego.zim.entity.ZIMUsersInfoQueryConfig;
 import im.zego.zim.enums.ZIMErrorCode;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -93,32 +97,65 @@ public class ZIMKitCreateAndJoinGroupVM extends AndroidViewModel {
             toChat(ZIMErrorCode.PARAM_INVALID, "id is null or empty ");
             return;
         }
-        ZIMKit.createGroup(groupName, ids, new CreateGroupCallback() {
-            @Override
-            public void onCreateGroup(ZIMKitGroupInfo groupInfo, ArrayList<ZIMErrorUserInfo> inviteUserErrors, ZIMError error) {
-                if (error.code == ZIMErrorCode.SUCCESS) {
-                    if (!inviteUserErrors.isEmpty()) {
-                        StringBuilder errorUserStr = new StringBuilder();
-                        Iterator<ZIMErrorUserInfo> iterator = inviteUserErrors.iterator();
-                        while (iterator.hasNext()) {
-                            errorUserStr.append(iterator.next().userID);
-                            if (iterator.hasNext()) {
-                                errorUserStr.append(",");
+        ZegoSignalingPlugin.getInstance()
+            .queryUserInfo(ids, new ZIMUsersInfoQueryConfig(), new ZIMUsersInfoQueriedCallback() {
+                @Override
+                public void onUsersInfoQueried(ArrayList<ZIMUserFullInfo> userList,
+                    ArrayList<ZIMErrorUserInfo> errorUserList, ZIMError errorInfo) {
+                    if (errorInfo.code == ZIMErrorCode.SUCCESS) {
+                        if (errorUserList == null || errorUserList.isEmpty()) {
+                            ZIMKit.createGroup(groupName, ids, new CreateGroupCallback() {
+                                @Override
+                                public void onCreateGroup(ZIMKitGroupInfo groupInfo,
+                                    ArrayList<ZIMErrorUserInfo> inviteUserErrors, ZIMError error) {
+                                    if (error.code == ZIMErrorCode.SUCCESS) {
+                                        Bundle bundle = new Bundle();
+                                        bundle.putString(ZIMKitConstant.GroupPageConstant.KEY_TITLE,
+                                            groupInfo.getName());
+                                        bundle.putString(ZIMKitConstant.GroupPageConstant.KEY_ID, groupInfo.getId());
+                                        toChat(error.code, bundle);
+                                    } else {
+                                        toChat(error.code, error.message);
+                                    }
+                                }
+                            });
+                        } else {
+                            StringBuilder errorUserStr = new StringBuilder();
+                            Iterator<ZIMErrorUserInfo> iterator = errorUserList.iterator();
+                            while (iterator.hasNext()) {
+                                errorUserStr.append(iterator.next().userID);
+                                if (iterator.hasNext()) {
+                                    errorUserStr.append(",");
+                                }
                             }
+                            ZIMError error = new ZIMError();
+                            error.setCode(ZIMErrorCode.DOES_NOT_EXIST);
+                            error.setMessage(getApplication().getString(R.string.zimkit_group_user_id_not_exit,
+                                errorUserStr.toString()));
+                            toChat(error.code, error.message);
                         }
-                        error.setCode(ZIMErrorCode.DOES_NOT_EXIST);
-                        toChat(error.code, getApplication().getString(R.string.zimkit_group_user_id_not_exit, errorUserStr.toString()));
                     } else {
-                        Bundle bundle = new Bundle();
-                        bundle.putString(ZIMKitConstant.GroupPageConstant.KEY_TITLE, groupInfo.getName());
-                        bundle.putString(ZIMKitConstant.GroupPageConstant.KEY_ID, groupInfo.getId());
-                        toChat(error.code, bundle);
+                        if (errorInfo.code == ZIMErrorCode.USER_NOT_EXIST) {
+                            StringBuilder errorUserStr = new StringBuilder();
+                            Iterator<ZIMErrorUserInfo> iterator = errorUserList.iterator();
+                            while (iterator.hasNext()) {
+                                errorUserStr.append(iterator.next().userID);
+                                if (iterator.hasNext()) {
+                                    errorUserStr.append(",");
+                                }
+                            }
+                            ZIMError error = new ZIMError();
+                            error.setCode(ZIMErrorCode.DOES_NOT_EXIST);
+                            error.setMessage(getApplication().getString(R.string.zimkit_group_user_id_not_exit,
+                                errorUserStr.toString()));
+                            toChat(error.code, error.message);
+                        } else {
+                            toChat(errorInfo.code, errorInfo.message);
+                        }
                     }
-                } else {
-                    toChat(error.code, error.message);
                 }
-            }
-        });
+            });
+
     }
 
     public void joinGroupChat(String groupId) {

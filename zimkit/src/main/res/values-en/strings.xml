@@ -50,7 +50,7 @@
   <string name="zimkit_group_join_group_chat">Join a group chat</string>
   <string name="zimkit_user_not_exit">The user doesn\'t exist.</string>
   <string name="zimkit_group_not_exit">The group doesn\'t exist.</string>
-  <string name="zimkit_group_user_id_not_exit">The user ID (%s) doesn\'t exist. Please modify and try again.</string>
+  <string name="zimkit_group_user_id_not_exit">Group user ID (%s) doesn\'t exist. Please modify and try again.</string>
   <string name="zimkit_group_id_not_exit">The group (%s) doesn\'t exist. Please try again.</string>
   <string name="zimkit_input_user_id_error_tip">The userID must be between 6–12 characters using letters and numbers.</string>
   <string name="zimkit_group_id">Group ID</string>
@@ -175,6 +175,7 @@
   <string name="zimkit_input_photo">Photo</string>
   <string name="zimkit_notification_request_text">We need your consent for the following permissions in order to use notification function properly</string>
   <string name="zimkit_cannot_chat_self">Cannot chat with yourself</string>
+  <string name="zimkit_user_id_not_exist">User ID (%s) doesn\'t exist. Please return.</string>
   <string name="zimkit_file_too_large">The file is too large,Please choose again</string>
   <string name="zimkit_call_kit_plugin_not_existed">CallKit plugin not existed</string>
   <string name="zimkit_callkit_plugin_not_enabled">CallKit plugin not enabled</string>
