@@ -38,6 +38,8 @@ import com.zegocloud.zimkit.services.model.ZIMKitMessage;
 import im.zego.zim.enums.ZIMMessageDirection;
 import im.zego.zim.enums.ZIMMessageType;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -82,22 +84,9 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
         //        } else {
         //            newList = new ArrayList<>(list);
         //        }
-
-        if (mList.size() == newList.size()) {
-            mList.clear();
-            mList.addAll(newList);
-            this.notifyItemRangeChanged(0, newList.size());
-            return;
-        }
-        if (mList.size() > 0) {
-            int count = mList.size();
-            mList.clear();
-            this.notifyItemRangeRemoved(0, count);
-        }
-        if (newList.size() > 0) {
-            mList.addAll(newList);
-            this.notifyItemRangeInserted(0, newList.size());
-        }
+        mList.clear();
+        mList.addAll(newList);
+        sortAndUpdateListInner();
     }
 
     public void addListToTop(List<ZIMKitMessageModel> list) {
@@ -176,7 +165,6 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
      * @param list
      */
     public void updateMessageInfo(List<ZIMKitMessageModel> list) {
-        Log.d(TAG, "updateMessageInfo() called with: list = [" + list + "]");
         if (mList.isEmpty()) {
             mList.addAll(list);
             notifyDataSetChanged();
@@ -199,7 +187,19 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
                     }
                 }
             }
+            // 如果是本地消息，是有可能更新 timestamp的，所以这里也要排序
+            sortAndUpdateListInner();
         }
+    }
+
+    private void sortAndUpdateListInner() {
+        Collections.sort(mList, new Comparator<ZIMKitMessageModel>() {
+            @Override
+            public int compare(ZIMKitMessageModel o1, ZIMKitMessageModel o2) {
+                return (int) (o1.getMessage().getTimestamp() - o2.getMessage().getTimestamp());
+            }
+        });
+        notifyDataSetChanged();
     }
 
     public boolean isOneSideForwardMode() {
@@ -344,7 +344,6 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull MessageViewHolder holder, int position) {
-        Log.d(TAG, "onBindViewHolder() called with: holder = [" + holder + "], position = [" + position + "]");
         ZIMKitMessageModel model = mList.get(holder.getAdapterPosition());
         holder.mAdapter = this;
         holder.bind(BR.model, holder.getAdapterPosition(), model);
