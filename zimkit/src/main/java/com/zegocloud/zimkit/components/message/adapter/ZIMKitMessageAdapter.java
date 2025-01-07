@@ -519,6 +519,12 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
         Collections.sort(mList, new Comparator<ZIMKitMessageModel>() {
             @Override
             public int compare(ZIMKitMessageModel o1, ZIMKitMessageModel o2) {
+                if (Objects.equals(o1.getMessage().localExtendedData, "loading")) {
+                    return 1;
+                }
+                if (Objects.equals(o2.getMessage().localExtendedData, "loading")) {
+                    return 1;
+                }
                 return (int) (o1.getMessage().getTimestamp() - o2.getMessage().getTimestamp());
             }
         });

@@ -603,16 +603,7 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
     }
 
     private @Nullable MessageSentCallback getMessageSentCallback() {
-        boolean showLoadingWhenSend = false;
-        ZIMKitConfig zimKitConfig = ZIMKitCore.getInstance().getZimKitConfig();
-        if (zimKitConfig != null && zimKitConfig.advancedConfig != null) {
-            if (zimKitConfig.advancedConfig.containsKey(ZIMKitAdvancedKey.showLoadingWhenSend)) {
-                String content = zimKitConfig.advancedConfig.get(ZIMKitAdvancedKey.showLoadingWhenSend);
-                if ("true".equalsIgnoreCase(content)) {
-                    showLoadingWhenSend = true;
-                }
-            }
-        }
+        boolean showLoadingWhenSend = ZIMKitCore.getInstance().isShowLoadingWhenSend();
         if (showLoadingWhenSend) {
             if (getArguments() != null) {
                 MessageSentCallback messageSentCallback = new MessageSentCallback() {
