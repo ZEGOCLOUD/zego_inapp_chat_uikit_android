@@ -352,6 +352,7 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
                 } else if (loadData.state == ZIMKitMessageVM.LoadData.DATA_STATE_HISTORY_NEXT) {
                     mAdapter.addListToTop(loadData.data);
                 } else if (loadData.state == ZIMKitMessageVM.LoadData.DATA_STATE_NEW) {
+                    // 在特殊场景下，比如是后台的服务器接口，这里也可能是自己发的消息的处理
                     mAdapter.addListToBottom(loadData.data);
                 } else if (loadData.state == ZIMKitMessageVM.LoadData.DATA_STATE_NEW_UPDATE
                     || loadData.state == ZIMKitMessageVM.LoadData.DATA_STATE_UPDATE_AVATAR) {

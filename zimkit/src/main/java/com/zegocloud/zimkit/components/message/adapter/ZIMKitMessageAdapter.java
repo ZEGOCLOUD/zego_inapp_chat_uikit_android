@@ -3,7 +3,6 @@ package com.zegocloud.zimkit.components.message.adapter;
 import android.content.Context;
 import android.media.AudioManager;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,6 +33,7 @@ import com.zegocloud.zimkit.components.message.widget.viewholder.TipsMessageHold
 import com.zegocloud.zimkit.components.message.widget.viewholder.VideoMessageHolder;
 import com.zegocloud.zimkit.services.ZIMKit;
 import com.zegocloud.zimkit.services.ZIMKitDelegate;
+import com.zegocloud.zimkit.services.internal.ZIMKitCore;
 import com.zegocloud.zimkit.services.model.ZIMKitMessage;
 import im.zego.zim.enums.ZIMMessageDirection;
 import im.zego.zim.enums.ZIMMessageType;
@@ -84,15 +84,38 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
         //        } else {
         //            newList = new ArrayList<>(list);
         //        }
-        mList.clear();
-        mList.addAll(newList);
-        sortAndUpdateListInner();
+
+        if (ZIMKitCore.getInstance().isSendMessageByServer()) {
+            mList.clear();
+            mList.addAll(newList);
+            sortAndUpdateListInner();
+        } else {
+            if (mList.size() == newList.size()) {
+                mList.clear();
+                mList.addAll(newList);
+                this.notifyItemRangeChanged(0, newList.size());
+                return;
+            }
+            if (mList.size() > 0) {
+                int count = mList.size();
+                mList.clear();
+                this.notifyItemRangeRemoved(0, count);
+            }
+            if (newList.size() > 0) {
+                mList.addAll(newList);
+                this.notifyItemRangeInserted(0, newList.size());
+            }
+        }
     }
 
     public void addListToTop(List<ZIMKitMessageModel> list) {
         deleteLoadingMessage();
         mList.addAll(0, list);
-        this.notifyItemRangeInserted(0, list.size());
+        if (ZIMKitCore.getInstance().isSendMessageByServer()) {
+            sortAndUpdateListInner();
+        } else {
+            this.notifyItemRangeInserted(0, list.size());
+        }
     }
 
     public void addListToBottom(List<ZIMKitMessageModel> list) {
@@ -100,7 +123,12 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
 
         int oldCount = mList.size();
         mList.addAll(list);
-        this.notifyItemRangeInserted(oldCount, list.size());
+        if (ZIMKitCore.getInstance().isSendMessageByServer()) {
+            sortAndUpdateListInner();
+        } else {
+            this.notifyItemRangeInserted(oldCount, list.size());
+        }
+
     }
 
     public void addMessageToBottom(ZIMKitMessageModel model) {
@@ -108,10 +136,14 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
             return;
         }
         deleteLoadingMessage();
-
         int oldCount = mList.size();
         mList.add(model);
-        this.notifyItemRangeInserted(oldCount, 1);
+        if (ZIMKitCore.getInstance().isSendMessageByServer()) {
+            sortAndUpdateListInner();
+        } else {
+            this.notifyItemRangeInserted(oldCount, 1);
+        }
+
     }
 
     /**
@@ -125,7 +157,12 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
         }
         int index = mList.indexOf(model);
         mList.remove(model);
-        this.notifyItemRemoved(index);
+
+        if (ZIMKitCore.getInstance().isSendMessageByServer()) {
+            sortAndUpdateListInner();
+        } else {
+            this.notifyItemRemoved(index);
+        }
     }
 
     /**
@@ -142,7 +179,11 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
                 it.remove();
             }
         }
-        this.notifyDataSetChanged();
+        if (ZIMKitCore.getInstance().isSendMessageByServer()) {
+            sortAndUpdateListInner();
+        } else {
+            this.notifyDataSetChanged();
+        }
     }
 
     /**
@@ -167,7 +208,11 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
     public void updateMessageInfo(List<ZIMKitMessageModel> list) {
         if (mList.isEmpty()) {
             mList.addAll(list);
-            notifyDataSetChanged();
+            if (ZIMKitCore.getInstance().isSendMessageByServer()) {
+                sortAndUpdateListInner();
+            } else {
+                notifyDataSetChanged();
+            }
         } else {
 
             deleteLoadingMessage();
@@ -187,19 +232,10 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
                     }
                 }
             }
-            // 如果是本地消息，是有可能更新 timestamp的，所以这里也要排序
-            sortAndUpdateListInner();
-        }
-    }
-
-    private void sortAndUpdateListInner() {
-        Collections.sort(mList, new Comparator<ZIMKitMessageModel>() {
-            @Override
-            public int compare(ZIMKitMessageModel o1, ZIMKitMessageModel o2) {
-                return (int) (o1.getMessage().getTimestamp() - o2.getMessage().getTimestamp());
+            if (ZIMKitCore.getInstance().isSendMessageByServer()) {
+                sortAndUpdateListInner();
             }
-        });
-        notifyDataSetChanged();
+        }
     }
 
     public boolean isOneSideForwardMode() {
@@ -211,12 +247,14 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
     }
 
     private void deleteLoadingMessage() {
-        List<ZIMKitMessageModel> collect = mList.stream()
-            .filter(messageModel -> Objects.equals(messageModel.getMessage().localExtendedData, "loading"))
-            .collect(Collectors.toList());
-        if (!collect.isEmpty()) {
-            mList.removeAll(collect);
-            notifyDataSetChanged();
+        if (ZIMKitCore.getInstance().isShowLoadingWhenSend()) {
+            List<ZIMKitMessageModel> collect = mList.stream()
+                .filter(messageModel -> Objects.equals(messageModel.getMessage().localExtendedData, "loading"))
+                .collect(Collectors.toList());
+            if (!collect.isEmpty()) {
+                mList.removeAll(collect);
+                notifyDataSetChanged();
+            }
         }
         //        List<ZIMMessage> messageList = collect.stream().map(zimKitMessageModel -> zimKitMessageModel.getMessage())
         //            .collect(Collectors.toList());
@@ -476,6 +514,16 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
             }
         }
     };
+
+    private void sortAndUpdateListInner() {
+        Collections.sort(mList, new Comparator<ZIMKitMessageModel>() {
+            @Override
+            public int compare(ZIMKitMessageModel o1, ZIMKitMessageModel o2) {
+                return (int) (o1.getMessage().getTimestamp() - o2.getMessage().getTimestamp());
+            }
+        });
+        notifyDataSetChanged();
+    }
 
     public void clear() {
         ZIMKit.unRegisterZIMKitDelegate(eventCallBack);

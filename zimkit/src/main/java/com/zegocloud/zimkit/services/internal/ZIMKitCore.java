@@ -673,8 +673,8 @@ public class ZIMKitCore implements IZIMKitCore {
 
     public void sendMessage(ZIMMessage message, String toConversationID, ZIMConversationType conversationType,
         ZIMMessageSendConfig config, ZIMMessageSentCallback callback) {
-        ZegoSignalingPlugin.getInstance().sendMessage(message, toConversationID, conversationType, config,
-            new ZIMMessageSentCallback() {
+        ZegoSignalingPlugin.getInstance()
+            .sendMessage(message, toConversationID, conversationType, config, new ZIMMessageSentCallback() {
                 @Override
                 public void onMessageAttached(ZIMMessage message) {
                     ZIMKitMessage zimKitMessage = ZIMMessageUtil.parseZIMMessageToKitMessage(message);
@@ -717,5 +717,27 @@ public class ZIMKitCore implements IZIMKitCore {
 
     public void queryCombineMessageDetail(ZIMCombineMessage message, ZIMCombineMessageDetailQueriedCallback callback) {
         ZegoSignalingPlugin.getInstance().queryCombineMessageDetail(message, callback);
+    }
+
+    public boolean isSendMessageByServer() {
+        ZIMKitConfig zimKitConfig = ZIMKitCore.getInstance().getZimKitConfig();
+        if (zimKitConfig != null && zimKitConfig.advancedConfig != null) {
+            if (zimKitConfig.advancedConfig.containsKey(ZIMKitAdvancedKey.send_message_by_server)) {
+                String content = zimKitConfig.advancedConfig.get(ZIMKitAdvancedKey.send_message_by_server);
+                return ("true".equalsIgnoreCase(content));
+            }
+        }
+        return false;
+    }
+
+    public boolean isShowLoadingWhenSend() {
+        ZIMKitConfig zimKitConfig = ZIMKitCore.getInstance().getZimKitConfig();
+        if (zimKitConfig != null && zimKitConfig.advancedConfig != null) {
+            if (zimKitConfig.advancedConfig.containsKey(ZIMKitAdvancedKey.showLoadingWhenSend)) {
+                String content = zimKitConfig.advancedConfig.get(ZIMKitAdvancedKey.showLoadingWhenSend);
+                return ("true".equalsIgnoreCase(content));
+            }
+        }
+        return false;
     }
 }
