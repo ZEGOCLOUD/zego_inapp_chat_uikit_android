@@ -2,7 +2,7 @@ package com.zegocloud.zimkit.common.utils;
 
 import android.app.Application;
 import android.text.TextUtils;
-
+import com.zegocloud.zimkit.R;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -79,11 +79,11 @@ public class ZIMKitDateUtils {
         cal1.setTime(new Date(date));
         Calendar nowCal1 = Calendar.getInstance();
         nowCal1.setTime(new Date());
-        if (sdfYMD.format(date).equals(sdfYMD.format(new Date()))) {
+        if (isSameDay(cal1, nowCal1)) {
             return sdfHM.format(date);
-        } else if (nowCal1.get(Calendar.DAY_OF_YEAR) - cal1.get(Calendar.DAY_OF_YEAR) == 1) {
+        } else if (isYesterday(cal1, nowCal1)) {
             return sApplication.getString(R.string.zimkit_yesterday) + (showDetailTime ? " " + sdfHM.format(date) : "");
-        } else if (nowCal1.get(Calendar.DAY_OF_YEAR) - cal1.get(Calendar.DAY_OF_YEAR) < 7) {
+        } else if (isWithinWeek(cal1, nowCal1)) {
             return getWeekOfDate(date) + (showDetailTime ? " " + sdfHM.format(date) : "");
         } else if (cal1.get(Calendar.YEAR) != nowCal1.get(Calendar.YEAR)) {
             if (showDetailTime) {
@@ -98,6 +98,28 @@ public class ZIMKitDateUtils {
                 return sdfMD.format(date);
             }
         }
+    }
+
+
+    // 日期判断工具方法
+    private static boolean isSameDay(Calendar c1, Calendar c2) {
+        return c1.get(Calendar.YEAR) == c2.get(Calendar.YEAR)
+            && c1.get(Calendar.DAY_OF_YEAR) == c2.get(Calendar.DAY_OF_YEAR);
+    }
+
+    private static boolean isYesterday(Calendar target, Calendar now) {
+        Calendar yesterday = (Calendar) now.clone();
+        yesterday.add(Calendar.DATE, -1);
+        return isSameDay(target, yesterday);
+    }
+
+    private static boolean isWithinWeek(Calendar target, Calendar now) {
+        long diff = now.getTimeInMillis() - target.getTimeInMillis();
+        return diff < 7 * 24 * 60 * 60 * 1000L;
+    }
+
+    private static boolean sameYear(Calendar c1, Calendar c2) {
+        return c1.get(Calendar.YEAR) == c2.get(Calendar.YEAR);
     }
 
 
@@ -205,8 +227,8 @@ public class ZIMKitDateUtils {
     }
 
     /**
-     * Get the day of the week of the specified date When the parameter is null,
-     * it means get the day of the week of the current date
+     * Get the day of the week of the specified date When the parameter is null, it means get the day of the week of the
+     * current date
      *
      * @param milliseconds
      * @return
@@ -250,14 +272,6 @@ public class ZIMKitDateUtils {
         return now.getTime();
     }
 
-    public static boolean isSameDay(Date date1, Date date2) {
-        Calendar cal1 = Calendar.getInstance();
-        cal1.setTime(date1);
-        Calendar cal2 = Calendar.getInstance();
-        cal2.setTime(date2);
-        return isSameDay(cal1, cal2);
-    }
-
     /**
      * Compare the number of days difference between two dates with positive and negative
      *
@@ -280,11 +294,6 @@ public class ZIMKitDateUtils {
         calendar2.set(Calendar.MILLISECOND, 0);
         int days = (int) ((calendar2.getTime().getTime() - calendar1.getTime().getTime()) / (1000 * 3600 * 24));
         return days;
-    }
-
-    public static boolean isSameDay(Calendar cal1, Calendar cal2) {
-
-        return cal1.get(0) == cal2.get(0) && cal1.get(1) == cal2.get(1) && cal1.get(6) == cal2.get(6);
     }
 
     public static long parseUTCTime(String utc) {
