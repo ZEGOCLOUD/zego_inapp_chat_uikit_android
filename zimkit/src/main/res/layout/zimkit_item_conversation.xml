@@ -23,26 +23,6 @@
     android:layout_height="wrap_content"
     android:background="?android:attr/selectableItemBackground">
 
-    <!--    <TextView-->
-    <!--      android:layout_width="80dp"-->
-    <!--      android:layout_height="0dp"-->
-    <!--      android:background="@color/conversation_item_delete"-->
-    <!--      android:gravity="center"-->
-    <!--      android:text="@string/zimkit_delete"-->
-    <!--      app:layout_constraintBottom_toBottomOf="@+id/conversation_content"-->
-    <!--      app:layout_constraintStart_toEndOf="@+id/conversation_content"-->
-    <!--      app:layout_constraintTop_toTopOf="@+id/conversation_content" />-->
-
-    <!--    <TextView-->
-    <!--      android:layout_width="94dp"-->
-    <!--      android:layout_height="0dp"-->
-    <!--      android:background="@color/conversation_item_make_top"-->
-    <!--      android:gravity="center"-->
-    <!--      android:text="@string/zimkit_delete"-->
-    <!--      app:layout_constraintBottom_toBottomOf="@+id/conversation_content"-->
-    <!--      app:layout_constraintStart_toEndOf="@+id/conversation_content"-->
-    <!--      app:layout_constraintTop_toTopOf="@+id/conversation_content" />-->
-
 
     <androidx.constraintlayout.widget.ConstraintLayout
       android:id="@+id/conversation_content"
@@ -104,8 +84,8 @@
         android:text="@{itemModel.name}"
         android:textColor="@color/color_2a2a2a"
         android:textSize="17sp"
-        app:layout_constraintLeft_toRightOf="@id/iv_avatar"
-        app:layout_constraintRight_toLeftOf="@id/tv_time"
+        app:layout_constraintEnd_toStartOf="@id/tv_time"
+        app:layout_constraintStart_toEndOf="@id/iv_avatar"
         app:layout_constraintTop_toTopOf="@id/iv_avatar"
         tools:text="科普小课堂" />
 
@@ -133,8 +113,8 @@
         android:text="@{itemModel.lastMsgContent}"
         android:textColor="@color/color_a4a4a4"
         android:textSize="14sp"
-        app:layout_constraintLeft_toRightOf="@id/img_fail"
-        app:layout_constraintRight_toLeftOf="@id/do_not_disturb"
+        app:layout_constraintEnd_toStartOf="@id/do_not_disturb"
+        app:layout_constraintStart_toEndOf="@id/img_fail"
         app:layout_constraintTop_toBottomOf="@id/tv_name"
         app:layout_goneMarginEnd="0dp"
         tools:text="测试测试测试" />
@@ -158,6 +138,16 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="@id/tv_name"
         app:layout_constraintRight_toRightOf="parent" />
+
+      <FrameLayout
+        android:id="@+id/custom_item_decor"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
   </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

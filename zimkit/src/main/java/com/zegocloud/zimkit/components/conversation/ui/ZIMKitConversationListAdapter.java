@@ -10,10 +10,14 @@ import com.zegocloud.zimkit.common.adapter.BaseDifferRvAdapter;
 import com.zegocloud.zimkit.components.conversation.model.ZIMKitConversationModel;
 import com.zegocloud.zimkit.components.conversation.ui.ZIMKitConversationListAdapter.ConversationItemViewHolder;
 import com.zegocloud.zimkit.databinding.ZimkitItemConversationBinding;
+import com.zegocloud.zimkit.services.config.conversation.ConversationItemDecor;
 import java.util.Objects;
 
 public class ZIMKitConversationListAdapter extends
     BaseDifferRvAdapter<ConversationItemViewHolder, ZIMKitConversationModel> {
+
+
+    private ConversationItemDecor itemDecor;
 
     @Override
     protected boolean itemsTheSame(@NonNull ZIMKitConversationModel oldItem, @NonNull ZIMKitConversationModel newItem) {
@@ -26,12 +30,11 @@ public class ZIMKitConversationListAdapter extends
         boolean lastMessageChanged = Objects.equals(oldItem.getLastMsgContent(), newItem.getLastMsgContent());
         return oldItem.getConversation().unreadMessageCount == newItem.getConversation().unreadMessageCount
             && oldItem.getConversation().conversationName.equals(newItem.getConversation().conversationName)
-            && lastMessageChanged
-            && (oldItem.getConversation().lastMessage == null ? 0 : oldItem.getConversation().lastMessage.getTimestamp())
+            && lastMessageChanged &&
+            (oldItem.getConversation().lastMessage == null ? 0 : oldItem.getConversation().lastMessage.getTimestamp())
                 == (newItem.getConversation().lastMessage == null ? 0
                 : newItem.getConversation().lastMessage.getTimestamp())
-            && oldItem.getSendState() == newItem.getSendState()
-            && oldItem.isPinned() == newItem.isPinned()
+            && oldItem.getSendState() == newItem.getSendState() && oldItem.isPinned() == newItem.isPinned()
             && oldItem.isDoNotDisturb() == newItem.isDoNotDisturb();
     }
 
@@ -49,16 +52,28 @@ public class ZIMKitConversationListAdapter extends
             }
             return true;
         });
+
+        if (itemDecor != null) {
+            itemDecor.onBindViewHolder((ViewGroup) holder.itemView, model.getConversation(), position);
+        }
     }
 
     public ZIMKitConversationModel getModel(int position) {
         return mDiffer.getCurrentList().get(position);
     }
 
+    public void setConversationItemDecor(ConversationItemDecor itemDecor) {
+        this.itemDecor = itemDecor;
+    }
+
     @Override
     protected ConversationItemViewHolder getHolder(@NonNull ViewGroup parent, int position) {
         ZimkitItemConversationBinding binding = DataBindingUtil.inflate(LayoutInflater.from(parent.getContext()),
             R.layout.zimkit_item_conversation, parent, false);
+
+        if (itemDecor != null) {
+            itemDecor.onCreateViewHolder((ViewGroup) binding.getRoot(), position);
+        }
         return new ConversationItemViewHolder(binding);
     }
 

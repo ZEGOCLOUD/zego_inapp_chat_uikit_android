@@ -49,7 +49,7 @@ dependencies {
     implementation 'com.github.chrisbanes:PhotoView:2.0.0'
     implementation 'com.google.android.flexbox:flexbox:3.0.0'
 
-    api 'com.github.ZEGOCLOUD:zego_uikit_signaling_plugin_android:2.9.8.private'
+    api 'com.github.ZEGOCLOUD:zego_uikit_signaling_plugin_android:+'
     implementation 'com.github.ybq:Android-SpinKit:1.4.0'
 
 }

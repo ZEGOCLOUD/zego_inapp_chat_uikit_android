@@ -82,17 +82,25 @@ public class ZIMKitConversationFragment extends BaseFragment<ZimkitFragmentConve
     protected void initView() {
         mListAdapter = new ZIMKitConversationListAdapter();
         mListAdapter.setLongClickListener(model -> {
-//            if (mDeleteConversationBottomSheet != null && mDeleteConversationBottomSheet.getDialog() != null
-//                && mDeleteConversationBottomSheet.getDialog().isShowing()) {
-//                mDeleteConversationBottomSheet.dismiss();
-//            }
-//            if (mDeleteConversationBottomSheet == null) {
-//                mDeleteConversationBottomSheet = new CustomBottomSheet<>(R.layout.zimkit_layout_conversation_delete,
-//                    this::setBottomSheetItemListener);
-//            }
-//            mCurrentSelectModel = model;
-//            mDeleteConversationBottomSheet.show(getParentFragmentManager(), "delete_conversation");
+            //            if (mDeleteConversationBottomSheet != null && mDeleteConversationBottomSheet.getDialog() != null
+            //                && mDeleteConversationBottomSheet.getDialog().isShowing()) {
+            //                mDeleteConversationBottomSheet.dismiss();
+            //            }
+            //            if (mDeleteConversationBottomSheet == null) {
+            //                mDeleteConversationBottomSheet = new CustomBottomSheet<>(R.layout.zimkit_layout_conversation_delete,
+            //                    this::setBottomSheetItemListener);
+            //            }
+            //            mCurrentSelectModel = model;
+            //            mDeleteConversationBottomSheet.show(getParentFragmentManager(), "delete_conversation");
         });
+
+        ZIMKitConfig zimKitConfig = ZIMKitCore.getInstance().getZimKitConfig();
+        if (zimKitConfig != null && zimKitConfig.conversationConfig != null) {
+            if (zimKitConfig.conversationConfig.conversationItemDecor != null) {
+                mListAdapter.setConversationItemDecor(zimKitConfig.conversationConfig.conversationItemDecor);
+            }
+        }
+
         mListAdapter.setItemClickListener(model -> {
             if (conversationListListener != null) {
                 ZIMKitConversation conversation = new ZIMKitConversation(model.getConversation());
@@ -146,7 +154,8 @@ public class ZIMKitConversationFragment extends BaseFragment<ZimkitFragmentConve
                     SwipeButton deleteButton = new SwipeButton(delete, Color.WHITE, spToPx(15),
                         ContextCompat.getColor(getContext(), R.color.color_ff3c48), dpToPx(80), new ClickListener() {
                         @Override
-                        public void onSingleTapConfirmed(int position, SwipeButton button, SlideButtonDecor slideButtonDecor) {
+                        public void onSingleTapConfirmed(int position, SwipeButton button,
+                            SlideButtonDecor slideButtonDecor) {
                             ZIMKit.deleteConversation(conversation.conversationID, conversation.type,
                                 new DeleteConversationCallback() {
                                     @Override
