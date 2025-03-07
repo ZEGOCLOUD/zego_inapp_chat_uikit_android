@@ -1,6 +1,7 @@
 package com.zegocloud.zimkit.components.conversation.model;
 
 import android.text.TextUtils;
+import android.util.Log;
 import androidx.databinding.BaseObservable;
 import androidx.databinding.Bindable;
 import com.zegocloud.uikit.plugin.signaling.ZegoSignalingPlugin;
@@ -64,6 +65,7 @@ public class ZIMKitConversationModel extends BaseObservable {
 
     public void setDoNotDisturb(boolean doNotDisturb) {
         this.doNotDisturb = doNotDisturb;
+        Log.d(TAG, "setDoNotDisturb() called with: doNotDisturb = [" + doNotDisturb + "]，conversation：" + mConversation);
         notifyPropertyChanged(BR.doNotDisturb);
     }
 

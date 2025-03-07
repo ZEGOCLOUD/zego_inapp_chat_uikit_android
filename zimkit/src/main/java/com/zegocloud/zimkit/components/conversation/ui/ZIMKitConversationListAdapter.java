@@ -43,7 +43,7 @@ public class ZIMKitConversationListAdapter extends
 
     @Override
     protected void onBind(ConversationItemViewHolder holder, ZIMKitConversationModel model, int position) {
-        Log.d(TAG, "onBind,getConversation: " + model.getConversation());
+        Log.d(TAG, "onBind,getConversation: " + model.getConversation() + ",model:" + model.isDoNotDisturb());
         holder.bind(model);
         holder.mBinding.getRoot().setOnClickListener(v -> {
             if (mOnClickListener != null) {
