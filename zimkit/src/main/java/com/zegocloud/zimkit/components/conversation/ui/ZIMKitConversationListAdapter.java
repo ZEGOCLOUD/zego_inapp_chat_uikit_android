@@ -1,5 +1,6 @@
 package com.zegocloud.zimkit.components.conversation.ui;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
@@ -38,8 +39,11 @@ public class ZIMKitConversationListAdapter extends
             && oldItem.isDoNotDisturb() == newItem.isDoNotDisturb();
     }
 
+    private static final String TAG = "ZIMKitConversationListA";
+
     @Override
     protected void onBind(ConversationItemViewHolder holder, ZIMKitConversationModel model, int position) {
+        Log.d(TAG, "onBind,getConversation: " + model.getConversation());
         holder.bind(model);
         holder.mBinding.getRoot().setOnClickListener(v -> {
             if (mOnClickListener != null) {
