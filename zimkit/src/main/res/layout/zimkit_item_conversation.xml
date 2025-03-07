@@ -14,9 +14,6 @@
       type="im.zego.zim.enums.ZIMMessageSentStatus" />
 
     <variable
-      name="notifyStatus"
-      type="im.zego.zim.enums.ZIMConversationNotificationStatus" />
-    <variable
       name="itemModel"
       type="com.zegocloud.zimkit.components.conversation.model.ZIMKitConversationModel" />
   </data>
@@ -128,7 +125,7 @@
         android:layout_height="wrap_content"
         android:scaleType="center"
         android:src="@drawable/zimkit_icon_do_not_disturb"
-        android:visibility="@{itemModel.conversation.notificationStatus == notifyStatus.DO_NOT_DISTURB ? view.VISIBLE:view.GONE}"
+        android:visibility="@{itemModel.doNotDisturb ? view.VISIBLE:view.GONE}"
         app:layout_constraintBottom_toBottomOf="@id/tv_content"
         app:layout_constraintEnd_toEndOf="@id/tv_time"
         app:layout_constraintTop_toTopOf="@id/tv_content" />
