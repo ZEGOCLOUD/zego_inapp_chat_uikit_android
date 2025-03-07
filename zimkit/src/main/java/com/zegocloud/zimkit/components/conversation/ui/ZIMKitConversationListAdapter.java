@@ -1,8 +1,6 @@
 package com.zegocloud.zimkit.components.conversation.ui;
 
-import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.databinding.DataBindingUtil;
@@ -40,11 +38,8 @@ public class ZIMKitConversationListAdapter extends
             && oldItem.isDoNotDisturb() == newItem.isDoNotDisturb();
     }
 
-    private static final String TAG = "ZIMKitConversationListA";
-
     @Override
     protected void onBind(ConversationItemViewHolder holder, ZIMKitConversationModel model, int position) {
-        Log.d(TAG, "onBind,getConversation: " + model.getConversation() + ",model:" + model.isDoNotDisturb());
         holder.bind(model);
         holder.mBinding.getRoot().setOnClickListener(v -> {
             if (mOnClickListener != null) {
@@ -61,7 +56,6 @@ public class ZIMKitConversationListAdapter extends
         if (itemDecor != null) {
             itemDecor.onBindViewHolder((ViewGroup) holder.itemView, model.getConversation(), position);
         }
-        holder.mBinding.doNotDisturb.setVisibility(model.isDoNotDisturb() ? View.VISIBLE : View.GONE);
     }
 
     public ZIMKitConversationModel getModel(int position) {
