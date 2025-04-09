@@ -2,6 +2,7 @@ package com.zegocloud.zimkit.services.utils;
 
 import android.graphics.Bitmap;
 import android.text.TextUtils;
+import android.util.Log;
 import com.zegocloud.zimkit.R;
 import com.zegocloud.zimkit.common.utils.ZIMKitFileUtils;
 import com.zegocloud.zimkit.components.message.model.AudioMessageModel;
@@ -35,6 +36,8 @@ import im.zego.zim.enums.ZIMMessageRepliedInfoState;
 import im.zego.zim.enums.ZIMMessageSentStatus;
 import im.zego.zim.enums.ZIMMessageType;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ZIMMessageUtil {
 
@@ -321,5 +324,50 @@ public class ZIMMessageUtil {
             } catch (IOException e) {
             }
         }
+    }
+
+
+    // 从 JSON 字符串还原回 List<String>
+    public static List<String> jsonStringToList(String jsonStr) {
+        List<String> result = new ArrayList<>();
+        if (jsonStr == null || jsonStr.trim().equals("[]")) {
+            return result;
+        }
+
+        // 去掉首尾的中括号
+        jsonStr = jsonStr.trim().substring(1, jsonStr.length() - 1);
+        if (jsonStr.isEmpty()) {
+            return result;
+        }
+
+        // 手动解析逗号分隔的元素
+        int start = 0;
+        while (start < jsonStr.length()) {
+            if (jsonStr.charAt(start) != '"') {
+                start++;
+                continue;
+            }
+            int end = start + 1;
+            while (end < jsonStr.length()) {
+                if (jsonStr.charAt(end) == '"' && jsonStr.charAt(end - 1) != '\\') {
+                    break;
+                }
+                end++;
+            }
+            String item = jsonStr.substring(start + 1, end);
+            result.add(unescapeString(item));
+
+            // 跳到下一个元素
+            start = end + 1;
+            while (start < jsonStr.length() && (jsonStr.charAt(start) == ',' || jsonStr.charAt(start) == ' ')) {
+                start++;
+            }
+        }
+        return result;
+    }
+
+    // 反转义字符串
+    private static String unescapeString(String input) {
+        return input.replace("\\\"", "\"").replace("\\\\", "\\");
     }
 }

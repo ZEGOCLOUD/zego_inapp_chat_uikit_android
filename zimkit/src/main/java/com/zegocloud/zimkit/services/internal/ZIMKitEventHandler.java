@@ -1,8 +1,11 @@
 package com.zegocloud.zimkit.services.internal;
 
+import android.util.Log;
+import com.zegocloud.zimkit.services.ZIMKitConfig;
 import com.zegocloud.zimkit.services.model.ZIMKitConversation;
 import com.zegocloud.zimkit.services.model.ZIMKitMessage;
 import com.zegocloud.zimkit.services.utils.MessageTransform;
+import com.zegocloud.zimkit.services.utils.ZIMMessageUtil;
 import im.zego.zim.ZIM;
 import im.zego.zim.callback.ZIMEventHandler;
 import im.zego.zim.entity.ZIMConversationChangeInfo;
@@ -19,6 +22,7 @@ import im.zego.zim.enums.ZIMGroupMemberEvent;
 import im.zego.zim.enums.ZIMGroupMemberState;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.json.JSONObject;
 import timber.log.Timber;
 
@@ -177,10 +181,36 @@ public class ZIMKitEventHandler extends ZIMEventHandler {
                     ZIMKitCore.getInstance().getConversations().remove(oldModel);
                     ZIMKitCore.getInstance().getConversations().add(new ZIMKitConversation(info.conversation));
                 }
+            } else if (info.event == ZIMConversationEvent.DELETED) {
+                ZIMKitConversation oldModel = null;
+                for (ZIMKitConversation model : ZIMKitCore.getInstance().getConversations()) {
+                    if (model.getId().equals(info.conversation.conversationID)) {
+                        oldModel = model;
+                        break;
+                    }
+                }
+                if (oldModel != null) {
+                    ZIMKitCore.getInstance().getConversations().remove(oldModel);
+                }
             }
         }
+
+        ArrayList<ZIMKitConversation> conversations = new ArrayList<>(ZIMKitCore.getInstance().getConversations()) ;
+        ZIMKitConfig zimKitConfig = ZIMKitCore.getInstance().getZimKitConfig();
+        if (zimKitConfig != null && zimKitConfig.advancedConfig != null) {
+            if (zimKitConfig.advancedConfig.containsKey(ZIMKitAdvancedKey.ai_robot)) {
+                String content = zimKitConfig.advancedConfig.get(ZIMKitAdvancedKey.ai_robot);
+                List<String> restoredList = ZIMMessageUtil.jsonStringToList(content);
+                List<ZIMKitConversation> filteredList = ZIMKitCore.getInstance().getConversations().stream()
+                    .filter(zimKitConversation -> restoredList.contains(zimKitConversation.getId())).collect(
+                        Collectors.toList());
+                conversations.clear();
+                conversations.addAll(filteredList);
+            }
+        }
+
         ZIMKitCore.getInstance().getZimkitNotifyList().notifyAllListener(zimKitDelegate -> {
-            zimKitDelegate.onConversationListChanged(new ArrayList<>(ZIMKitCore.getInstance().getConversations()));
+            zimKitDelegate.onConversationListChanged(conversations);
         });
     }
 

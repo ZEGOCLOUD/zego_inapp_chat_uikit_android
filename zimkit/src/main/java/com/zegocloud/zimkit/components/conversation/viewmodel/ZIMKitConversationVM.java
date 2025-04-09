@@ -4,11 +4,14 @@ import androidx.databinding.ObservableField;
 import androidx.lifecycle.ViewModel;
 import com.zegocloud.zimkit.components.conversation.model.ZIMKitConversationModel;
 import com.zegocloud.zimkit.services.ZIMKit;
+import com.zegocloud.zimkit.services.ZIMKitConfig;
 import com.zegocloud.zimkit.services.ZIMKitDelegate;
 import com.zegocloud.zimkit.services.callback.GetConversationListCallback;
 import com.zegocloud.zimkit.services.callback.LoadMoreConversationCallback;
+import com.zegocloud.zimkit.services.internal.ZIMKitAdvancedKey;
 import com.zegocloud.zimkit.services.internal.ZIMKitCore;
 import com.zegocloud.zimkit.services.model.ZIMKitConversation;
+import com.zegocloud.zimkit.services.utils.ZIMMessageUtil;
 import im.zego.zim.entity.ZIMConversation;
 import im.zego.zim.entity.ZIMError;
 import im.zego.zim.enums.ZIMConnectionEvent;
@@ -17,7 +20,9 @@ import im.zego.zim.enums.ZIMConversationEvent;
 import im.zego.zim.enums.ZIMConversationType;
 import im.zego.zim.enums.ZIMErrorCode;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 public class ZIMKitConversationVM extends ViewModel {
 
@@ -132,6 +137,20 @@ public class ZIMKitConversationVM extends ViewModel {
     }
 
     public void postList(boolean isEmpty, boolean isSuccess, ZIMError zimError, int state) {
+
+        ZIMKitConfig zimKitConfig = ZIMKitCore.getInstance().getZimKitConfig();
+        if (zimKitConfig != null && zimKitConfig.advancedConfig != null) {
+            if (zimKitConfig.advancedConfig.containsKey(ZIMKitAdvancedKey.ai_robot)) {
+                String content = zimKitConfig.advancedConfig.get(ZIMKitAdvancedKey.ai_robot);
+                List<String> restoredList = ZIMMessageUtil.jsonStringToList(content);
+                List<ZIMKitConversationModel> collect = mItemModelCacheTreeSet.stream()
+                    .filter(zimKitConversation -> restoredList.contains(zimKitConversation.getConversationID()))
+                    .collect(Collectors.toList());
+                mItemModelCacheTreeSet.clear();
+                mItemModelCacheTreeSet.addAll(collect);
+            }
+        }
+
         LoadData loadData = new LoadData(isEmpty, mItemModelCacheTreeSet, state);
         if (mLoadConversationListener != null) {
             if (isSuccess) {

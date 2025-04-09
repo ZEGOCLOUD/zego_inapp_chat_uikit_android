@@ -2,11 +2,13 @@ package com.zegocloud.zimkit.services.internal;
 
 import android.text.TextUtils;
 import com.zegocloud.uikit.plugin.signaling.ZegoSignalingPlugin;
+import com.zegocloud.zimkit.services.ZIMKitConfig;
 import com.zegocloud.zimkit.services.callback.ConnectUserCallback;
 import com.zegocloud.zimkit.services.callback.QueryUserCallback;
 import com.zegocloud.zimkit.services.callback.UserAvatarUrlUpdateCallback;
 import com.zegocloud.zimkit.services.model.ZIMKitConversation;
 import com.zegocloud.zimkit.services.model.ZIMKitUser;
+import com.zegocloud.zimkit.services.utils.ZIMMessageUtil;
 import im.zego.zim.callback.ZIMUsersInfoQueriedCallback;
 import im.zego.zim.entity.ZIMError;
 import im.zego.zim.entity.ZIMErrorUserInfo;
@@ -15,6 +17,8 @@ import im.zego.zim.entity.ZIMUserInfo;
 import im.zego.zim.entity.ZIMUsersInfoQueryConfig;
 import im.zego.zim.enums.ZIMErrorCode;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class UserService {
 
@@ -115,10 +119,26 @@ public class UserService {
                         .getZIMKitConversation(userFullInfo.baseInfo.userID);
                     if (kitConversation != null) {
                         kitConversation.setAvatarUrl(userFullInfo.baseInfo.userAvatarUrl);
+
+
+                        ArrayList<ZIMKitConversation> conversations = new ArrayList<>(ZIMKitCore.getInstance().getConversations()) ;
+                        ZIMKitConfig zimKitConfig = ZIMKitCore.getInstance().getZimKitConfig();
+                        if (zimKitConfig != null && zimKitConfig.advancedConfig != null) {
+                            if (zimKitConfig.advancedConfig.containsKey(ZIMKitAdvancedKey.ai_robot)) {
+                                String content = zimKitConfig.advancedConfig.get(ZIMKitAdvancedKey.ai_robot);
+                                List<String> restoredList = ZIMMessageUtil.jsonStringToList(content);
+                                List<ZIMKitConversation> filteredList = ZIMKitCore.getInstance().getConversations().stream()
+                                    .filter(zimKitConversation -> restoredList.contains(zimKitConversation.getId())).collect(
+                                        Collectors.toList());
+                                conversations.clear();
+                                conversations.addAll(filteredList);
+                            }
+                        }
+
                         ZIMKitCore.getInstance().getZimkitNotifyList().notifyAllListener(zimKitDelegate -> {
-                            zimKitDelegate.onConversationListChanged(
-                                new ArrayList<>(ZIMKitCore.getInstance().getConversations()));
+                            zimKitDelegate.onConversationListChanged(conversations);
                         });
+
                     }
                     if (callback != null) {
                         callback.onQueryUser(userInfo, errorInfo);
