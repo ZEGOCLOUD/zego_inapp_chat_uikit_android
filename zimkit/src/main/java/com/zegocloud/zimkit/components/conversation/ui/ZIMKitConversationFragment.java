@@ -42,8 +42,10 @@ import com.zegocloud.zimkit.services.ZIMKit;
 import com.zegocloud.zimkit.services.ZIMKitConfig;
 import com.zegocloud.zimkit.services.ZIMKitDelegate;
 import com.zegocloud.zimkit.services.callback.DeleteConversationCallback;
+import com.zegocloud.zimkit.services.internal.ZIMKitAdvancedKey;
 import com.zegocloud.zimkit.services.internal.ZIMKitCore;
 import com.zegocloud.zimkit.services.model.ZIMKitConversation;
+import com.zegocloud.zimkit.services.utils.ZIMMessageUtil;
 import im.zego.zim.entity.ZIMConversation;
 import im.zego.zim.entity.ZIMError;
 import im.zego.zim.enums.ZIMConnectionEvent;
@@ -51,6 +53,7 @@ import im.zego.zim.enums.ZIMConnectionState;
 import im.zego.zim.enums.ZIMConversationType;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ZIMKitConversationFragment extends BaseFragment<ZimkitFragmentConversationBinding, ZIMKitConversationVM> {
 
@@ -385,7 +388,21 @@ public class ZIMKitConversationFragment extends BaseFragment<ZimkitFragmentConve
                 if (loadData.currentLoadIsEmpty) {
                     mBinding.refreshLayout.finishLoadMoreWithNoMoreData();
                 } else {
-                    mListAdapter.submitList(new ArrayList<>(loadData.allList));
+                    ArrayList<ZIMKitConversationModel> models = new ArrayList<>(loadData.allList);
+
+                    ZIMKitConfig zimKitConfig = ZIMKitCore.getInstance().getZimKitConfig();
+                    if (zimKitConfig != null && zimKitConfig.advancedConfig != null) {
+                        if (zimKitConfig.advancedConfig.containsKey(ZIMKitAdvancedKey.ai_robot)) {
+                            String content = zimKitConfig.advancedConfig.get(ZIMKitAdvancedKey.ai_robot);
+                            List<String> restoredList = ZIMMessageUtil.jsonStringToList(content);
+                            List<ZIMKitConversationModel> filteredList = models.stream()
+                                .filter(zimKitConversation -> restoredList.contains(zimKitConversation.getConversationID())).collect(
+                                    Collectors.toList());
+                            models.clear();
+                            models.addAll(filteredList);
+                        }
+                    }
+                    mListAdapter.submitList(models);
                     mBinding.refreshLayout.finishLoadMore(true);
                     if (loadData.state == ZIMKitConversationVM.LoadData.DATA_STATE_CHANGE) {
                         //                        mBinding.rvList.post(() -> mBinding.rvList.smoothScrollToPosition(0));

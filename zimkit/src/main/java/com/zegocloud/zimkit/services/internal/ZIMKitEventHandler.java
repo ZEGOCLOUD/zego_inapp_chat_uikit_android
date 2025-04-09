@@ -196,18 +196,6 @@ public class ZIMKitEventHandler extends ZIMEventHandler {
         }
 
         ArrayList<ZIMKitConversation> conversations = new ArrayList<>(ZIMKitCore.getInstance().getConversations()) ;
-        ZIMKitConfig zimKitConfig = ZIMKitCore.getInstance().getZimKitConfig();
-        if (zimKitConfig != null && zimKitConfig.advancedConfig != null) {
-            if (zimKitConfig.advancedConfig.containsKey(ZIMKitAdvancedKey.ai_robot)) {
-                String content = zimKitConfig.advancedConfig.get(ZIMKitAdvancedKey.ai_robot);
-                List<String> restoredList = ZIMMessageUtil.jsonStringToList(content);
-                List<ZIMKitConversation> filteredList = ZIMKitCore.getInstance().getConversations().stream()
-                    .filter(zimKitConversation -> restoredList.contains(zimKitConversation.getId())).collect(
-                        Collectors.toList());
-                conversations.clear();
-                conversations.addAll(filteredList);
-            }
-        }
 
         ZIMKitCore.getInstance().getZimkitNotifyList().notifyAllListener(zimKitDelegate -> {
             zimKitDelegate.onConversationListChanged(conversations);

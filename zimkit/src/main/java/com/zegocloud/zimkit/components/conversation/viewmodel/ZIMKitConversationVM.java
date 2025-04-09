@@ -138,19 +138,6 @@ public class ZIMKitConversationVM extends ViewModel {
 
     public void postList(boolean isEmpty, boolean isSuccess, ZIMError zimError, int state) {
 
-        ZIMKitConfig zimKitConfig = ZIMKitCore.getInstance().getZimKitConfig();
-        if (zimKitConfig != null && zimKitConfig.advancedConfig != null) {
-            if (zimKitConfig.advancedConfig.containsKey(ZIMKitAdvancedKey.ai_robot)) {
-                String content = zimKitConfig.advancedConfig.get(ZIMKitAdvancedKey.ai_robot);
-                List<String> restoredList = ZIMMessageUtil.jsonStringToList(content);
-                List<ZIMKitConversationModel> collect = mItemModelCacheTreeSet.stream()
-                    .filter(zimKitConversation -> restoredList.contains(zimKitConversation.getConversationID()))
-                    .collect(Collectors.toList());
-                mItemModelCacheTreeSet.clear();
-                mItemModelCacheTreeSet.addAll(collect);
-            }
-        }
-
         LoadData loadData = new LoadData(isEmpty, mItemModelCacheTreeSet, state);
         if (mLoadConversationListener != null) {
             if (isSuccess) {
