@@ -88,6 +88,8 @@ import com.zegocloud.zimkit.services.callback.MessageSentCallback;
 import com.zegocloud.zimkit.services.callback.QueryGroupInfoCallback;
 import com.zegocloud.zimkit.services.callback.QueryUserCallback;
 import com.zegocloud.zimkit.services.config.ZIMKitInputButtonName;
+import com.zegocloud.zimkit.services.config.ZIMKitMessageConfig;
+import com.zegocloud.zimkit.services.config.message.ZIMKitMessageOperationName;
 import com.zegocloud.zimkit.services.internal.ZIMKitAdvancedKey;
 import com.zegocloud.zimkit.services.internal.ZIMKitCore;
 import com.zegocloud.zimkit.services.model.MediaTransferProgress;
@@ -443,6 +445,16 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
                 mAdapter.updateMessageInfo(data);
             }
         });
+
+        mBinding.multiSelectForwardOnebyone.setVisibility(View.GONE);
+        mBinding.multiSelectForwardMerge.setVisibility(View.GONE);
+        ZIMKitConfig zimKitConfig = ZIMKitCore.getInstance().getZimKitConfig();
+        if (zimKitConfig != null && zimKitConfig.messageConfig != null && zimKitConfig.messageConfig.textMessageConfig != null) {
+            if (zimKitConfig.messageConfig.textMessageConfig.operations.contains(ZIMKitMessageOperationName.FORWARD)) {
+                mBinding.multiSelectForwardOnebyone.setVisibility(View.VISIBLE);
+                mBinding.multiSelectForwardMerge.setVisibility(View.VISIBLE);
+            }
+        }
 
         mBinding.multiSelectForwardOnebyone.setOnClickListener(v -> {
             ArrayList<ZIMKitMessageModel> selectedItem = mAdapter.getSelectedItem();

@@ -5,6 +5,7 @@ import android.view.MotionEvent;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.ViewCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.databinding.ViewDataBinding;
 import androidx.lifecycle.ViewModel;
@@ -29,6 +30,13 @@ public abstract class BaseActivity<T extends ViewDataBinding, VM extends ViewMod
             mBinding.setLifecycleOwner(this);
             mBinding.setVariable(getViewModelId(), mViewModel);
         }
+
+        ViewCompat.setOnApplyWindowInsetsListener(mBinding.getRoot(), (v, insets) -> {
+            int topInset = insets.getStableInsetTop(); // 状态栏高度
+            int bottomInset = insets.getStableInsetBottom(); // 导航栏高度
+            v.setPadding(0, topInset, 0, bottomInset);
+            return insets;
+        });
         initView();
         initData();
     }
