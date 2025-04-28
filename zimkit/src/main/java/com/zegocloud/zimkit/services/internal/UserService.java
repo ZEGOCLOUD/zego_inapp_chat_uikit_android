@@ -43,7 +43,7 @@ public class UserService {
         ZIMUserInfo mZIMUserInfo = new ZIMUserInfo();
         mZIMUserInfo.userID = userID;
         mZIMUserInfo.userName = userName;
-        ZegoSignalingPlugin.getInstance().connectUser(userID, userName,
+        ZegoSignalingPlugin.getInstance().connectUser(userID, userName,token,
             new com.zegocloud.uikit.plugin.adapter.plugins.signaling.ConnectUserCallback() {
                 @Override
                 public void onResult(int errorCode, String errorMessage) {
