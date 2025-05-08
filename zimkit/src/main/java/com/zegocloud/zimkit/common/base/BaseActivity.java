@@ -2,15 +2,16 @@ package com.zegocloud.zimkit.common.base;
 
 import android.os.Bundle;
 import android.view.MotionEvent;
-
+import androidx.activity.EdgeToEdge;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.databinding.ViewDataBinding;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
-
 import com.zegocloud.zimkit.common.utils.ZIMKitActivityUtils;
 import com.zegocloud.zimkit.common.utils.ZIMKitKeyboardUtils.ActivityDispatchTouchEvent;
 import java.lang.reflect.ParameterizedType;
@@ -23,7 +24,15 @@ public abstract class BaseActivity<T extends ViewDataBinding, VM extends ViewMod
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        EdgeToEdge.enable(this);
         mBinding = DataBindingUtil.setContentView(this, getLayoutId());
+        ViewCompat.setOnApplyWindowInsetsListener(mBinding.getRoot(), (v, insets) -> {
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            return insets;
+        });
+
         if (getViewModelId() != 0) {
             Class<VM> entityClass = (Class<VM>) ((ParameterizedType) this.getClass().getGenericSuperclass()).getActualTypeArguments()[1];
             mViewModel = new ViewModelProvider(this).get(entityClass);
@@ -31,12 +40,6 @@ public abstract class BaseActivity<T extends ViewDataBinding, VM extends ViewMod
             mBinding.setVariable(getViewModelId(), mViewModel);
         }
 
-        ViewCompat.setOnApplyWindowInsetsListener(mBinding.getRoot(), (v, insets) -> {
-            int topInset = insets.getStableInsetTop(); // 状态栏高度
-            int bottomInset = insets.getStableInsetBottom(); // 导航栏高度
-            v.setPadding(0, topInset, 0, bottomInset);
-            return insets;
-        });
         initView();
         initData();
     }

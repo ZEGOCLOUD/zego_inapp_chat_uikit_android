@@ -921,7 +921,9 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
         if (mAdapter != null) {
             mAdapter.clear();
         }
-        mViewModel.setReceiveMessageListener(null);
+        if (mViewModel != null) {
+            mViewModel.setReceiveMessageListener(null);
+        }
         ZIMKitMessageManager.share().setMessageStateListener(null);
         if (ZIMKitCore.getInstance().isKickedOutAccount()) {
             transparentActivity();
