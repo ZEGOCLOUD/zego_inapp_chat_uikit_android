@@ -25,7 +25,7 @@ public abstract class BaseActivity<T extends ViewDataBinding, VM extends ViewMod
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        EdgeToEdge.enable(this);
+//        EdgeToEdge.enable(this);
         mBinding = DataBindingUtil.setContentView(this, getLayoutId());
         ViewCompat.setOnApplyWindowInsetsListener(mBinding.getRoot(), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());

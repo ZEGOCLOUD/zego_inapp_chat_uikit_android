@@ -72,7 +72,12 @@ public class HEIFImageHelper {
         if (!isHeif(path)) {
             return path;
         }
-        String tempPath = ZIMKitCore.getInstance().getApplication().getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath() + File.separator + "images/" + System.currentTimeMillis() + "_zimkit" + suffix_jpg;
+        File externalFilesDir = ZIMKitCore.getInstance().getApplication()
+            .getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
+        if (externalFilesDir == null || (!externalFilesDir.exists() && !externalFilesDir.mkdirs())) {
+            externalFilesDir = ZIMKitCore.getInstance().getApplication().getFilesDir();
+        }
+        String tempPath = externalFilesDir.getAbsolutePath() + File.separator + "images/" + System.currentTimeMillis() + "_zimkit" + suffix_jpg;
         FileOutputStream fileOutputStream = null;
         Bitmap bitmap = null;
         try {
