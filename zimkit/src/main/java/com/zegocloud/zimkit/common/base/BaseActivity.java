@@ -25,11 +25,13 @@ public abstract class BaseActivity<T extends ViewDataBinding, VM extends ViewMod
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-//        EdgeToEdge.enable(this);
+        EdgeToEdge.enable(this);
         mBinding = DataBindingUtil.setContentView(this, getLayoutId());
         ViewCompat.setOnApplyWindowInsetsListener(mBinding.getRoot(), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, Math.max(systemBars.bottom, ime.bottom));
+//            v.setPadding(systemBars.left, systemBars.top, systemBars.right,systemBars.bottom);
             return insets;
         });
 

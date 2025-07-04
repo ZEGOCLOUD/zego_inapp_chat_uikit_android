@@ -100,7 +100,9 @@ import im.zego.zim.callback.ZIMMessageDeletedCallback;
 import im.zego.zim.callback.ZIMMessageSentFullCallback;
 import im.zego.zim.entity.ZIMError;
 import im.zego.zim.entity.ZIMImageMessage;
+import im.zego.zim.entity.ZIMMediaMessage;
 import im.zego.zim.entity.ZIMMessage;
+import im.zego.zim.entity.ZIMMultipleMessage;
 import im.zego.zim.entity.ZIMTextMessage;
 import im.zego.zim.entity.ZIMUserFullInfo;
 import im.zego.zim.entity.ZIMVideoMessage;
@@ -525,8 +527,15 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
                         }
 
                         @Override
-                        public void onMediaUploadingProgress(ZIMMessage message, long currentFileSize,
+                        public void onMediaUploadingProgress(ZIMMediaMessage message, long currentFileSize,
                             long totalFileSize) {
+
+                        }
+
+                        @Override
+                        public void onMultipleMediaUploadingProgress(ZIMMultipleMessage message, long currentFileSize,
+                            long totalFileSize, int messageInfoIndex, long currentIndexFileSize,
+                            long totalIndexFileSize) {
 
                         }
                     });
@@ -713,8 +722,15 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
                             }
 
                             @Override
-                            public void onMediaUploadingProgress(ZIMMessage message, long currentFileSize,
+                            public void onMediaUploadingProgress(ZIMMediaMessage message, long currentFileSize,
                                 long totalFileSize) {
+
+                            }
+
+                            @Override
+                            public void onMultipleMediaUploadingProgress(ZIMMultipleMessage message,
+                                long currentFileSize, long totalFileSize, int messageInfoIndex,
+                                long currentIndexFileSize, long totalIndexFileSize) {
 
                             }
                         });
@@ -1156,8 +1172,15 @@ public class ZIMKitMessageFragment extends BaseFragment<ZimkitFragmentMessageBin
                             }
 
                             @Override
-                            public void onMediaUploadingProgress(ZIMMessage message, long currentFileSize,
+                            public void onMediaUploadingProgress(ZIMMediaMessage message, long currentFileSize,
                                 long totalFileSize) {
+
+                            }
+
+                            @Override
+                            public void onMultipleMediaUploadingProgress(ZIMMultipleMessage message,
+                                long currentFileSize, long totalFileSize, int messageInfoIndex,
+                                long currentIndexFileSize, long totalIndexFileSize) {
                                 ZIMKitMessageModel messageModel = ZIMMessageUtil.parseZIMMessageToModel(message);
                                 ChatMessageBuilder.setNickNameAndAvatar(messageModel);
                                 MediaTransferProgress progress = new MediaTransferProgress(currentFileSize,

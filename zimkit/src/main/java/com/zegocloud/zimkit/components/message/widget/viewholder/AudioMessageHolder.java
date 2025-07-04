@@ -3,7 +3,6 @@ package com.zegocloud.zimkit.components.message.widget.viewholder;
 import android.graphics.drawable.AnimationDrawable;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.ViewGroup;
 import androidx.databinding.ViewDataBinding;
 import androidx.fragment.app.FragmentActivity;
@@ -21,14 +20,12 @@ import com.zegocloud.zimkit.components.message.model.ZIMKitMessageModel;
 import com.zegocloud.zimkit.components.message.widget.ZIMKitAudioPlayer;
 import com.zegocloud.zimkit.databinding.ZimkitItemMessageReceiveAudioBinding;
 import com.zegocloud.zimkit.databinding.ZimkitItemMessageSendAudioBinding;
-import com.zegocloud.zimkit.services.ZIMKit;
-import com.zegocloud.zimkit.services.callback.DownloadMediaFileCallback;
 import com.zegocloud.zimkit.services.internal.ZIMKitCore;
-import com.zegocloud.zimkit.services.utils.ZIMMessageUtil;
 import im.zego.zim.callback.ZIMMediaDownloadedCallback;
 import im.zego.zim.entity.ZIMAudioMessage;
 import im.zego.zim.entity.ZIMError;
 import im.zego.zim.entity.ZIMMediaMessage;
+import im.zego.zim.entity.ZIMMessage;
 import im.zego.zim.enums.ZIMErrorCode;
 import im.zego.zim.enums.ZIMMediaFileType;
 import im.zego.zim.enums.ZIMMessageDirection;
@@ -193,7 +190,7 @@ public class AudioMessageHolder extends MessageViewHolder {
                 if (animationReceiveBgDrawable != null) {
                     animationReceiveBgDrawable.stop();
                 }
-                if (audioMessageModel.getReactions().isEmpty()&& model.getMessage().getRepliedInfo() == null) {
+                if (audioMessageModel.getReactions().isEmpty() && model.getMessage().getRepliedInfo() == null) {
                     receiveAudioBinding.msgContentLayout.setBackgroundResource(R.drawable.zimkit_shape_8dp_white);
                 } else {
                     receiveAudioBinding.msgContentLayout.setBackgroundResource(R.drawable.zimkit_shape_8dp_eff0f2);
@@ -264,20 +261,21 @@ public class AudioMessageHolder extends MessageViewHolder {
         ZIMMediaFileType mediaType = ZIMMediaFileType.ORIGINAL_FILE;
         ZegoSignalingPlugin.getInstance().downloadMediaFile(mediaMessage, mediaType, new ZIMMediaDownloadedCallback() {
             @Override
-            public void onMediaDownloaded(ZIMMediaMessage message, ZIMError errorInfo) {
+            public void onMediaDownloaded(ZIMMessage message, ZIMError errorInfo) {
                 ZIMKitMessageManager.share().unRegisterNetworkListener(networkConnectionListener);
                 if (errorInfo.code == ZIMErrorCode.SUCCESS) {
-                    ZIMAudioMessage audioMessage = (ZIMAudioMessage) message;
-                    audioMessageModel.setFileLocalPath(message.getFileLocalPath());
-                    audioMessageModel.setAudioDuration(audioMessage.getAudioDuration());
-                    audioMessageModel.setFileDownloadUrl(mediaMessage.getFileDownloadUrl());
-
-                    ZIMKitMessageManager.share().unRegisterNetworkListener(networkConnectionListener);
+                    if (message instanceof ZIMAudioMessage) {
+                        ZIMAudioMessage audioMessage = (ZIMAudioMessage) message;
+                        audioMessageModel.setFileLocalPath(audioMessage.getFileLocalPath());
+                        audioMessageModel.setAudioDuration(audioMessage.getAudioDuration());
+                        audioMessageModel.setFileDownloadUrl(mediaMessage.getFileDownloadUrl());
+                        ZIMKitMessageManager.share().unRegisterNetworkListener(networkConnectionListener);
+                    }
                 }
             }
 
             @Override
-            public void onMediaDownloadingProgress(ZIMMediaMessage message, long currentFileSize, long totalFileSize) {
+            public void onMediaDownloadingProgress(ZIMMessage message, long currentFileSize, long totalFileSize) {
 
             }
         });

@@ -339,7 +339,7 @@ public class MessageService {
                 .downloadMediaFile((ZIMMediaMessage) zimMessage.zim, ZIMMediaFileType.ORIGINAL_FILE,
                     new ZIMMediaDownloadedCallback() {
                         @Override
-                        public void onMediaDownloaded(ZIMMediaMessage message, ZIMError errorInfo) {
+                        public void onMediaDownloaded(ZIMMessage message, ZIMError errorInfo) {
                             boolean isFinished = errorInfo.code == ZIMErrorCode.SUCCESS;
                             ZIMKitCore.getInstance().getZimkitNotifyList().notifyAllListener(zimKitDelegate -> {
                                 zimKitDelegate.onMediaMessageDownloadingProgressUpdated(
@@ -351,7 +351,7 @@ public class MessageService {
                         }
 
                         @Override
-                        public void onMediaDownloadingProgress(ZIMMediaMessage message, long currentFileSize,
+                        public void onMediaDownloadingProgress(ZIMMessage message, long currentFileSize,
                             long totalFileSize) {
                             ZIMKitMessage zimKitMessage = getZIMKitMessage(message.getMessageID());
                             if (zimKitMessage == null) {
@@ -376,7 +376,7 @@ public class MessageService {
     }
 
     public void deleteMessage(List<ZIMKitMessage> messages, DeleteMessageCallback callback) {
-        if (messages == null || messages.size() == 0) {
+        if (messages == null || messages.isEmpty()) {
             ZIMError zimError = new ZIMError();
             zimError.code = ZIMErrorCode.FAILED;
             if (callback != null) {

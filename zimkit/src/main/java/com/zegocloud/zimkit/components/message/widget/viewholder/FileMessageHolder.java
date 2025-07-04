@@ -18,6 +18,7 @@ import com.zegocloud.zimkit.databinding.ZimkitItemMessageSendFileBinding;
 import im.zego.zim.callback.ZIMMediaDownloadedCallback;
 import im.zego.zim.entity.ZIMError;
 import im.zego.zim.entity.ZIMMediaMessage;
+import im.zego.zim.entity.ZIMMessage;
 import im.zego.zim.enums.ZIMErrorCode;
 import im.zego.zim.enums.ZIMMediaFileType;
 import im.zego.zim.enums.ZIMMessageDirection;
@@ -56,7 +57,7 @@ public class FileMessageHolder extends MessageViewHolder {
                     dp2px(12, displayMetrics), dp2px(10, displayMetrics));
             }
             if (!isSend) {
-                if (model.getReactions().isEmpty()&& model.getMessage().getRepliedInfo() == null) {
+                if (model.getReactions().isEmpty() && model.getMessage().getRepliedInfo() == null) {
                     receiveFileBinding.msgContentLayout.setBackgroundResource(R.drawable.zimkit_shape_12dp_white);
                 } else {
                     receiveFileBinding.msgContentLayout.setBackgroundResource(
@@ -159,17 +160,21 @@ public class FileMessageHolder extends MessageViewHolder {
         ZIMMediaFileType mediaType = ZIMMediaFileType.ORIGINAL_FILE;
         ZegoSignalingPlugin.getInstance().downloadMediaFile(mediaMessage, mediaType, new ZIMMediaDownloadedCallback() {
             @Override
-            public void onMediaDownloaded(ZIMMediaMessage message, ZIMError errorInfo) {
+            public void onMediaDownloaded(ZIMMessage message, ZIMError errorInfo) {
                 if (errorInfo.code == ZIMErrorCode.SUCCESS) {
-                    fileMessageModel.setFileLocalPath(message.getFileLocalPath());
-                    fileMessageModel.setFileSize(message.getFileSize());
-                    fileMessageModel.setFileName(message.getFileName());
-                    ZIMKitMessageManager.share().unRegisterNetworkListener(networkConnectionListener);
+                    if (message instanceof ZIMMediaMessage) {
+                        ZIMMediaMessage zimMediaMessage = mediaMessage;
+                        fileMessageModel.setFileLocalPath(zimMediaMessage.getFileLocalPath());
+                        fileMessageModel.setFileSize(zimMediaMessage.getFileSize());
+                        fileMessageModel.setFileName(zimMediaMessage.getFileName());
+                        ZIMKitMessageManager.share().unRegisterNetworkListener(networkConnectionListener);
+                    }
+
                 }
             }
 
             @Override
-            public void onMediaDownloadingProgress(ZIMMediaMessage message, long currentFileSize, long totalFileSize) {
+            public void onMediaDownloadingProgress(ZIMMessage message, long currentFileSize, long totalFileSize) {
 
             }
         });
