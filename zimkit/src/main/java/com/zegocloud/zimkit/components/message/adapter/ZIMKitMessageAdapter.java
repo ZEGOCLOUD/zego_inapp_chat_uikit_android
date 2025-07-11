@@ -519,13 +519,22 @@ public class ZIMKitMessageAdapter extends RecyclerView.Adapter<MessageViewHolder
         Collections.sort(mList, new Comparator<ZIMKitMessageModel>() {
             @Override
             public int compare(ZIMKitMessageModel o1, ZIMKitMessageModel o2) {
-                if (Objects.equals(o1.getMessage().localExtendedData, "loading")) {
-                    return 1;
+                if (o1.getMessage() == null || o2.getMessage() == null) {
+                    return 0;
                 }
-                if (Objects.equals(o2.getMessage().localExtendedData, "loading")) {
-                    return 1;
+                boolean o1IsLoading = Objects.equals(o1.getMessage().localExtendedData, "loading");
+                boolean o2IsLoading = Objects.equals(o2.getMessage().localExtendedData, "loading");
+                if (o1IsLoading && !o2IsLoading) {
+                    return 1; // o1 排后
                 }
-                return (int) (o1.getMessage().getTimestamp() - o2.getMessage().getTimestamp());
+                if (!o1IsLoading && o2IsLoading) {
+                    return -1; // o2 排后
+                }
+                // 两者都是 loading 或都不是 loading，按 timestamp 升序
+                long o1Timestamp = o1.getMessage().getTimestamp();
+                long o2Timestamp = o2.getMessage().getTimestamp();
+                int result = Long.compare(o1Timestamp, o2Timestamp);
+                return result;
             }
         });
         notifyDataSetChanged();
